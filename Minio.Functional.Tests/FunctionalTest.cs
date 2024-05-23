@@ -451,7 +451,6 @@ public static class FunctionalTest
                 rsg.GenerateStreamFromSeed(5));
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
-        await Task.Delay(1000).ConfigureAwait(false);
 
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal) { { "bucketName", bucketName }, { "x-minio-force-delete", "true" } };
@@ -585,7 +584,6 @@ public static class FunctionalTest
         var bktExists = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
         if (!bktExists)
             return;
-        var taskList = new List<Task>();
         var getVersions = false;
         // Get Versioning/Retention Info.
         var lockConfigurationArgs =
@@ -618,24 +616,15 @@ public static class FunctionalTest
             .WithBucket(bucketName)
             .WithRecursive(true)
             .WithVersions(getVersions);
-        var objectNamesVersions =
-            new List<Tuple<string, string>>();
+
+        var objectNamesVersions = new List<Tuple<string, string>>();
         var objectNames = new List<string>();
-        var observable = minio.ListObjectsAsync(listObjectsArgs);
+        await foreach (var item in minio.ListObjectsEnumAsync(listObjectsArgs).ConfigureAwait(false))
+            if (getVersions)
+                objectNamesVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
+            else
+                objectNames.Add(item.Key);
 
-        var exceptionList = new List<Exception>();
-        var subscription = observable.Subscribe(
-            item =>
-            {
-                if (getVersions)
-                    objectNamesVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
-                else
-                    objectNames.Add(item.Key);
-            },
-            exceptionList.Add,
-            () => { });
-
-        await Task.Delay(20000).ConfigureAwait(false);
         if (lockConfig?.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled,
                 StringComparison.OrdinalIgnoreCase) == true)
         {
@@ -1219,7 +1208,6 @@ public static class FunctionalTest
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
-            await Task.Delay(1000).ConfigureAwait(false);
             new MintLogger("RemoveObjects_Test2", removeObjectSignature2,
                 "Tests whether RemoveObjectAsync for multi objects delete passes", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -1263,33 +1251,23 @@ public static class FunctionalTest
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
-            await Task.Delay(1000).ConfigureAwait(false);
             var listObjectsArgs = new ListObjectsArgs()
                 .WithBucket(bucketName)
                 .WithRecursive(true)
                 .WithVersions(true);
-            var observable = minio.ListObjectsAsync(listObjectsArgs);
+
             var objVersions = new List<Tuple<string, string>>();
-            var subscription = observable.Subscribe(
-                item => objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId)),
-                ex => throw ex,
-                () => Task.Factory.StartNew(async () =>
-                {
-                    var removeObjectsArgs = new RemoveObjectsArgs()
-                        .WithBucket(bucketName)
-                        .WithObjectsVersions(objVersions);
+            await foreach (var item in minio.ListObjectsEnumAsync(listObjectsArgs).ConfigureAwait(false))
+                objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
 
-                    var rmObservable = await minio.RemoveObjectsAsync(removeObjectsArgs).ConfigureAwait(false);
+            var removeObjectsArgs = new RemoveObjectsArgs()
+                .WithBucket(bucketName)
+                .WithObjectsVersions(objVersions);
 
-                    var deList = new List<DeleteError>();
-                    using var rmSub = rmObservable.Subscribe(
-                        deList.Add,
-                        ex => throw ex,
-                        () => Task.Factory.StartNew(async () =>
-                            await TearDown(minio, bucketName).ConfigureAwait(false)));
-                }));
+            await minio.RemoveObjectsAsync(removeObjectsArgs).ConfigureAwait(false);
 
-            await Task.Delay(2 * 1000).ConfigureAwait(false);
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+
             new MintLogger("RemoveObjects_Test3", removeObjectSignature2,
                 "Tests whether RemoveObjectsAsync for multi objects/versions delete passes", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -1441,13 +1419,17 @@ public static class FunctionalTest
 
                 await minio.RemoveIncompleteUploadAsync(rmArgs).ConfigureAwait(false);
 
-                var listArgs = new ListIncompleteUploadsArgs()
-                    .WithBucket(bucketName);
-                var observable = minio.ListIncompleteUploads(listArgs);
-
-                var subscription = observable.Subscribe(
-                    item => Assert.Fail(),
-                    ex => Assert.Fail());
+                try
+                {
+                    var listArgs = new ListIncompleteUploadsArgs()
+                        .WithBucket(bucketName);
+                    await foreach (var item in minio.ListIncompleteUploadsEnumAsync(listArgs).ConfigureAwait(false))
+                        Assert.Fail();
+                }
+                catch (Exception)
+                {
+                    Assert.Fail();
+                }
             }
 
             new MintLogger("RemoveIncompleteUpload_Test", removeIncompleteUploadSignature,
@@ -4703,7 +4685,6 @@ public static class FunctionalTest
                 _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             }
 
-            await Task.Delay(1000).ConfigureAwait(false);
             new MintLogger("GetObject_Test1", getObjectSignature, "Tests whether GetObject as stream works",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
@@ -5072,7 +5053,6 @@ public static class FunctionalTest
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             await ListObjects_Test(minio, bucketName, prefix, 2, false).ConfigureAwait(false);
-            await Task.Delay(2000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test1", listObjectsSignature,
                 "Tests whether ListObjects lists all objects matching a prefix non-recursive", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -5101,7 +5081,6 @@ public static class FunctionalTest
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
 
             await ListObjects_Test(minio, bucketName, null, 0).ConfigureAwait(false);
-            await Task.Delay(2000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test2", listObjectsSignature,
                 "Tests whether ListObjects passes when bucket is empty", TestStatus.PASS, DateTime.Now - startTime,
                 args: args).Log();
@@ -5144,7 +5123,6 @@ public static class FunctionalTest
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             await ListObjects_Test(minio, bucketName, prefix, 2).ConfigureAwait(false);
-            await Task.Delay(2000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test3", listObjectsSignature,
                 "Tests whether ListObjects lists all objects matching a prefix and recursive", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -5183,7 +5161,6 @@ public static class FunctionalTest
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             await ListObjects_Test(minio, bucketName, "", 2, false).ConfigureAwait(false);
-            await Task.Delay(2000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test4", listObjectsSignature,
                 "Tests whether ListObjects lists all objects when no prefix is specified", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -5231,7 +5208,6 @@ public static class FunctionalTest
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
             await ListObjects_Test(minio, bucketName, objectNamePrefix, numObjects, false).ConfigureAwait(false);
-            await Task.Delay(5000).ConfigureAwait(false);
             new MintLogger("ListObjects_Test5", listObjectsSignature,
                 "Tests whether ListObjects lists all objects when number of objects == 100", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -5282,22 +5258,19 @@ public static class FunctionalTest
                 .WithPrefix(objectNamePrefix)
                 .WithRecursive(false)
                 .WithVersions(false);
-            var observable = minio.ListObjectsAsync(listArgs);
-            var subscription = observable.Subscribe(
-                item =>
-                {
-                    Assert.IsTrue(item.Key.StartsWith(objectNamePrefix, StringComparison.OrdinalIgnoreCase));
-                    if (!objectNamesSet.Add(item.Key))
-                        new MintLogger("ListObjects_Test6", listObjectsSignature,
-                            "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)",
-                            TestStatus.FAIL, DateTime.Now - startTime,
-                            "Failed to add. Object already exists: " + item.Key, "", args: args).Log();
+            await foreach (var item in minio.ListObjectsEnumAsync(listArgs).ConfigureAwait(false))
+            {
+                Assert.IsTrue(item.Key.StartsWith(objectNamePrefix, StringComparison.OrdinalIgnoreCase));
+                if (!objectNamesSet.Add(item.Key))
+                    new MintLogger("ListObjects_Test6", listObjectsSignature,
+                        "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)",
+                        TestStatus.FAIL, DateTime.Now - startTime,
+                        "Failed to add. Object already exists: " + item.Key, "", args: args).Log();
 
-                    count++;
-                },
-                ex => throw ex,
-                () => Assert.AreEqual(count, numObjects));
-            await Task.Delay(3500).ConfigureAwait(false);
+                count++;
+            }
+
+            Assert.AreEqual(count, numObjects);
             new MintLogger("ListObjects_Test6", listObjectsSignature,
                 "Tests whether ListObjects lists more than 1000 objects correctly(max-keys = 1000)", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
@@ -5347,7 +5320,6 @@ public static class FunctionalTest
 
             await ListObjects_Test(minio, bucketName, prefix, 2, false, true).ConfigureAwait(false);
 
-            await Task.Delay(2000).ConfigureAwait(false);
             var listObjectsArgs = new ListObjectsArgs()
                 .WithBucket(bucketName)
                 .WithRecursive(true)
@@ -5355,18 +5327,15 @@ public static class FunctionalTest
             var count = 0;
             var numObjectVersions = 8;
 
-            var observable = minio.ListObjectsAsync(listObjectsArgs);
-            var subscription = observable.Subscribe(
-                item =>
-                {
-                    Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-                    count++;
-                    objectVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
-                },
-                ex => throw ex,
-                () => Assert.AreEqual(count, numObjectVersions));
+            await foreach (var item in minio.ListObjectsEnumAsync(listObjectsArgs).ConfigureAwait(false))
+            {
+                Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+                count++;
+                objectVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
+            }
 
-            await Task.Delay(4000).ConfigureAwait(false);
+            Assert.AreEqual(count, numObjectVersions);
+
             new MintLogger("ListObjectVersions_Test1", listObjectsSignature,
                 "Tests whether ListObjects with versions lists all objects along with all version ids for each object matching a prefix non-recursive",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
@@ -5385,43 +5354,31 @@ public static class FunctionalTest
     }
 
     internal static async Task ListObjects_Test(IMinioClient minio, string bucketName, string prefix, int numObjects,
-        bool recursive = true, bool versions = false, Dictionary<string, string> headers = null)
+        bool recursive = true, bool versions = false, bool includeUserMedata = false,
+        Dictionary<string, string> headers = null)
     {
-        var startTime = DateTime.Now;
         var count = 0;
         var args = new ListObjectsArgs()
             .WithBucket(bucketName)
             .WithPrefix(prefix)
             .WithHeaders(headers)
             .WithRecursive(recursive)
-            .WithVersions(versions);
+            .WithVersions(versions)
+            .WithIncludeUserMetadata(includeUserMedata);
         if (!versions)
-        {
-            var observable = minio.ListObjectsAsync(args);
-            var subscription = observable.Subscribe(
-                item =>
-                {
-                    if (!string.IsNullOrEmpty(prefix))
-                        Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-                    count++;
-                },
-                ex => throw ex,
-                () => { });
-        }
-        else
-        {
-            var observable = minio.ListObjectsAsync(args);
-            var subscription = observable.Subscribe(
-                item =>
-                {
+            await foreach (var item in minio.ListObjectsEnumAsync(args).ConfigureAwait(false))
+            {
+                if (!string.IsNullOrEmpty(prefix))
                     Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-                    count++;
-                },
-                ex => throw ex,
-                () => { });
-        }
+                count++;
+            }
+        else
+            await foreach (var item in minio.ListObjectsEnumAsync(args).ConfigureAwait(false))
+            {
+                Assert.IsTrue(item.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+                count++;
+            }
 
-        await Task.Delay(40000).ConfigureAwait(false);
         Assert.AreEqual(numObjects, count);
     }
 
@@ -5799,13 +5756,17 @@ public static class FunctionalTest
             }
             catch (OperationCanceledException)
             {
-                var listArgs = new ListIncompleteUploadsArgs()
-                    .WithBucket(bucketName);
-                var observable = minio.ListIncompleteUploads(listArgs);
-
-                var subscription = observable.Subscribe(
-                    item => Assert.IsTrue(item.Key.Contains(objectName, StringComparison.Ordinal)),
-                    ex => Assert.Fail());
+                try
+                {
+                    var listArgs = new ListIncompleteUploadsArgs()
+                        .WithBucket(bucketName);
+                    await foreach (var item in minio.ListIncompleteUploadsEnumAsync(listArgs).ConfigureAwait(false))
+                        Assert.IsTrue(item.Key.Contains(objectName, StringComparison.Ordinal));
+                }
+                catch (Exception)
+                {
+                    Assert.Fail();
+                }
             }
             catch (Exception ex)
             {
@@ -5860,15 +5821,19 @@ public static class FunctionalTest
             }
             catch (OperationCanceledException)
             {
-                var listArgs = new ListIncompleteUploadsArgs()
-                    .WithBucket(bucketName)
-                    .WithPrefix("minioprefix")
-                    .WithRecursive(false);
-                var observable = minio.ListIncompleteUploads(listArgs);
-
-                var subscription = observable.Subscribe(
-                    item => Assert.AreEqual(item.Key, objectName),
-                    ex => Assert.Fail());
+                try
+                {
+                    var listArgs = new ListIncompleteUploadsArgs()
+                        .WithBucket(bucketName)
+                        .WithPrefix("minioprefix")
+                        .WithRecursive(false);
+                    await foreach (var item in minio.ListIncompleteUploadsEnumAsync(listArgs).ConfigureAwait(false))
+                        Assert.AreEqual(item.Key, objectName);
+                }
+                catch
+                {
+                    Assert.Fail();
+                }
             }
 
             new MintLogger("ListIncompleteUpload_Test2", listIncompleteUploadsSignature,
@@ -5917,15 +5882,19 @@ public static class FunctionalTest
             }
             catch (OperationCanceledException)
             {
-                var listArgs = new ListIncompleteUploadsArgs()
-                    .WithBucket(bucketName)
-                    .WithPrefix(prefix)
-                    .WithRecursive(true);
-                var observable = minio.ListIncompleteUploads(listArgs);
-
-                var subscription = observable.Subscribe(
-                    item => Assert.AreEqual(item.Key, objectName),
-                    ex => Assert.Fail());
+                try
+                {
+                    var listArgs = new ListIncompleteUploadsArgs()
+                        .WithBucket(bucketName)
+                        .WithPrefix(prefix)
+                        .WithRecursive(true);
+                    await foreach (var item in minio.ListIncompleteUploadsEnumAsync(listArgs).ConfigureAwait(false))
+                        Assert.AreEqual(item.Key, objectName);
+                }
+                catch
+                {
+                    Assert.Fail();
+                }
             }
 
             new MintLogger("ListIncompleteUpload_Test3", listIncompleteUploadsSignature,

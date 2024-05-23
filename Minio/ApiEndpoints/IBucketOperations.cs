@@ -87,7 +87,7 @@ public interface IBucketOperations
     ///     For example, if you call ListObjectsAsync on a bucket with versioning
     ///     enabled or object lock enabled
     /// </exception>
-    IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<Item> ListObjectsEnumAsync(ListObjectsArgs args, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Gets notification configuration for this bucket
