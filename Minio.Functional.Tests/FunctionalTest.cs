@@ -3526,7 +3526,8 @@ public static class FunctionalTest
             var statObj = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
                 stream, progress).ConfigureAwait(false);
             Assert.IsTrue(percentage == 100, "Reported percentage after finished upload was not 100 percent.");
-            Assert.IsTrue(totalBytesTransferred == objSize, "Transfered object size does not match with the original object size.");
+            Assert.IsTrue(totalBytesTransferred == objSize,
+                "Transfered object size does not match with the original object size.");
             new MintLogger(nameof(PutObject_Test9), putObjectSignature,
                 "Tests whether PutObject with progress passes for small object", TestStatus.PASS,
                 DateTime.Now - startTime,
@@ -3581,7 +3582,8 @@ public static class FunctionalTest
             _ = await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
                 rsg.GenerateStreamFromSeed(64 * MB), progress).ConfigureAwait(false);
             Assert.IsTrue(percentage == 100, "Reported percentage after finished upload was not 100 percent.");
-            Assert.IsTrue(totalBytesTransferred == 64 * MB, "Transfered object size does not match with the original object size.");
+            Assert.IsTrue(totalBytesTransferred == 64 * MB,
+                "Transfered object size does not match with the original object size.");
             new MintLogger(nameof(PutObject_Test10), putObjectSignature,
                 "Tests whether multipart PutObject with progress passes", TestStatus.PASS, DateTime.Now - startTime,
                 args: args).Log();
