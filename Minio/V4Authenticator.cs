@@ -467,6 +467,10 @@ internal class V4Authenticator
         foreach (var header in headers)
         {
             var headerName = header.Key.ToLowerInvariant();
+            if (string.Equals(header.Key, "versionId", StringComparison.Ordinal))
+            {
+                headerName = "versionId";
+            }
             var headerValue = header.Value;
 
             if (!ignoredHeaders.Contains(headerName)) sortedHeaders.Add(headerName, headerValue);
