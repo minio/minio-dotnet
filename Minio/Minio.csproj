@@ -9,7 +9,7 @@
 		<Description>MinIO .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
 		<Product>Minio</Product>
 		<PackageId>Minio-HeaderFix</PackageId>
-		<Version>6.0.5</Version>
+		<Version>6.0.8</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
