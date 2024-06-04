@@ -219,7 +219,7 @@ public partial class MinioClient : IObjectOperations
 
         var authenticator = new V4Authenticator(Config.Secure, Config.AccessKey, Config.SecretKey,
             region, Config.SessionToken);
-        
+
         var t = DateTime.UtcNow;
         const string signV4Algorithm = "AWS4-HMAC-SHA256";
         var credential = authenticator.GetCredentialString(t, region);
@@ -235,18 +235,18 @@ public partial class MinioClient : IObjectOperations
         // args.Policy.formData["key"] = "\\\"" + args.ObjectName + "\\\"";
 
         args.Policy.FormData["key"] = args.ObjectName;
-        
+
         args.Policy.FormData["x-amz-algorithm"] = signV4Algorithm;
         args.Policy.FormData["x-amz-credential"] = credential;
         args.Policy.FormData["x-amz-date"] = t.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
 
         if (!string.IsNullOrEmpty(Config.SessionToken))
             args.Policy.FormData["x-amz-security-token"] = Config.SessionToken;
-        
+
         // Get base64 encoded policy.
         var policyBase64 = args.Policy.Base64();
         args.Policy.FormData["policy"] = policyBase64;
-        
+
         var signature = authenticator.PresignPostSignature(region, t, policyBase64);
         args.Policy.FormData["x-amz-signature"] = signature;
 
