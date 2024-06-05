@@ -19,6 +19,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
+using System.Web;
 using System.Xml.Linq;
 using CommunityToolkit.HighPerformance;
 using Minio.ApiEndpoints;
@@ -271,7 +272,7 @@ public partial class MinioClient : IBucketOperations
 
                 var objectKey = t.Element(ns + "Key")?.Value;
                 if (objectKey != null)
-                    objectKey = Uri.UnescapeDataString(objectKey);
+                    objectKey = HttpUtility.UrlDecode(objectKey);
 
                 return new Item
                 {
