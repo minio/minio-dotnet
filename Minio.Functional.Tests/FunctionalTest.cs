@@ -5291,7 +5291,7 @@ public static class FunctionalTest
             await TearDown(minio, bucketName).ConfigureAwait(false);
         }
     }
-    
+
     internal static async Task ListObjects_Test7(IMinioClient minio)
     {
         var startTime = DateTime.Now;
@@ -5318,13 +5318,15 @@ public static class FunctionalTest
 
             await ListObjects_Test(minio, bucketName, prefix, 2, false).ConfigureAwait(false);
             new MintLogger("ListObjects_Test7", listObjectsSignature,
-                "Tests whether ListObjects lists all objects matching a prefix with a space non-recursive", TestStatus.PASS,
+                "Tests whether ListObjects lists all objects matching a prefix with a space non-recursive",
+                TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
         }
         catch (Exception ex)
         {
             new MintLogger("ListObjects_Test7", listObjectsSignature,
-                "Tests whether ListObjects lists all objects matching a prefix with a space non-recursive", TestStatus.FAIL,
+                "Tests whether ListObjects lists all objects matching a prefix with a space non-recursive",
+                TestStatus.FAIL,
                 DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
             throw;
         }
