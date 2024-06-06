@@ -177,6 +177,7 @@ internal static class Program
         functionalTestTasks.Add(FunctionalTest.ListObjects_Test5(minioClient));
         functionalTestTasks.Add(FunctionalTest.ListObjects_Test6(minioClient));
         functionalTestTasks.Add(FunctionalTest.ListObjects_Test7(minioClient));
+        functionalTestTasks.Add(FunctionalTest.ListObjects_Test8(minioClient));
 
         // Test RemoveObjectAsync function
         functionalTestTasks.Add(FunctionalTest.RemoveObject_Test1(minioClient));

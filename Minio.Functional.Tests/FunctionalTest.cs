@@ -5335,6 +5335,50 @@ public static class FunctionalTest
             await TearDown(minio, bucketName).ConfigureAwait(false);
         }
     }
+    
+    internal static async Task ListObjects_Test8(IMinioClient minio)
+    {
+        var startTime = DateTime.Now;
+        var bucketName = GetRandomName(15);
+        var prefix = "minix+";
+        var objectName = prefix + GetRandomName(10);
+        var args = new Dictionary<string, string>
+            (StringComparer.Ordinal)
+            {
+                { "bucketName", bucketName },
+                { "objectName", objectName },
+                { "prefix", prefix },
+                { "recursive", "false" }
+            };
+        try
+        {
+            await Setup_Test(minio, bucketName).ConfigureAwait(false);
+            var tasks = new Task[2];
+            for (var i = 0; i < 2; i++)
+                tasks[i] = PutObject_Task(minio, bucketName, objectName + i, null, null, 0, null,
+                    rsg.GenerateStreamFromSeed(1));
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            await ListObjects_Test(minio, bucketName, prefix, 2, false).ConfigureAwait(false);
+            new MintLogger("ListObjects_Test8", listObjectsSignature,
+                "Tests whether ListObjects lists all objects matching a prefix with a plus non-recursive",
+                TestStatus.PASS,
+                DateTime.Now - startTime, args: args).Log();
+        }
+        catch (Exception ex)
+        {
+            new MintLogger("ListObjects_Test8", listObjectsSignature,
+                "Tests whether ListObjects lists all objects matching a prefix with a plus non-recursive",
+                TestStatus.FAIL,
+                DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
+            throw;
+        }
+        finally
+        {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+        }
+    }
 
     internal static async Task ListObjectVersions_Test1(IMinioClient minio)
     {
