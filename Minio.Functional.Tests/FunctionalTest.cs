@@ -5335,7 +5335,7 @@ public static class FunctionalTest
             await TearDown(minio, bucketName).ConfigureAwait(false);
         }
     }
-    
+
     internal static async Task ListObjects_Test8(IMinioClient minio)
     {
         var startTime = DateTime.Now;
