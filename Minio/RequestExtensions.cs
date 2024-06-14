@@ -107,10 +107,10 @@ public static class RequestExtensions
                 if (request.Method == HttpMethod.Head)
                 {
                     if (responseResult.Exception?.GetType().Equals(typeof(BucketNotFoundException)) == true ||
-                        path.Length == 1)
+                        path.ToList().Count == 1)
                         responseResult.Exception = new BucketNotFoundException();
 
-                    if (path.Length > 1)
+                    if (path.ToList().Count > 1)
                     {
                         var found = await minioClient
                             .BucketExistsAsync(new BucketExistsArgs().WithBucket(path.ToList()[0]), cancellationToken)
@@ -125,7 +125,11 @@ public static class RequestExtensions
                 if (request.RequestUri.ToString().Contains("lock", StringComparison.OrdinalIgnoreCase) &&
                     request.Method == HttpMethod.Get)
                     responseResult.Exception = new MissingObjectLockConfigurationException();
+                return responseResult;
             }
+
+            minioClient.HandleIfErrorResponse(responseResult, errorHandlers, startTime);
+            return responseResult;
         }
         catch (Exception ex) when (ex is not (OperationCanceledException or
                                        ObjectNotFoundException))
@@ -139,9 +143,6 @@ public static class RequestExtensions
                 responseResult = new ResponseResult(request, ex);
             return responseResult;
         }
-
-        minioClient.HandleIfErrorResponse(responseResult, errorHandlers, startTime);
-        return responseResult;
     }
 
     private static Task<ResponseResult> ExecuteWithRetry(this IMinioClient minioClient,
