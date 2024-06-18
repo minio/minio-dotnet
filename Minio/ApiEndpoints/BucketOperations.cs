@@ -90,6 +90,10 @@ public partial class MinioClient : IBucketOperations
                     HttpStatusCode.NotFound != ice.ServerResponse.StatusCode) &&
                    ice.ServerResponse is not null;
         }
+        catch (BucketNotFoundException)
+        {
+            return false;
+        }
     }
 
     /// <summary>

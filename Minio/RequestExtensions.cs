@@ -80,7 +80,6 @@ public static class RequestExtensions
         CancellationToken cancellationToken = default)
     {
         var startTime = DateTime.Now;
-
         var v4Authenticator = new V4Authenticator(minioClient.Config.Secure,
             minioClient.Config.AccessKey, minioClient.Config.SecretKey, minioClient.Config.Region,
             minioClient.Config.SessionToken);
@@ -101,19 +100,28 @@ public static class RequestExtensions
                 await requestMessageBuilder.ResponseWriter(responseResult.ContentStream, cancellationToken)
                     .ConfigureAwait(false);
 
-            var path = request.RequestUri.LocalPath.TrimStart('/').TrimEnd('/').Split('/');
+            var separator = new[] { "/", " " };
+            var path = request.RequestUri.LocalPath.TrimStart('/').TrimEnd('/')
+                .Split(separator, StringSplitOptions.RemoveEmptyEntries);
             if (responseResult.Response.StatusCode == HttpStatusCode.NotFound)
             {
+                if (request.RequestUri.ToString().Contains("lock", StringComparison.OrdinalIgnoreCase) &&
+                    request.Method == HttpMethod.Get)
+                {
+                    responseResult.Exception = new MissingObjectLockConfigurationException();
+                    return responseResult;
+                }
+
                 if (request.Method == HttpMethod.Head)
                 {
                     if (responseResult.Exception?.GetType().Equals(typeof(BucketNotFoundException)) == true ||
-                        path.ToList().Count == 1)
+                        path.Length == 1)
                         responseResult.Exception = new BucketNotFoundException();
 
-                    if (path.ToList().Count > 1)
+                    if (path.Length > 1)
                     {
                         var found = await minioClient
-                            .BucketExistsAsync(new BucketExistsArgs().WithBucket(path.ToList()[0]), cancellationToken)
+                            .BucketExistsAsync(new BucketExistsArgs().WithBucket(path[0]), cancellationToken)
                             .ConfigureAwait(false);
                         responseResult.Exception = !found
                             ? new Exception("ThrowBucketNotFoundException")
@@ -122,9 +130,6 @@ public static class RequestExtensions
                     }
                 }
 
-                if (request.RequestUri.ToString().Contains("lock", StringComparison.OrdinalIgnoreCase) &&
-                    request.Method == HttpMethod.Get)
-                    responseResult.Exception = new MissingObjectLockConfigurationException();
                 return responseResult;
             }
 
