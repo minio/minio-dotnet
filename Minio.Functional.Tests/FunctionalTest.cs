@@ -4777,135 +4777,82 @@ public static class FunctionalTest
 
     internal static async Task GetObjectNegObjNotFound_Test3(IMinioClient minio)
     {
-        var startTime = DateTime.Now;
+        var stopwatch = Stopwatch.StartNew();
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
-        string contentType = null;
-        var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName }, { "objectName", objectName }, { "contentType", contentType }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "objectName", objectName } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
             // Don't Put the object, so we can hit "ObjectNotFound" exception
-            Stream strm;
-            await using ((strm = rsg.GenerateStreamFromSeed(1 * MB)).ConfigureAwait(false))
-            {
-                var file_write_size = strm.Length;
-                long file_read_size = 0;
-                var getObjectArgs = new GetObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithCallbackStream(async (stream, cancellationToken) =>
-                    {
-                        var fileStream = File.Create(tempFileName);
-
-                        await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                        await fileStream.DisposeAsync().ConfigureAwait(false);
-
-                        var writtenInfo = new FileInfo(tempFileName);
-                        file_read_size = writtenInfo.Length;
-
-                        Assert.AreEqual(file_write_size, file_read_size);
-                        File.Delete(tempFileName);
-                    });
-                _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
-            }
-
+            var getObjectArgs = new GetObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithCallbackStream(_ => throw new Exception("Should never be reached at the Callback function"));
+            _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             new MintLogger("GetObjectNegObjNotFound_Test3", getObjectSignature,
                 "Tests whether GetObjectAsync hits ObjectNotFoundException",
-                TestStatus.FAIL, DateTime.Now - startTime, "Failed to hit ObjectNotFound exception", args: args).Log();
-            throw new Exception("Failed to hit ObjectNotFound exception");
+                TestStatus.FAIL, stopwatch.Elapsed, "Failed to hit ObjectNotFoundxception", args: args).Log();
+            throw new Exception("Failed to hit ObjectNotFoundException");
         }
         catch (ObjectNotFoundException)
         {
             new MintLogger("GetObjectNegObjNotFound_Test3", getObjectSignature,
                 "Tests whether GetObjectAsync hits ObjectNotFoundException",
-                TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+                TestStatus.PASS, stopwatch.Elapsed, args: args).Log();
         }
         catch (Exception ex)
         {
             new MintLogger("GetObjectNegObjNotFound_Test3", getObjectSignature,
                 "Tests whether GetObjectAsync hits ObjectNotFoundException",
-                TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
+                TestStatus.FAIL, stopwatch.Elapsed, ex.Message, ex.ToString(), args: args).Log();
             throw;
         }
         finally
         {
-            if (File.Exists(tempFileName))
-                File.Delete(tempFileName);
             await TearDown(minio, bucketName).ConfigureAwait(false);
         }
     }
 
     internal static async Task GetObjectNegBcktNotFound_Test4(IMinioClient minio)
     {
-        var startTime = DateTime.Now;
+        var stopwatch = Stopwatch.StartNew();
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
-        string contentType = null;
-        var tempFileName = "tempFile-" + GetRandomName();
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName }, { "objectName", objectName }, { "contentType", contentType }
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "objectName", objectName } };
         try
         {
             // No object, no bucket, so we can hit "BucketNotFoundException" with
-            Stream strm;
-            await using ((strm = rsg.GenerateStreamFromSeed(1 * MB)).ConfigureAwait(false))
-            {
-                var file_write_size = strm.Length;
-                long file_read_size = 0;
-                var getObjectArgs = new GetObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithCallbackStream(async (stream, cancellationToken) =>
-                    {
-                        var fileStream = File.Create(tempFileName);
-
-                        await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                        await fileStream.DisposeAsync().ConfigureAwait(false);
-
-                        var writtenInfo = new FileInfo(tempFileName);
-                        file_read_size = writtenInfo.Length;
-
-                        Assert.AreEqual(file_write_size, file_read_size);
-                        File.Delete(tempFileName);
-                    });
-                _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
-            }
-
+            var getObjectArgs = new GetObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithCallbackStream(_ => throw new Exception("Should never be reached"));
+            _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
             new MintLogger("GetObjectNegBcktNotFound_Test4", getObjectSignature,
                 "Tests whether GetObjectAsync hits BucketNotFoundException",
-                TestStatus.FAIL, DateTime.Now - startTime, "Failed to hit BucketNotFoundException", args: args).Log();
+                TestStatus.FAIL, stopwatch.Elapsed, "Failed to hit BucketNotFoundException", args: args).Log();
             throw new Exception("Failed to hit BucketNotFoundException");
         }
         catch (BucketNotFoundException)
         {
             new MintLogger("GetObjectNegBcktNotFound_Test4", getObjectSignature,
                 "Tests whether GetObjectAsync hits BucketNotFoundException",
-                TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+                TestStatus.PASS, stopwatch.Elapsed, args: args).Log();
         }
         catch (Exception ex)
         {
             new MintLogger("GetObjectNegBcktNotFound_Test4", getObjectSignature,
                 "Tests whether GetObjectAsync hits BucketNotFoundException",
-                TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
+                TestStatus.FAIL, stopwatch.Elapsed, ex.Message, ex.ToString(), args: args).Log();
             throw;
         }
         finally
         {
-            if (File.Exists(tempFileName))
-                File.Delete(tempFileName);
             await TearDown(minio, bucketName).ConfigureAwait(false);
         }
     }
-
 
     internal static async Task GetObject_3_OffsetLength_Tests(IMinioClient minio)
         // 3 tests will run to check different values of offset and length parameters

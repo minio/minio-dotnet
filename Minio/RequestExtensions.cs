@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Web;
 using Minio.Credentials;
 using Minio.DataModel;
 using Minio.DataModel.Args;
@@ -104,11 +105,14 @@ public static class RequestExtensions
                 .Split('/', StringSplitOptions.RemoveEmptyEntries);
             if (responseResult.Response.StatusCode == HttpStatusCode.NotFound)
             {
-                if (request.RequestUri.ToString().Contains("lock", StringComparison.OrdinalIgnoreCase) &&
-                    request.Method == HttpMethod.Get)
+                if (request.Method == HttpMethod.Get)
                 {
-                    responseResult.Exception = new MissingObjectLockConfigurationException();
-                    return responseResult;
+                    var q = HttpUtility.ParseQueryString(request.RequestUri.Query);
+                    if (q.Get("object-lock") != null)
+                    {
+                        responseResult.Exception = new MissingObjectLockConfigurationException();
+                        return responseResult;
+                    }
                 }
 
                 if (request.Method == HttpMethod.Head)
