@@ -100,9 +100,8 @@ public static class RequestExtensions
                 await requestMessageBuilder.ResponseWriter(responseResult.ContentStream, cancellationToken)
                     .ConfigureAwait(false);
 
-            var separator = new[] { "/", " " };
             var path = request.RequestUri.LocalPath.TrimStart('/').TrimEnd('/')
-                .Split(separator, StringSplitOptions.RemoveEmptyEntries);
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
             if (responseResult.Response.StatusCode == HttpStatusCode.NotFound)
             {
                 if (request.RequestUri.ToString().Contains("lock", StringComparison.OrdinalIgnoreCase) &&
