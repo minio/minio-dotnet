@@ -114,8 +114,7 @@ public static class RequestExtensions
 
                 if (request.Method == HttpMethod.Head)
                 {
-                    if (responseResult.Exception?.GetType().Equals(typeof(BucketNotFoundException)) == true ||
-                        path.Length == 1)
+                    if (responseResult.Exception is BucketNotFoundException || path.Length == 1)
                         responseResult.Exception = new BucketNotFoundException();
 
                     if (path.Length > 1)
