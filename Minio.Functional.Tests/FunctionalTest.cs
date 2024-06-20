@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017-2021 MinIO, Inc.
  *
@@ -4657,16 +4657,16 @@ public static class FunctionalTest
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
-
-            using (var filestream = rsg.GenerateStreamFromSeed(1 * MB))
+            Stream strm;
+            await using ((strm = rsg.GenerateStreamFromSeed(1 * MB)).ConfigureAwait(false))
             {
-                var file_write_size = filestream.Length;
+                var file_write_size = strm.Length;
                 long file_read_size = 0;
                 var putObjectArgs = new PutObjectArgs()
                     .WithBucket(bucketName)
                     .WithObject(objectName)
-                    .WithStreamData(filestream)
-                    .WithObjectSize(filestream.Length)
+                    .WithStreamData(strm)
+                    .WithObjectSize(strm.Length)
                     .WithContentType(contentType);
                 _ = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
@@ -4771,6 +4771,85 @@ public static class FunctionalTest
         {
             if (File.Exists(fileName))
                 File.Delete(fileName);
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+        }
+    }
+
+    internal static async Task GetObjectNegObjNotFound_Test3(IMinioClient minio)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var bucketName = GetRandomName(15);
+        var objectName = GetRandomObjectName(10);
+        var args = new Dictionary<string, string>
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "objectName", objectName } };
+        try
+        {
+            await Setup_Test(minio, bucketName).ConfigureAwait(false);
+            // Don't Put the object, so we can hit "ObjectNotFound" exception
+            var getObjectArgs = new GetObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithCallbackStream(_ => throw new Exception("Should never be reached at the Callback function"));
+            _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            new MintLogger("GetObjectNegObjNotFound_Test3", getObjectSignature,
+                "Tests whether GetObjectAsync hits ObjectNotFoundException",
+                TestStatus.FAIL, stopwatch.Elapsed, "Failed to hit ObjectNotFoundxception", args: args).Log();
+            throw new Exception("Failed to hit ObjectNotFoundException");
+        }
+        catch (ObjectNotFoundException)
+        {
+            new MintLogger("GetObjectNegObjNotFound_Test3", getObjectSignature,
+                "Tests whether GetObjectAsync hits ObjectNotFoundException",
+                TestStatus.PASS, stopwatch.Elapsed, args: args).Log();
+        }
+        catch (Exception ex)
+        {
+            new MintLogger("GetObjectNegObjNotFound_Test3", getObjectSignature,
+                "Tests whether GetObjectAsync hits ObjectNotFoundException",
+                TestStatus.FAIL, stopwatch.Elapsed, ex.Message, ex.ToString(), args: args).Log();
+            throw;
+        }
+        finally
+        {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+        }
+    }
+
+    internal static async Task GetObjectNegBcktNotFound_Test4(IMinioClient minio)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var bucketName = GetRandomName(15);
+        var objectName = GetRandomObjectName(10);
+        var args = new Dictionary<string, string>
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "objectName", objectName } };
+        try
+        {
+            // No object, no bucket, so we can hit "BucketNotFoundException" with
+            var getObjectArgs = new GetObjectArgs()
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithCallbackStream(_ => throw new Exception("Should never be reached"));
+            _ = await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+            new MintLogger("GetObjectNegBcktNotFound_Test4", getObjectSignature,
+                "Tests whether GetObjectAsync hits BucketNotFoundException",
+                TestStatus.FAIL, stopwatch.Elapsed, "Failed to hit BucketNotFoundException", args: args).Log();
+            throw new Exception("Failed to hit BucketNotFoundException");
+        }
+        catch (BucketNotFoundException)
+        {
+            new MintLogger("GetObjectNegBcktNotFound_Test4", getObjectSignature,
+                "Tests whether GetObjectAsync hits BucketNotFoundException",
+                TestStatus.PASS, stopwatch.Elapsed, args: args).Log();
+        }
+        catch (Exception ex)
+        {
+            new MintLogger("GetObjectNegBcktNotFound_Test4", getObjectSignature,
+                "Tests whether GetObjectAsync hits BucketNotFoundException",
+                TestStatus.FAIL, stopwatch.Elapsed, ex.Message, ex.ToString(), args: args).Log();
+            throw;
+        }
+        finally
+        {
             await TearDown(minio, bucketName).ConfigureAwait(false);
         }
     }

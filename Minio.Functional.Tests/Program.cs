@@ -151,6 +151,8 @@ internal static class Program
         // Test GetObjectAsync function
         functionalTestTasks.Add(FunctionalTest.GetObject_Test1(minioClient));
         functionalTestTasks.Add(FunctionalTest.GetObject_Test2(minioClient));
+        functionalTestTasks.Add(FunctionalTest.GetObjectNegObjNotFound_Test3(minioClient));
+        functionalTestTasks.Add(FunctionalTest.GetObjectNegBcktNotFound_Test4(minioClient));
         // 3 tests will run to check different values of offset and length parameters
         // when GetObject api returns part of the object as defined by the offset
         // and length parameters. Tests will be reported as GetObject_Test3,
