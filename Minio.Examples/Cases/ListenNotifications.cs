@@ -21,7 +21,7 @@ namespace Minio.Examples.Cases;
 
 internal static class ListenNotifications
 {
-    // Listen for notifications from a specified bucket (a Minio-only extension)
+    // Listen for gloabal notifications (a Minio-only extension)
     public static void Run(IMinioClient minio,
         List<EventType> events = null,
         string prefix = "",
@@ -31,11 +31,8 @@ internal static class ListenNotifications
         {
             Console.WriteLine("Running example for API: ListenNotifications");
             Console.WriteLine();
-            events ??= new List<EventType> { EventType.ObjectCreatedAll };
-            var args = new ListenBucketNotificationsArgs()
-                .WithPrefix(prefix)
-                .WithEvents(events)
-                .WithSuffix(suffix);
+            events ??= new List<EventType> { EventType.BucketCreatedAll };
+            var args = new ListenBucketNotificationsArgs().WithEvents(events);
             var observable = minio.ListenNotificationsAsync(events, prefix, suffix);
 
             var subscription = observable.Subscribe(
