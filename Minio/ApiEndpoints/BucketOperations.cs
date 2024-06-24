@@ -776,6 +776,8 @@ public partial class MinioClient : IBucketOperations
     /// </summary>
     /// <param name="bucketName">Bucket to get notifications from</param>
     /// <param name="events">Events to listen for</param>
+    /// <param name="prefix">Filter keys starting with this prefix</param>
+    /// <param name="suffix">Filter keys ending with this suffix</param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns>An observable of JSON-based notification events</returns>
     public IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(
