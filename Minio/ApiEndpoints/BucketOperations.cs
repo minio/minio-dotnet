@@ -782,12 +782,16 @@ public partial class MinioClient : IBucketOperations
     public IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(
         string bucketName,
         IList<EventType> events,
+        string prefix = "",
+        string suffix = "",
         CancellationToken cancellationToken = default)
     {
         var eventList = new List<EventType>(events);
         var args = new ListenBucketNotificationsArgs()
             .WithBucket(bucketName)
-            .WithEvents(eventList);
+            .WithEvents(eventList)
+            .WithPrefix(prefix)
+            .WithSuffix(suffix);
         return ListenBucketNotificationsAsync(args, cancellationToken);
     }
 
