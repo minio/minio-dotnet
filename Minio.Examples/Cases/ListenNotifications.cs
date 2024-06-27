@@ -25,6 +25,7 @@ internal static class ListenNotifications
     public static void Run(IMinioClient minio,
         List<EventType> events = null)
     {
+        IDisposable subscription = null;
         try
         {
             Console.WriteLine("Running example for API: ListenNotifications");
@@ -33,16 +34,18 @@ internal static class ListenNotifications
             var args = new ListenBucketNotificationsArgs().WithEvents(events);
             var observable = minio.ListenNotificationsAsync(events);
 
-            var subscription = observable.Subscribe(
+            subscription = observable.Subscribe(
                 notification => Console.WriteLine($"Notification: {notification.Json}"),
                 ex => Console.WriteLine($"OnError: {ex}"),
                 () => Console.WriteLine("Stopped listening for bucket notifications\n"));
-
-            // subscription.Dispose();
         }
         catch (Exception e)
         {
             Console.WriteLine($"[Bucket]  Exception: {e}");
+        }
+        finally
+        {
+            subscription?.Dispose();
         }
     }
 }
