@@ -38,6 +38,9 @@ internal static class ListenNotifications
                 notification => Console.WriteLine($"Notification: {notification.Json}"),
                 ex => Console.WriteLine($"OnError: {ex}"),
                 () => Console.WriteLine("Stopped listening for bucket notifications\n"));
+
+            Console.WriteLine("Press any key to stop listening for notifications...");
+            Console.ReadLine();
         }
         catch (Exception e)
         {
