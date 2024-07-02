@@ -152,6 +152,9 @@ public static class Program
         // Start listening for bucket notifications
         ListenBucketNotifications.Run(minioClient, bucketName, new List<EventType> { EventType.ObjectCreatedAll });
 
+        // Start listening for global notifications
+        ListenNotifications.Run(minioClient, new List<EventType> { EventType.BucketCreatedAll });
+
         // Put an object to the new bucket
         await PutObject.Run(minioClient, bucketName, objectName, smallFileName, progress).ConfigureAwait(false);
 

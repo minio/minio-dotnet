@@ -43,6 +43,9 @@ public sealed class EventType
     public static readonly EventType ObjectRemovedDeleteMarkerCreated = new("s3:ObjectRemoved:DeleteMarkerCreated");
     public static readonly EventType ReducedRedundancyLostObject = new("s3:ReducedRedundancyLostObject");
 
+    public static readonly EventType BucketCreatedAll = new("s3:BucketCreated:*");
+    public static readonly EventType BucketRemovedAll = new("s3:BucketRemoved:*");
+
     private EventType()
     {
         Value = null;
