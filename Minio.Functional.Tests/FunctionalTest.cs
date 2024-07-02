@@ -1043,7 +1043,8 @@ public static class FunctionalTest
         await minio.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucketName)).ConfigureAwait(false);
 
         // Verify the bucket exists
-        var bucketExists = await minio.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName)).ConfigureAwait(false);
+        var bucketExists = await minio.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName))
+            .ConfigureAwait(false);
         Assert.IsTrue(bucketExists, $"Bucket {bucketName} was not created successfully.");
 
         return bucketExists;
@@ -2643,10 +2644,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName },
-            };
+            (StringComparer.Ordinal) { { "bucketName", bucketName } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -2660,13 +2658,13 @@ public static class FunctionalTest
                 received.Add,
                 ex => Console.WriteLine($"OnError: {ex}"),
                 () => Console.WriteLine("Stopped listening for bucket notifications\n"));
-           
+
             // Ensure the subscription is established
             await Task.Delay(1000).ConfigureAwait(false);
 
             // Trigger the event by creating a new bucket
             var isBucketCreated = await CreateBucket_Tester(minio, bucketName).ConfigureAwait(false);
-        
+
             var eventDetected = false;
             for (var attempt = 0; attempt < 10; attempt++)
             {
@@ -2681,9 +2679,10 @@ public static class FunctionalTest
                         break;
                     }
                 }
+
                 await Task.Delay(1000).ConfigureAwait(false); // wait for 1 second before the next attempt
             }
-            
+
             subscription.Dispose();
             if (!eventDetected)
                 throw new UnexpectedMinioException("Failed to detect the expected bucket notification event.");
@@ -6003,7 +6002,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var contentType = "gzip";
         var args = new Dictionary<string, string>
-             (StringComparer.Ordinal) { { "bucketName", bucketName }, { "recursive", "true" } };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "recursive", "true" } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
