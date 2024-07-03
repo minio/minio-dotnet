@@ -2647,8 +2647,6 @@ public static class FunctionalTest
             (StringComparer.Ordinal) { { "bucketName", bucketName } };
         try
         {
-            await Setup_Test(minio, bucketName).ConfigureAwait(false);
-
             var received = new List<MinioNotificationRaw>();
 
             var eventsList = new List<EventType> { EventType.BucketCreatedAll };
@@ -2663,10 +2661,10 @@ public static class FunctionalTest
             await Task.Delay(1000).ConfigureAwait(false);
 
             // Trigger the event by creating a new bucket
-            var isBucketCreated = await CreateBucket_Tester(minio, bucketName).ConfigureAwait(false);
+            var isBucketCreated1 = await CreateBucket_Tester(minio, bucketName).ConfigureAwait(false);
 
             var eventDetected = false;
-            for (var attempt = 0; attempt < 10; attempt++)
+            for (var attempt = 0; attempt < 20; attempt++)
             {
                 if (received.Count > 0)
                 {
@@ -2679,8 +2677,7 @@ public static class FunctionalTest
                         break;
                     }
                 }
-
-                await Task.Delay(1000).ConfigureAwait(false); // wait for 1 second before the next attempt
+                await Task.Delay(500).ConfigureAwait(false);  // Delay between attempts
             }
 
             subscription.Dispose();
@@ -2750,6 +2747,7 @@ public static class FunctionalTest
                 ex => { },
                 () => { }
             );
+
 
             _ = await PutObject_Tester(minio, bucketName, objectName, null, contentType,
                 0, null, rsg.GenerateStreamFromSeed(1 * KB)).ConfigureAwait(false);
@@ -6002,7 +6000,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var contentType = "gzip";
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "recursive", "true" } };
+             (StringComparer.Ordinal) { { "bucketName", bucketName }, { "recursive", "true" } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
