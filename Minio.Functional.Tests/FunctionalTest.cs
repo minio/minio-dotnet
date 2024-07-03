@@ -2677,7 +2677,8 @@ public static class FunctionalTest
                         break;
                     }
                 }
-                await Task.Delay(500).ConfigureAwait(false);  // Delay between attempts
+
+                await Task.Delay(500).ConfigureAwait(false); // Delay between attempts
             }
 
             subscription.Dispose();
@@ -6000,7 +6001,7 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var contentType = "gzip";
         var args = new Dictionary<string, string>
-             (StringComparer.Ordinal) { { "bucketName", bucketName }, { "recursive", "true" } };
+            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "recursive", "true" } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
