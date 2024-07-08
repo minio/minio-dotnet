@@ -83,6 +83,9 @@ public static class FunctionalTest
     private const string listenBucketNotificationsSignature =
         "IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(ListenBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
 
+    private const string listenNotificationsSignature =
+        "IObservable<MinioNotificationRaw> ListenNotificationsAsync(IList<EventType> events, CancellationToken cancellationToken = default(CancellationToken))";
+
     private const string copyObjectSignature =
         "Task<CopyObjectResult> CopyObjectAsync(CopyObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))";
 
@@ -1032,6 +1035,19 @@ public static class FunctionalTest
         }
 
         return statObject;
+    }
+
+    internal static async Task<bool> CreateBucket_Tester(IMinioClient minio, string bucketName)
+    {
+        // Create a new bucket
+        await minio.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucketName)).ConfigureAwait(false);
+
+        // Verify the bucket exists
+        var bucketExists = await minio.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName))
+            .ConfigureAwait(false);
+        Assert.IsTrue(bucketExists, $"Bucket {bucketName} was not created successfully.");
+
+        return bucketExists;
     }
 
     internal static async Task StatObject_Test1(IMinioClient minio)
@@ -2621,6 +2637,84 @@ public static class FunctionalTest
         }
     }
 
+    #region Global Notifications
+
+    internal static async Task ListenNotificationsAsync_Test1(IMinioClient minio)
+    {
+        var startTime = DateTime.Now;
+        var bucketName = GetRandomName(15);
+        var args = new Dictionary<string, string>
+            (StringComparer.Ordinal) { { "bucketName", bucketName } };
+        try
+        {
+            var received = new List<MinioNotificationRaw>();
+
+            var eventsList = new List<EventType> { EventType.BucketCreatedAll };
+
+            var events = minio.ListenNotificationsAsync(eventsList);
+            var subscription = events.Subscribe(
+                received.Add,
+                ex => Console.WriteLine($"OnError: {ex}"),
+                () => Console.WriteLine("Stopped listening for bucket notifications\n"));
+
+            // Ensure the subscription is established
+            await Task.Delay(1000).ConfigureAwait(false);
+
+            // Trigger the event by creating a new bucket
+            var isBucketCreated1 = await CreateBucket_Tester(minio, bucketName).ConfigureAwait(false);
+
+            var eventDetected = false;
+            for (var attempt = 0; attempt < 20; attempt++)
+            {
+                if (received.Count > 0)
+                {
+                    var notification = JsonSerializer.Deserialize<MinioNotification>(received[0].Json);
+
+                    if (notification.Records is not null)
+                    {
+                        Assert.AreEqual(1, notification.Records.Count);
+                        eventDetected = true;
+                        break;
+                    }
+                }
+
+                await Task.Delay(500).ConfigureAwait(false); // Delay between attempts
+            }
+
+            subscription.Dispose();
+            if (!eventDetected)
+                throw new UnexpectedMinioException("Failed to detect the expected bucket notification event.");
+
+            new MintLogger(nameof(ListenNotificationsAsync_Test1),
+                listenNotificationsSignature,
+                "Tests whether ListenNotifications passes",
+                TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+        }
+        catch (NotImplementedException ex)
+        {
+            new MintLogger(nameof(ListenNotificationsAsync_Test1),
+                listenNotificationsSignature,
+                "Tests whether ListenNotifications passes",
+                TestStatus.NA, DateTime.Now - startTime, ex.Message,
+                ex.ToString(), args: args).Log();
+        }
+        catch (Exception ex)
+        {
+            new MintLogger(nameof(ListenNotificationsAsync_Test1),
+                listenNotificationsSignature,
+                "Tests whether ListenNotifications passes",
+                TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
+                ex.ToString(), args: args).Log();
+            throw;
+        }
+        finally
+        {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+        }
+    }
+
+    #endregion
+
     #region Bucket Notifications
 
     internal static async Task ListenBucketNotificationsAsync_Test1(IMinioClient minio)
@@ -2654,6 +2748,7 @@ public static class FunctionalTest
                 ex => { },
                 () => { }
             );
+
 
             _ = await PutObject_Tester(minio, bucketName, objectName, null, contentType,
                 0, null, rsg.GenerateStreamFromSeed(1 * KB)).ConfigureAwait(false);

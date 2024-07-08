@@ -107,6 +107,9 @@ internal static class Program
 
         ConcurrentBag<Task> functionalTestTasks = new();
 
+        // Global Notification
+        await FunctionalTest.ListenNotificationsAsync_Test1(minioClient).ConfigureAwait(false);
+
         // Try catch as 'finally' section needs to run in the Functional Tests
         // Bucket notification is a minio specific feature.
         // If the following test is run against AWS, then the SDK throws
