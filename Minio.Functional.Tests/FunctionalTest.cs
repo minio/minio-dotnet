@@ -2658,7 +2658,7 @@ public static class FunctionalTest
                 () => { }
             );
 
-            await Task.Delay(75).ConfigureAwait(false);
+            await Task.Delay(150).ConfigureAwait(false);
             // Trigger the event by creating a new bucket
             _ = await CreateBucket_Tester(minio, bucketName).ConfigureAwait(false);
 
