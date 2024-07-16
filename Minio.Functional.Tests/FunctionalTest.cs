@@ -2662,7 +2662,6 @@ public static class FunctionalTest
 
             var eventDetected = false;
             for (var attempt = 0; attempt < 20; attempt++)
-            {
                 if (received.Count > 0)
                 {
                     // Check if there is any unexpected error returned
@@ -2703,7 +2702,6 @@ public static class FunctionalTest
                         break;
                     }
                 }
-            }
 
             subscription.Dispose();
             if (!eventDetected)
@@ -2779,7 +2777,6 @@ public static class FunctionalTest
             // wait for notifications
             var eventDetected = false;
             for (var attempt = 0; attempt < 10; attempt++)
-            {
                 if (received.Count > 0)
                 {
                     // Check if there is any unexpected error returned
@@ -2827,7 +2824,6 @@ public static class FunctionalTest
                         break;
                     }
                 }
-            }
 
             subscription.Dispose();
             if (!eventDetected)
