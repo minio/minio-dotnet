@@ -1041,11 +1041,11 @@ public static class FunctionalTest
     {
         // Create a new bucket
         await minio.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucketName)).ConfigureAwait(false);
+        await Task.Delay(1000).ConfigureAwait(false);
 
         // Verify the bucket exists
-        var bucketExists = await minio.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName))
+        return await minio.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName))
             .ConfigureAwait(false);
-        return bucketExists;
     }
 
     internal static async Task StatObject_Test1(IMinioClient minio)
@@ -2657,13 +2657,12 @@ public static class FunctionalTest
                 _ => { },
                 () => { }
             );
-
-            await Task.Delay(150).ConfigureAwait(false);
             // Trigger the event by creating a new bucket
             _ = await CreateBucket_Tester(minio, bucketName).ConfigureAwait(false);
 
             var eventDetected = false;
             for (var attempt = 0; attempt < 20; attempt++)
+            {
                 if (received.Count > 0)
                 {
                     // Check if there is any unexpected error returned
@@ -2704,6 +2703,7 @@ public static class FunctionalTest
                         break;
                     }
                 }
+            }
 
             subscription.Dispose();
             if (!eventDetected)
@@ -2773,13 +2773,13 @@ public static class FunctionalTest
                 () => { }
             );
 
-
             _ = await PutObject_Tester(minio, bucketName, objectName, null, contentType,
                 0, null, rsg.GenerateStreamFromSeed(1 * KB)).ConfigureAwait(false);
 
             // wait for notifications
             var eventDetected = false;
             for (var attempt = 0; attempt < 10; attempt++)
+            {
                 if (received.Count > 0)
                 {
                     // Check if there is any unexpected error returned
@@ -2827,8 +2827,9 @@ public static class FunctionalTest
                         break;
                     }
                 }
+            }
 
-            // subscription.Dispose();
+            subscription.Dispose();
             if (!eventDetected)
                 throw new UnexpectedMinioException("Failed to detect the expected bucket notification event.");
 
