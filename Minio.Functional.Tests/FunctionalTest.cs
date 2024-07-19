@@ -2648,21 +2648,23 @@ public static class FunctionalTest
             var received = new List<MinioNotificationRaw>();
             var eventsList = new List<EventType> { EventType.BucketCreatedAll };
 
+            // No need to define a new "ListenNotificationArgs"
+            // "ListenBucketNotificationsArgs" is good here
             var listenArgs = new ListenBucketNotificationsArgs()
                 .WithEvents(eventsList);
             var events = minio.ListenNotifications(listenArgs);
             var eventDetected = false;
             using (var subscription = events.Subscribe(
-                received.Add,
-                _ => { },
-                () => { }))
+                       received.Add,
+                       _ => { },
+                       () => { }))
             {
                 await Task.Delay(200).ConfigureAwait(false);
                 // Trigger the event by creating a new bucket
                 _ = await CreateBucket_Tester(minio, bucketName).ConfigureAwait(false);
             }
+
             for (var attempt = 0; attempt < 20; attempt++)
-            {
                 // Check if there is a caught event
                 if (received.Count == 1)
                 {
@@ -2677,18 +2679,14 @@ public static class FunctionalTest
                         break;
                     }
                 }
-            }
+
             if (eventDetected)
-            {
                 new MintLogger(nameof(ListenNotifications_Test1),
-                                listenNotificationsSignature,
-                                "Tests whether ListenNotifications notifies user about \"BucketCreatedAll\" event",
-                                TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
-            }
+                    listenNotificationsSignature,
+                    "Tests whether ListenNotifications notifies user about \"BucketCreatedAll\" event",
+                    TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
             else
-            {
-                throw new UnexpectedMinioException("Failed to detect the expected bucket notification event.");
-            }
+                throw new UnexpectedMinioException("Failed to detect the expected notification event, \"BucketCreatedAll\".");
         }
         catch (Exception ex)
         {
@@ -2737,15 +2735,15 @@ public static class FunctionalTest
                 .WithEvents(eventsList);
             var events = minio.ListenBucketNotificationsAsync(listenArgs);
             using (var subscription = events.Subscribe(
-                received.Add,
-                _ => { },
-                () => { } ))
+                       received.Add,
+                       _ => { },
+                       () => { }))
             {
                 _ = await PutObject_Tester(minio, bucketName, objectName, null, contentType,
-                0, null, rsg.GenerateStreamFromSeed(1 * KB)).ConfigureAwait(false);
+                    0, null, rsg.GenerateStreamFromSeed(1 * KB)).ConfigureAwait(false);
             }
+
             for (var attempt = 0; attempt < 20; attempt++)
-            {
                 // Check if there is a caught event
                 if (received.Count == 1)
                 {
@@ -2764,24 +2762,19 @@ public static class FunctionalTest
                         break;
                     }
                 }
-            }
             if (eventDetected)
-            {
                 new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
                     listenBucketNotificationsSignature,
                     "Tests whether ListenBucketNotifications passes for small object",
                     TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
-            }
             else
-            {
                 throw new UnexpectedMinioException("Failed to detect the expected bucket notification event.");
-            }
         }
         catch (NotImplementedException ex)
         {
             new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
                 listenBucketNotificationsSignature,
-                "Tests whether ListenBucketNotifications passes for small object",
+                "Tests whether ListenBucketNotifications generates notification for a newly created object.",
                 TestStatus.NA, DateTime.Now - startTime, ex.Message,
                 ex.ToString(), args: args).Log();
         }
@@ -2805,14 +2798,14 @@ public static class FunctionalTest
                     // This is a PASS
                     new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
                         listenBucketNotificationsSignature,
-                        "Tests whether ListenBucketNotifications creates notification for an object",
+                        "Tests whether ListenBucketNotifications generates notification for a newly created object.",
                         TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
             }
             else
             {
                 new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
                     listenBucketNotificationsSignature,
-                    "Tests whether ListenBucketNotifications creates notification for an object",
+                    "Tests whether ListenBucketNotifications generates notification for a newly created object.",
                     TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
                     ex.ToString(), args: args).Log();
                 throw;
