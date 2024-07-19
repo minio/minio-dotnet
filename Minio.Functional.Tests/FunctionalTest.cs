@@ -1041,7 +1041,7 @@ public static class FunctionalTest
     {
         // Create a new bucket
         await minio.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucketName)).ConfigureAwait(false);
-        await Task.Delay(1000).ConfigureAwait(false);
+        await Task.Delay(800).ConfigureAwait(false);
 
         // Verify the bucket exists
         return await minio.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName))
@@ -2646,85 +2646,55 @@ public static class FunctionalTest
         try
         {
             var received = new List<MinioNotificationRaw>();
-
             var eventsList = new List<EventType> { EventType.BucketCreatedAll };
 
             var listenArgs = new ListenBucketNotificationsArgs()
                 .WithEvents(eventsList);
             var events = minio.ListenNotifications(listenArgs);
-            var subscription = events.Subscribe(
+            var eventDetected = false;
+            using (var subscription = events.Subscribe(
                 received.Add,
                 _ => { },
-                () => { }
-            );
-            // Trigger the event by creating a new bucket
-            _ = await CreateBucket_Tester(minio, bucketName).ConfigureAwait(false);
-
-            var eventDetected = false;
+                () => { }))
+            {
+                await Task.Delay(200).ConfigureAwait(false);
+                // Trigger the event by creating a new bucket
+                _ = await CreateBucket_Tester(minio, bucketName).ConfigureAwait(false);
+            }
             for (var attempt = 0; attempt < 20; attempt++)
-                if (received.Count > 0)
+            {
+                // Check if there is a caught event
+                if (received.Count == 1)
                 {
-                    // Check if there is any unexpected error returned
-                    // and captured in the receivedJson list, like
-                    // "NotImplemented" api error. If so, we throw an exception
-                    // and skip running this test
-                    if (received.Count > 1 &&
-                        received[1].Json.StartsWith("<Error><Code>", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Although the attribute is called "json",
-                        // returned data in list "received" is in xml
-                        // format and it is an error.Here, we convert xml
-                        // into json format.
-                        var receivedJson = XmlStrToJsonStr(received[1].Json);
-
-                        // Cleanup the "Error" key encapsulating "receivedJson"
-                        // data. This is required to match and convert json data
-                        // "receivedJson" into class "ErrorResponse"
-                        var len = "{'Error':".Length;
-                        var trimmedFront = receivedJson[len..];
-                        var trimmedFull = trimmedFront[..^1];
-
-                        var err = JsonSerializer.Deserialize<ErrorResponse>(trimmedFull);
-
-                        Exception ex = new UnexpectedMinioException(err.Message);
-                        if (string.Equals(err.Code, "NotImplemented", StringComparison.OrdinalIgnoreCase))
-                            ex = new NotImplementedException(err.Message);
-                        await TearDown(minio, bucketName).ConfigureAwait(false);
-                        throw ex;
-                    }
-
                     var notification = JsonSerializer.Deserialize<MinioNotification>(received[0].Json);
 
                     if (notification.Records is not null)
                     {
                         Assert.AreEqual(1, notification.Records.Count);
+                        Assert.IsTrue(notification.Records[0].EventName
+                            .Contains("s3:BucketCreated:*", StringComparison.OrdinalIgnoreCase));
                         eventDetected = true;
                         break;
                     }
                 }
-
-            subscription.Dispose();
-            if (!eventDetected)
+            }
+            if (eventDetected)
+            {
+                new MintLogger(nameof(ListenNotifications_Test1),
+                                listenNotificationsSignature,
+                                "Tests whether ListenNotifications notifies user about \"BucketCreatedAll\" event",
+                                TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+            }
+            else
+            {
                 throw new UnexpectedMinioException("Failed to detect the expected bucket notification event.");
-
-            new MintLogger(nameof(ListenNotifications_Test1),
-                listenNotificationsSignature,
-                "Tests whether ListenNotifications passes",
-                TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
-        }
-        catch (NotImplementedException ex)
-        {
-            new MintLogger(nameof(ListenNotifications_Test1),
-                listenNotificationsSignature,
-                "Tests whether ListenNotifications passes",
-                TestStatus.NA, DateTime.Now - startTime, ex.Message,
-                ex.ToString(), args: args).Log();
+            }
         }
         catch (Exception ex)
         {
             new MintLogger(nameof(ListenNotifications_Test1),
                 listenNotificationsSignature,
-                "Tests whether ListenNotifications passes",
+                "Tests whether ListenNotifications notifies user about \"BucketCreatedAll\" event",
                 TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
                 ex.ToString(), args: args).Log();
             throw;
@@ -2760,56 +2730,26 @@ public static class FunctionalTest
             var received = new List<MinioNotificationRaw>();
 
             var eventsList = new List<EventType> { EventType.ObjectCreatedAll };
+            var eventDetected = false;
 
             var listenArgs = new ListenBucketNotificationsArgs()
                 .WithBucket(bucketName)
                 .WithEvents(eventsList);
             var events = minio.ListenBucketNotificationsAsync(listenArgs);
-            var subscription = events.Subscribe(
+            using (var subscription = events.Subscribe(
                 received.Add,
-                ex => { },
-                () => { }
-            );
-
-            _ = await PutObject_Tester(minio, bucketName, objectName, null, contentType,
+                _ => { },
+                () => { } ))
+            {
+                _ = await PutObject_Tester(minio, bucketName, objectName, null, contentType,
                 0, null, rsg.GenerateStreamFromSeed(1 * KB)).ConfigureAwait(false);
-
-            // wait for notifications
-            var eventDetected = false;
-            for (var attempt = 0; attempt < 10; attempt++)
-                if (received.Count > 0)
+            }
+            for (var attempt = 0; attempt < 20; attempt++)
+            {
+                // Check if there is a caught event
+                if (received.Count == 1)
                 {
-                    // Check if there is any unexpected error returned
-                    // and captured in the receivedJson list, like
-                    // "NotImplemented" api error. If so, we throw an exception
-                    // and skip running this test
-                    if (received.Count > 1 &&
-                        received[1].Json.StartsWith("<Error><Code>", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Although the attribute is called "json",
-                        // returned data in list "received" is in xml
-                        // format and it is an error.Here, we convert xml
-                        // into json format.
-                        var receivedJson = XmlStrToJsonStr(received[1].Json);
-
-                        // Cleanup the "Error" key encapsulating "receivedJson"
-                        // data. This is required to match and convert json data
-                        // "receivedJson" into class "ErrorResponse"
-                        var len = "{'Error':".Length;
-                        var trimmedFront = receivedJson[len..];
-                        var trimmedFull = trimmedFront[..^1];
-
-                        var err = JsonSerializer.Deserialize<ErrorResponse>(trimmedFull);
-
-                        Exception ex = new UnexpectedMinioException(err.Message);
-                        if (string.Equals(err.Code, "NotImplemented", StringComparison.OrdinalIgnoreCase))
-                            ex = new NotImplementedException(err.Message);
-                        await TearDown(minio, bucketName).ConfigureAwait(false);
-                        throw ex;
-                    }
-
                     var notification = JsonSerializer.Deserialize<MinioNotification>(received[0].Json);
-
                     if (notification.Records is not null)
                     {
                         Assert.AreEqual(1, notification.Records.Count);
@@ -2824,15 +2764,18 @@ public static class FunctionalTest
                         break;
                     }
                 }
-
-            subscription.Dispose();
-            if (!eventDetected)
+            }
+            if (eventDetected)
+            {
+                new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
+                    listenBucketNotificationsSignature,
+                    "Tests whether ListenBucketNotifications passes for small object",
+                    TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+            }
+            else
+            {
                 throw new UnexpectedMinioException("Failed to detect the expected bucket notification event.");
-
-            new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
-                listenBucketNotificationsSignature,
-                "Tests whether ListenBucketNotifications passes for small object",
-                TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
+            }
         }
         catch (NotImplementedException ex)
         {
@@ -2862,14 +2805,14 @@ public static class FunctionalTest
                     // This is a PASS
                     new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
                         listenBucketNotificationsSignature,
-                        "Tests whether ListenBucketNotifications passes for small object",
+                        "Tests whether ListenBucketNotifications creates notification for an object",
                         TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
             }
             else
             {
                 new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
                     listenBucketNotificationsSignature,
-                    "Tests whether ListenBucketNotifications passes for small object",
+                    "Tests whether ListenBucketNotifications creates notification for an object",
                     TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
                     ex.ToString(), args: args).Log();
                 throw;
