@@ -2686,7 +2686,8 @@ public static class FunctionalTest
                     "Tests whether ListenNotifications notifies user about \"BucketCreatedAll\" event",
                     TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
             else
-                throw new UnexpectedMinioException("Failed to detect the expected notification event, \"BucketCreatedAll\".");
+                throw new UnexpectedMinioException(
+                    "Failed to detect the expected notification event, \"BucketCreatedAll\".");
         }
         catch (Exception ex)
         {
@@ -2762,6 +2763,7 @@ public static class FunctionalTest
                         break;
                     }
                 }
+
             if (eventDetected)
                 new MintLogger(nameof(ListenBucketNotificationsAsync_Test1),
                     listenBucketNotificationsSignature,
