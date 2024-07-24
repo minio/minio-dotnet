@@ -145,7 +145,10 @@ public static class RequestExtensions
                 throw new BucketNotFoundException();
 
             if (responseResult is not null)
+            {
                 responseResult.Exception = ex;
+                throw;
+            }
             else
                 responseResult = new ResponseResult(request, ex);
             return responseResult;
