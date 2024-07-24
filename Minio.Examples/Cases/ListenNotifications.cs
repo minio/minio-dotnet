@@ -32,7 +32,7 @@ internal static class ListenNotifications
             Console.WriteLine();
             events ??= new List<EventType> { EventType.BucketCreatedAll };
             var args = new ListenBucketNotificationsArgs().WithEvents(events);
-            var observable = minio.ListenNotificationsAsync(events);
+            var observable = minio.ListenNotifications(args);
 
             subscription = observable.Subscribe(
                 notification => Console.WriteLine($"Notification: {notification.Json}"),
