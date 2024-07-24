@@ -149,8 +149,9 @@ public static class RequestExtensions
                 responseResult.Exception = ex;
                 throw;
             }
-            else
-                responseResult = new ResponseResult(request, ex);
+
+            responseResult = new ResponseResult(request, ex);
+
             return responseResult;
         }
     }
