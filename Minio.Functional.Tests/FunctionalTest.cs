@@ -371,21 +371,26 @@ public static class FunctionalTest
                 await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
 
             var found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
-            Assert.IsFalse(found);
+            if (found)
+                throw(new Exception("BucketExistsAsync api failed to return false for a non-existing bucket"));
+
             await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
             found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
-            Assert.IsTrue(found);
-            new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether BucketExists passes",
+
+            if (!found)
+                throw(new Exception("BucketExistsAsync api failed to return true for an existing bucket"));
+
+            new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether BucketExistsAsync api passes",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
         catch (NotImplementedException ex)
         {
-            new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether BucketExists passes",
+            new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether BucketExistsAsync api passes",
                 TestStatus.NA, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
         }
         catch (Exception ex)
         {
-            new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether BucketExists passes",
+            new MintLogger(nameof(BucketExists_Test), bucketExistsSignature, "Tests whether BucketExistsAsync api passes",
                 TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
             throw;
         }
