@@ -143,16 +143,7 @@ public static class RequestExtensions
         {
             if (ex.Message.Equals("ThrowBucketNotFoundException", StringComparison.Ordinal))
                 throw new BucketNotFoundException();
-
-            if (responseResult is not null)
-            {
-                responseResult.Exception = ex;
-                throw;
-            }
-
-            responseResult = new ResponseResult(request, ex);
-
-            return responseResult;
+            throw;
         }
     }
 
