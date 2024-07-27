@@ -26,6 +26,8 @@ public class GenericResponse
         ResponseStatusCode = statusCode;
     }
 
-    internal string ResponseContent { get; }
-    internal HttpStatusCode ResponseStatusCode { get; }
+    // These are very important for handling errors! 
+    // We should allow consumers to access them directly :)
+    public string ResponseContent { get; }
+    public HttpStatusCode ResponseStatusCode { get; }
 }
