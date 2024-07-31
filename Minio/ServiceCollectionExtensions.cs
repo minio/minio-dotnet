@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -29,14 +30,52 @@ public static class ServiceCollectionExtensions
     {
         if (services is null) throw new ArgumentNullException(nameof(services));
 
-        _ = services.AddMinio(configureClient => configureClient.WithCredentials(accessKey, secretKey), lifetime);
+        _ = services.AddMinioInternal(configureClient => configureClient.WithCredentials(accessKey, secretKey), lifetime);
         return services;
     }
-
     public static IServiceCollection AddMinio(
         this IServiceCollection services,
         Action<IMinioClient> configureClient,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    {
+        if (services is null) throw new ArgumentNullException(nameof(services));
+
+        _ = services.AddMinioInternal(configureClient, lifetime);
+        return services;
+    }
+
+
+    public static IServiceCollection AddKeyedMinio(
+        this IServiceCollection services,
+        Action<IMinioClient> configureClient,
+        object serviceKey,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    {
+        if (services is null) throw new ArgumentNullException(nameof(services));
+
+        _ = services.AddMinioInternal(configureClient, lifetime, serviceKey);
+        return services;
+    }
+
+
+    public static IServiceCollection AddKeyedMinio(
+        this IServiceCollection services,
+        string accessKey,
+        string secretKey,
+        object serviceKey,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    {
+        if (services is null) throw new ArgumentNullException(nameof(services));
+
+        _ = services.AddMinioInternal(configureClient => configureClient.WithCredentials(accessKey, secretKey), lifetime, serviceKey);
+        return services;
+    }
+
+    private static IServiceCollection AddMinioInternal(
+        this IServiceCollection services,
+        Action<IMinioClient> configureClient,
+        ServiceLifetime lifetime,
+        object serviceKey = null)
     {
         if (services is null) throw new ArgumentNullException(nameof(services));
         if (configureClient == null) throw new ArgumentNullException(nameof(configureClient));
@@ -46,18 +85,12 @@ public static class ServiceCollectionExtensions
 
         var client = minioClientFactory.CreateClient();
         client.Config.ServiceProvider = services.BuildServiceProvider();
-        switch (lifetime)
-        {
-            case ServiceLifetime.Singleton:
-                services.TryAddSingleton(_ => client);
-                break;
-            case ServiceLifetime.Scoped:
-                services.TryAddScoped(_ => client);
-                break;
-            case ServiceLifetime.Transient:
-                services.TryAddTransient(_ => client);
-                break;
-        }
+
+        var descriptor = serviceKey is null
+            ? new ServiceDescriptor(typeof(IMinioClient), _ => client, lifetime)
+            : new ServiceDescriptor(typeof(IMinioClient), serviceKey, (_, _) => client, lifetime);
+
+        services.TryAdd(descriptor);
 
         return services;
     }
