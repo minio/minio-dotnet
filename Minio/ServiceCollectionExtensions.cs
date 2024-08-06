@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Collections.ObjectModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -30,9 +29,11 @@ public static class ServiceCollectionExtensions
     {
         if (services is null) throw new ArgumentNullException(nameof(services));
 
-        _ = services.AddMinioInternal(configureClient => configureClient.WithCredentials(accessKey, secretKey), lifetime);
+        _ = services.AddMinioInternal(configureClient => configureClient.WithCredentials(accessKey, secretKey),
+            lifetime);
         return services;
     }
+
     public static IServiceCollection AddMinio(
         this IServiceCollection services,
         Action<IMinioClient> configureClient,
@@ -43,7 +44,6 @@ public static class ServiceCollectionExtensions
         _ = services.AddMinioInternal(configureClient, lifetime);
         return services;
     }
-
 
     public static IServiceCollection AddKeyedMinio(
         this IServiceCollection services,
@@ -57,7 +57,6 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-
     public static IServiceCollection AddKeyedMinio(
         this IServiceCollection services,
         string accessKey,
@@ -67,7 +66,8 @@ public static class ServiceCollectionExtensions
     {
         if (services is null) throw new ArgumentNullException(nameof(services));
 
-        _ = services.AddMinioInternal(configureClient => configureClient.WithCredentials(accessKey, secretKey), lifetime, serviceKey);
+        _ = services.AddMinioInternal(configureClient => configureClient.WithCredentials(accessKey, secretKey),
+            lifetime, serviceKey);
         return services;
     }
 
