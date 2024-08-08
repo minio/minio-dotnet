@@ -594,17 +594,17 @@ public static class FunctionalTest
     {
         var beArgs = new BucketExistsArgs()
             .WithBucket(bucketName);
-        var bktExists = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
-        if (!bktExists)
-            return;
         var getVersions = false;
-        // Get Versioning/Retention Info.
-        var lockConfigurationArgs =
-            new GetObjectLockConfigurationArgs()
-                .WithBucket(bucketName);
-        ObjectLockConfiguration lockConfig = null;
+        var lockConfig = new ObjectLockConfiguration();
         try
         {
+            var bktExists = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+            if (!bktExists)
+                return;
+            // Get Versioning/Retention Info.
+            var lockConfigurationArgs =
+                new GetObjectLockConfigurationArgs()
+                    .WithBucket(bucketName);
             var versioningConfig = await minio.GetVersioningAsync(new GetVersioningArgs()
                 .WithBucket(bucketName)
                 .WithVersions(true)).ConfigureAwait(false);
