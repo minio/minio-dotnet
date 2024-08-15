@@ -149,6 +149,7 @@ public partial class MinioClient : IObjectOperations
         {
             await foreach (var upload in ListIncompleteUploadsEnumAsync(listUploadArgs, cancellationToken)
                                .ConfigureAwait(false))
+            {
                 if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
                 {
                     var rmArgs = new RemoveUploadArgs()
@@ -157,6 +158,7 @@ public partial class MinioClient : IObjectOperations
                         .WithUploadId(upload.UploadId);
                     await RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
                 }
+            }
         }
         catch (Exception ex) when (ex.GetType() == typeof(BucketNotFoundException))
         {
@@ -266,8 +268,7 @@ public partial class MinioClient : IObjectOperations
         args?.Validate();
         var requestMessageBuilder = await this.CreateRequest(HttpMethod.Put, args.BucketName,
             args.ObjectName,
-            args.Headers, // contentType
-            Convert.ToString(args.GetType(), CultureInfo.InvariantCulture), // metaData
+            args.Headers,
             Utils.ObjectToByteArray(args.RequestBody)).ConfigureAwait(false);
         var authenticator = new V4Authenticator(Config.Secure, Config.AccessKey, Config.SecretKey, Config.Region,
             Config.SessionToken);
@@ -402,7 +403,7 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        IList<DeleteError> errs = new List<DeleteError>();
+        IList<DeleteError> errs = [];
         errs = args.ObjectNamesVersions.Count > 0
             ? await RemoveObjectVersionsHelper(args, errs.ToList(), cancellationToken).ConfigureAwait(false)
             : await RemoveObjectsHelper(args, errs, cancellationToken).ConfigureAwait(false);
@@ -579,8 +580,10 @@ public partial class MinioClient : IObjectOperations
             var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
             var bytesRead = bytes.Length;
             if (bytesRead != (int)args.ObjectSize)
+            {
                 throw new UnexpectedShortReadException(
                     $"Data read {bytesRead.ToString(CultureInfo.InvariantCulture)} is shorter than the size {args.ObjectSize.ToString(CultureInfo.InvariantCulture)} of input buffer.");
+            }
 
             args = args.WithRequestBody(bytes)
                 .WithStreamData(null)
@@ -690,12 +693,13 @@ public partial class MinioClient : IObjectOperations
             (srcByteRangeSize > 0 &&
              args.SourceObject.CopyOperationConditions.byteRangeEnd >=
              args.SourceObjectInfo.Size))
+        {
             throw new InvalidDataException($"Specified byte range ({args.SourceObject
                 .CopyOperationConditions
                 .byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{args.SourceObject
-                .CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)
-            }) does not fit within source object (size={args.SourceObjectInfo.Size
+                .CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)}) does not fit within source object (size={args.SourceObjectInfo.Size
                 .ToString(CultureInfo.InvariantCulture)})");
+        }
 
         if (copySize > Constants.MaxSingleCopyObjectSize ||
             (srcByteRangeSize > 0 &&
@@ -913,7 +917,9 @@ public partial class MinioClient : IObjectOperations
             numPartsUploaded++;
             totalParts[partNumber - 1] = new Part
             {
-                PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize
+                PartNumber = partNumber,
+                ETag = etag,
+                Size = (long)expectedReadSize
             };
             etags[partNumber] = etag;
             if (!dataToCopy.IsEmpty) progressReport.TotalBytesTransferred += dataToCopy.Length;
@@ -1006,7 +1012,9 @@ public partial class MinioClient : IObjectOperations
 
             totalParts[partNumber - 1] = new Part
             {
-                PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize
+                PartNumber = partNumber,
+                ETag = cpPartResult.ETag,
+                Size = (long)expectedReadSize
             };
         }
 

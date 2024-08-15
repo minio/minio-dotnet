@@ -126,17 +126,17 @@ public class AuthenticatorTest
         var authenticator = new V4Authenticator(false, "my-access-key", "my-secret-key");
 
         var request = new Uri(
-            "http://localhost:9001/bucket/object-name?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host");
+            "https://localhost:9000/bucket/object-name?X-Amz-Expires=43200&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20240815%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240815T153925Z&X-Amz-SignedHeaders=content-language%3Bhost%3Bx-special");
         var headersToSign = new SortedDictionary<string, string>(StringComparer.Ordinal)
         {
-            { "X-Special".ToLowerInvariant(), "special" }, { "Content-Language".ToLowerInvariant(), "en" }
+            { "X-Special".ToLowerInvariant(), "special" }, { "Content-Language".ToLowerInvariant(), "en" },
+            { "host","localhost:9000"}
         };
 
-        var canonicalRequest = authenticator.GetPresignCanonicalRequest(HttpMethod.Put, request, headersToSign);
-        Assert.AreEqual(
-            string.Join('\n', "PUT", "/bucket/object-name",
-                "X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&content-language=en&x-special=special",
-                "host:localhost:9001", "", "host", "UNSIGNED-PAYLOAD"),
+        var canonicalQueryString = "X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20240815%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240815T153925Z&X-Amz-Expires=43200&X-Amz-SignedHeaders=content-language%3Bhost%3Bx-special";
+
+        var canonicalRequest = authenticator.GetPresignCanonicalRequest(HttpMethod.Put, request, headersToSign, canonicalQueryString);
+        Assert.AreEqual("PUT\n/bucket/object-name\nX-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20240815%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240815T153925Z&X-Amz-Expires=43200&X-Amz-SignedHeaders=content-language%3Bhost%3Bx-special\ncontent-language:en\nhost:localhost:9000\nx-special:special\n\ncontent-language;host;x-special\nUNSIGNED-PAYLOAD",
             canonicalRequest);
     }
 
@@ -146,17 +146,16 @@ public class AuthenticatorTest
         var authenticator = new V4Authenticator(false, "my-access-key", "my-secret-key");
 
         var request = new Uri(
-            "http://localhost:9001/bucket/object-name?uploadId=upload-id&partNumber=1&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host");
+            "https://localhost:9000/bucket/object-name?X-Amz-Expires=43200&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20240815%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240815T153925Z&X-Amz-SignedHeaders=content-language%3Bhost%3Bx-special");
         var headersToSign = new SortedDictionary<string, string>(StringComparer.Ordinal)
         {
-            { "X-Special".ToLowerInvariant(), "special" }, { "Content-Language".ToLowerInvariant(), "en" }
+            { "X-Special".ToLowerInvariant(), "special" }, { "Content-Language".ToLowerInvariant(), "en" },{ "host","localhost:9000"}
         };
 
-        var canonicalRequest = authenticator.GetPresignCanonicalRequest(HttpMethod.Put, request, headersToSign);
-        Assert.AreEqual(
-            string.Join('\n', "PUT", "/bucket/object-name",
-                "X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&content-language=en&partNumber=1&uploadId=upload-id&x-special=special",
-                "host:localhost:9001", "", "host", "UNSIGNED-PAYLOAD"),
+        var canonicalQueryString = "X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20240815%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240815T153925Z&X-Amz-Expires=43200&X-Amz-SignedHeaders=content-language%3Bhost%3Bx-special";
+
+        var canonicalRequest = authenticator.GetPresignCanonicalRequest(HttpMethod.Put, request, headersToSign, canonicalQueryString);
+        Assert.AreEqual("PUT\n/bucket/object-name\nX-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=my-access-key%2F20240815%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240815T153925Z&X-Amz-Expires=43200&X-Amz-SignedHeaders=content-language%3Bhost%3Bx-special\ncontent-language:en\nhost:localhost:9000\nx-special:special\n\ncontent-language;host;x-special\nUNSIGNED-PAYLOAD",
             canonicalRequest);
     }
 
@@ -164,8 +163,7 @@ public class AuthenticatorTest
     {
         var key = request.HeaderParameters.Keys.FirstOrDefault(o =>
             string.Equals(o, headername, StringComparison.OrdinalIgnoreCase));
-        if (key is not null) return Tuple.Create(key, request.HeaderParameters[key]);
-        return null;
+        return key is not null ? Tuple.Create(key, request.HeaderParameters[key]) : null;
     }
 
     private bool HasPayloadHeader(HttpRequestMessageBuilder request, string headerName)

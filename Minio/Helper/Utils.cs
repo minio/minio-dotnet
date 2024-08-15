@@ -83,8 +83,66 @@ public static class Utils
     internal static void ValidateObjectPrefix(string objectPrefix)
     {
         if (objectPrefix.Length > 512)
+        {
             throw new InvalidObjectPrefixException(objectPrefix,
                 "Object prefix cannot be greater than 1024 characters.");
+        }
+    }
+
+    /// <summary>
+    ///     Compute sha256 checksum.
+    /// </summary>
+    /// <param name="body">Bytes body</param>
+    /// <returns>Bytes of sha256 checksum</returns>
+    internal static ReadOnlySpan<byte> ComputeSha256(ReadOnlySpan<byte> body)
+    {
+#if NETSTANDARD
+        using var sha = SHA256.Create();
+        ReadOnlySpan<byte> hash
+            = sha.ComputeHash(body.ToArray());
+#else
+        ReadOnlySpan<byte> hash = SHA256.HashData(body);
+#endif
+        return hash;
+    }
+
+    /// <summary>
+    ///     Computes sha256 checksum by converting the body string to bytes using UTF-8 encoding
+    ///     and then calls the ComputeSha256 method that takes a ReadOnlySpan<byte> parameter.
+    /// </summary>
+    /// <param name="body">Bytes body</param>
+    /// <returns>Bytes of sha256 checksum</returns>
+    internal static ReadOnlySpan<byte> ComputeSha256(string body)
+    {
+        return ComputeSha256(Encoding.UTF8.GetBytes(body));
+    }
+
+    /// <summary>
+    ///     Convert bytes to hexadecimal string.
+    /// </summary>
+    /// <param name="checkSum">Bytes of any checksum</param>
+    /// <returns>Hexlified string of input bytes</returns>
+    internal static string BytesToHex(ReadOnlySpan<byte> checkSum)
+    {
+        return BitConverter.ToString(checkSum.ToArray()).Replace("-", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .ToLowerInvariant();
+    }
+
+    /// <summary>
+    ///     Compute hmac of input content with key.
+    /// </summary>
+    /// <param name="key">Hmac key</param>
+    /// <param name="content">Bytes to be hmac computed</param>
+    /// <returns>Computed hmac of input content</returns>
+    internal static ReadOnlySpan<byte> SignHmac(ReadOnlySpan<byte> key, ReadOnlySpan<byte> content)
+    {
+#if NETSTANDARD
+        using var hmac = new HMACSHA256(key.ToArray());
+        hmac.Initialize();
+        return hmac.ComputeHash(content.ToArray());
+#else
+        return HMACSHA256.HashData(key, content);
+#endif
     }
 
     // Return url encoded string where reserved characters have been percent-encoded
@@ -126,15 +184,39 @@ public static class Utils
     {
         var encodedPathBuf = new StringBuilder();
         foreach (var pathSegment in path.Split('/'))
+        {
             if (pathSegment.Length != 0)
             {
                 if (encodedPathBuf.Length > 0) _ = encodedPathBuf.Append('/');
                 _ = encodedPathBuf.Append(UrlEncode(pathSegment));
             }
+        }
 
         if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase)) _ = encodedPathBuf.Insert(0, '/');
         if (path.EndsWith("/", StringComparison.OrdinalIgnoreCase)) _ = encodedPathBuf.Append('/');
         return encodedPathBuf.ToString();
+    }
+
+    /// <summary>
+    ///     Formats date to ISO8601 format.
+    /// </summary>
+    /// <param name="date">Date to be formatted</param>
+    /// <returns>Formatted date.yyyyMMdd </returns>
+    internal static string FormatDate(DateTime date)
+    {
+        return date.ToUniversalTime()
+            .ToString(Constants.DateISO8601Format, CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    ///     Formats datetime to ISO8601 format.
+    /// </summary>
+    /// <param name="date">Date to be formatted</param>
+    /// <returns>Formatted date. yyyyMMddTHHmmssZ </returns>
+    internal static string FormatDateTime(DateTime date)
+    {
+        return date.ToUniversalTime()
+            .ToString(Constants.DateTimeISO8601Format, CultureInfo.InvariantCulture);
     }
 
     internal static bool IsAnonymousClient(string accessKey, string secretKey)
@@ -168,9 +250,9 @@ public static class Utils
         {
         }
 
-        if (string.IsNullOrEmpty(extension)) return "application/octet-stream";
-
-        return contentTypeMap.Value.TryGetValue(extension, out var contentType)
+        return string.IsNullOrEmpty(extension)
+            ? "application/octet-stream"
+            : contentTypeMap.Value.TryGetValue(extension, out var contentType)
             ? contentType
             : "application/octet-stream";
     }
@@ -193,9 +275,7 @@ public static class Utils
     {
         if (l2 is null) return true;
 
-        if (l1 is null) return false;
-
-        return !l2.Except(l1, StringComparer.Ordinal).Any();
+        return l1 is not null && !l2.Except(l1, StringComparer.Ordinal).Any();
     }
 
     public static async Task ForEachAsync<TSource>(this IEnumerable<TSource> source, bool runInParallel = false,
@@ -246,10 +326,9 @@ public static class Utils
     public static bool CaseInsensitiveContains(string text, string value,
         StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
     {
-        if (string.IsNullOrEmpty(text))
-            throw new ArgumentException($"'{nameof(text)}' cannot be null or empty.", nameof(text));
-
-        return text.Contains(value, stringComparison);
+        return string.IsNullOrEmpty(text)
+            ? throw new ArgumentException($"'{nameof(text)}' cannot be null or empty.", nameof(text))
+            : text.Contains(value, stringComparison);
     }
 
     /// <summary>
@@ -263,8 +342,10 @@ public static class Utils
         if (size == -1) size = Constants.MaximumStreamObjectSize;
 
         if (size > Constants.MaxMultipartPutObjectSize)
+        {
             throw new EntityTooLargeException(
                 $"Your proposed upload size {size} exceeds the maximum allowed object size {Constants.MaxMultipartPutObjectSize}");
+        }
 
         var partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
         var minPartSize = copy ? Constants.MinimumCOPYPartSize : Constants.MinimumPUTPartSize;
@@ -923,35 +1004,41 @@ public static class Utils
     public static Uri GetBaseUrl(string endpoint)
     {
         if (string.IsNullOrEmpty(endpoint))
+        {
             throw new ArgumentException(
                 string.Format(CultureInfo.InvariantCulture,
                     "{0} is the value of the endpoint. It can't be null or empty.", endpoint),
                 nameof(endpoint));
+        }
 
         if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase))
             endpoint = endpoint[..^1];
         if (!endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
             !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
+        {
             throw new InvalidEndpointException(
                 string.Format(CultureInfo.InvariantCulture, "{0} is invalid hostname.", endpoint), "endpoint");
+        }
+
         string conn_url;
         if (endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
             throw new InvalidEndpointException(
                 string.Format(CultureInfo.InvariantCulture,
                     "{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
                 "endpoint");
+        }
 
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
         var scheme = enable_https?.Equals("1", StringComparison.OrdinalIgnoreCase) == true ? "https://" : "http://";
         conn_url = scheme + endpoint;
         var url = new Uri(conn_url);
         var hostnameOfUri = url.Authority;
-        if (!string.IsNullOrWhiteSpace(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri))
-            throw new InvalidEndpointException(
+        return !string.IsNullOrWhiteSpace(hostnameOfUri) && !BuilderUtil.IsValidHostnameOrIPAddress(hostnameOfUri)
+            ? throw new InvalidEndpointException(
                 string.Format(CultureInfo.InvariantCulture, "{0}, {1} is invalid hostname.", endpoint, hostnameOfUri),
-                "endpoint");
-
-        return url;
+                "endpoint")
+            : url;
     }
 
     internal static HttpRequestMessageBuilder GetEmptyRestRequest(HttpRequestMessageBuilder requestBuilder)
@@ -1008,17 +1095,19 @@ public static class Utils
     public static void PrintDict(IDictionary<string, string> d)
     {
         if (d is not null)
+        {
             foreach (var kv in d)
                 Console.WriteLine("DEBUG >>             Dictionary({0} => {1})", kv.Key, kv.Value);
+        }
 
         Console.WriteLine("DEBUG >>             Dictionary: Done printing\n");
     }
 
     public static string DetermineNamespace(XDocument document)
     {
-        if (document is null) throw new ArgumentNullException(nameof(document));
-
-        return document.Root.Attributes().FirstOrDefault(attr => attr.IsNamespaceDeclaration)?.Value ?? string.Empty;
+        return document is null
+            ? throw new ArgumentNullException(nameof(document))
+            : document.Root.Attributes().FirstOrDefault(attr => attr.IsNamespaceDeclaration)?.Value ?? string.Empty;
     }
 
     public static string SerializeToXml<T>(T anyobject) where T : class

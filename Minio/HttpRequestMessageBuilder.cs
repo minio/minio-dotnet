@@ -128,14 +128,17 @@ internal class HttpRequestMessageBuilder
 
     public ReadOnlyMemory<byte> Content { get; private set; }
 
-    public string ContentTypeKey => "Content-Type";
+    public const string ContentTypeKey = "Content-Type";
+    public const string HostKey = "Host";
 
     public void AddHeaderParameter(string key, string value)
     {
         if (key.StartsWith("content-", StringComparison.InvariantCultureIgnoreCase) &&
             !string.IsNullOrEmpty(value) &&
             !BodyParameters.ContainsKey(key))
+        {
             BodyParameters.Add(key, value);
+        }
 
         HeaderParameters[key] = value;
     }

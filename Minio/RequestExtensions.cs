@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Net;
+﻿using System.Net;
 using System.Web;
 using Minio.Credentials;
 using Minio.DataModel;
@@ -13,8 +12,6 @@ namespace Minio;
 
 public static class RequestExtensions
 {
-    [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
-        Justification = "This is done in the interface. String is provided here for convenience")]
     public static Task<HttpResponseMessage> WrapperGetAsync(this IMinioClient minioClient, string url)
     {
         return minioClient is null
@@ -25,8 +22,6 @@ public static class RequestExtensions
     /// <summary>
     ///     Runs httpClient's PutObjectAsync method
     /// </summary>
-    [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
-        Justification = "This is done in the interface. String is provided here for convenience")]
     public static Task WrapperPutAsync(this IMinioClient minioClient, string url, StreamContent strm)
     {
         return minioClient is null
@@ -98,8 +93,10 @@ public static class RequestExtensions
                 .ConfigureAwait(false);
             responseResult = new ResponseResult(request, response);
             if (requestMessageBuilder.ResponseWriter is not null)
+            {
                 await requestMessageBuilder.ResponseWriter(responseResult.ContentStream, cancellationToken)
                     .ConfigureAwait(false);
+            }
 
             var path = request.RequestUri.LocalPath.TrimStart('/').TrimEnd('/')
                 .Split('/', StringSplitOptions.RemoveEmptyEntries);
@@ -189,16 +186,23 @@ public static class RequestExtensions
     {
         ArgsCheck(args);
 
-        var contentType = "application/octet-stream";
-        _ = args.Headers?.TryGetValue("Content-Type", out contentType);
+        //var contentType = "application/octet-stream";
+        //_ = args.Headers?.TryGetValue("Content-Type", out contentType);
         var requestMessageBuilder =
             await minioClient.CreateRequest(args.RequestMethod,
                 args.BucketName,
                 args.ObjectName,
                 args.Headers,
-                contentType,
                 args.RequestBody).ConfigureAwait(false);
         return args.BuildRequest(requestMessageBuilder);
+    }
+
+    private static string GetContentType(IDictionary<string, string> headerMap)
+    {
+        var contentType = "application/octet-stream";
+        if (headerMap is not null && headerMap.TryGetValue(HttpRequestMessageBuilder.ContentTypeKey, out var value) && !string.IsNullOrEmpty(value))
+            contentType = value;
+        return contentType;
     }
 
     /// <summary>
@@ -211,7 +215,6 @@ public static class RequestExtensions
     /// <param name="bucketName">Bucket Name</param>
     /// <param name="objectName">Object Name</param>
     /// <param name="headerMap">headerMap</param>
-    /// <param name="contentType">Content Type</param>
     /// <param name="body">request body</param>
     /// <param name="resourcePath">query string</param>
     /// <param name="isBucketCreationRequest">boolean to define bucket creation</param>
@@ -222,11 +225,12 @@ public static class RequestExtensions
         string bucketName = null,
         string objectName = null,
         IDictionary<string, string> headerMap = null,
-        string contentType = "application/octet-stream",
         ReadOnlyMemory<byte> body = default,
         string resourcePath = null,
         bool isBucketCreationRequest = false)
     {
+
+
         var region = string.Empty;
         if (bucketName is not null)
         {
@@ -300,21 +304,21 @@ public static class RequestExtensions
         // Append query string passed in
         if (resourcePath is not null) resource += resourcePath;
 
-        HttpRequestMessageBuilder messageBuilder;
-        if (!string.IsNullOrEmpty(resource))
-            messageBuilder = new HttpRequestMessageBuilder(method, requestUrl, resource);
-        else
-            messageBuilder = new HttpRequestMessageBuilder(method, requestUrl);
+        var messageBuilder = !string.IsNullOrEmpty(resource)
+            ? new HttpRequestMessageBuilder(method, requestUrl, resource)
+            : new HttpRequestMessageBuilder(method, requestUrl);
+
+        var contentType = GetContentType(headerMap);
         if (!body.IsEmpty)
         {
             messageBuilder.SetBody(body);
-            messageBuilder.AddOrUpdateHeaderParameter("Content-Type", contentType);
+            messageBuilder.AddOrUpdateHeaderParameter(HttpRequestMessageBuilder.ContentTypeKey, contentType);
         }
-
+        //
         if (headerMap is not null)
         {
-            if (headerMap.TryGetValue(messageBuilder.ContentTypeKey, out var value) && !string.IsNullOrEmpty(value))
-                headerMap[messageBuilder.ContentTypeKey] = contentType;
+            if (headerMap.TryGetValue(HttpRequestMessageBuilder.ContentTypeKey, out var value) && !string.IsNullOrEmpty(value))
+                headerMap[HttpRequestMessageBuilder.ContentTypeKey] = contentType;
 
             foreach (var entry in headerMap) messageBuilder.AddOrUpdateHeaderParameter(entry.Key, entry.Value);
         }
@@ -330,8 +334,10 @@ public static class RequestExtensions
     private static void ArgsCheck(RequestArgs args)
     {
         if (args is null)
+        {
             throw new ArgumentNullException(nameof(args),
                 "Args object cannot be null. It needs to be assigned to an instantiated child object of Args.");
+        }
     }
 
     /// <summary>
@@ -352,9 +358,11 @@ public static class RequestExtensions
 
         // Pick region from location HEAD request
         if (rgn?.Length == 0)
+        {
             rgn = BucketRegionCache.Instance.Exists(bucketName)
                 ? await BucketRegionCache.Update(minioClient, bucketName).ConfigureAwait(false)
                 : BucketRegionCache.Instance.Region(bucketName);
+        }
 
         // Defaults to us-east-1 if region could not be found
         return rgn?.Length == 0 ? "us-east-1" : rgn;
@@ -382,10 +390,14 @@ public static class RequestExtensions
             throw response.Exception;
 
         if (handlers.Any())
+        {
             // Run through handlers passed to take up error handling
             foreach (var handler in handlers)
                 handler.Handle(response);
+        }
         else
+        {
             minioClient.DefaultErrorHandler.Handle(response);
+        }
     }
 }

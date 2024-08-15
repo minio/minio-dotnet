@@ -84,4 +84,15 @@ internal static class Constants
     ///     SSEKMSContext is the AWS SSE KMS Context.
     /// </summary>
     public static string SSEKMSContext = "X-Amz-Server-Side-Encryption-Context";
+
+    public const string XAmzAlgorithm = "X-Amz-Algorithm";
+    public const string XAmzExpires = "X-Amz-Expires";
+    public const string XAmzCredential = "X-Amz-Credential";
+    public const string XAmzDate = "X-Amz-Date";
+    public const string XAmzSignedHeaders = "X-Amz-SignedHeaders";
+    public const string XAmzSignature = "X-Amz-Signature";
+
+    public const string DateTimeISO8601Format = "yyyyMMddTHHmmssZ";
+    public const string DateISO8601Format = "yyyyMMdd";
+
 }
