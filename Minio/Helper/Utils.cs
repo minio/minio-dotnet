@@ -83,10 +83,8 @@ public static class Utils
     internal static void ValidateObjectPrefix(string objectPrefix)
     {
         if (objectPrefix.Length > 512)
-        {
             throw new InvalidObjectPrefixException(objectPrefix,
                 "Object prefix cannot be greater than 1024 characters.");
-        }
     }
 
     /// <summary>
@@ -108,7 +106,7 @@ public static class Utils
 
     /// <summary>
     ///     Computes sha256 checksum by converting the body string to bytes using UTF-8 encoding
-    ///     and then calls the ComputeSha256 method that takes a ReadOnlySpan<byte> parameter.
+    ///     and then calls the ComputeSha256 method that takes a ReadOnlySpan&lt;byte&gt; parameter.
     /// </summary>
     /// <param name="body">Bytes body</param>
     /// <returns>Bytes of sha256 checksum</returns>
@@ -184,13 +182,11 @@ public static class Utils
     {
         var encodedPathBuf = new StringBuilder();
         foreach (var pathSegment in path.Split('/'))
-        {
             if (pathSegment.Length != 0)
             {
                 if (encodedPathBuf.Length > 0) _ = encodedPathBuf.Append('/');
                 _ = encodedPathBuf.Append(UrlEncode(pathSegment));
             }
-        }
 
         if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase)) _ = encodedPathBuf.Insert(0, '/');
         if (path.EndsWith("/", StringComparison.OrdinalIgnoreCase)) _ = encodedPathBuf.Append('/');
@@ -253,8 +249,8 @@ public static class Utils
         return string.IsNullOrEmpty(extension)
             ? "application/octet-stream"
             : contentTypeMap.Value.TryGetValue(extension, out var contentType)
-            ? contentType
-            : "application/octet-stream";
+                ? contentType
+                : "application/octet-stream";
     }
 
     public static void MoveWithReplace(string sourceFileName, string destFileName)
@@ -342,10 +338,8 @@ public static class Utils
         if (size == -1) size = Constants.MaximumStreamObjectSize;
 
         if (size > Constants.MaxMultipartPutObjectSize)
-        {
             throw new EntityTooLargeException(
                 $"Your proposed upload size {size} exceeds the maximum allowed object size {Constants.MaxMultipartPutObjectSize}");
-        }
 
         var partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
         var minPartSize = copy ? Constants.MinimumCOPYPartSize : Constants.MinimumPUTPartSize;
@@ -1004,30 +998,24 @@ public static class Utils
     public static Uri GetBaseUrl(string endpoint)
     {
         if (string.IsNullOrEmpty(endpoint))
-        {
             throw new ArgumentException(
                 string.Format(CultureInfo.InvariantCulture,
                     "{0} is the value of the endpoint. It can't be null or empty.", endpoint),
                 nameof(endpoint));
-        }
 
         if (endpoint.EndsWith("/", StringComparison.OrdinalIgnoreCase))
             endpoint = endpoint[..^1];
         if (!endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
             !BuilderUtil.IsValidHostnameOrIPAddress(endpoint))
-        {
             throw new InvalidEndpointException(
                 string.Format(CultureInfo.InvariantCulture, "{0} is invalid hostname.", endpoint), "endpoint");
-        }
 
         string conn_url;
         if (endpoint.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-        {
             throw new InvalidEndpointException(
                 string.Format(CultureInfo.InvariantCulture,
                     "{0} the value of the endpoint has the scheme (http/https) in it.", endpoint),
                 "endpoint");
-        }
 
         var enable_https = Environment.GetEnvironmentVariable("ENABLE_HTTPS");
         var scheme = enable_https?.Equals("1", StringComparison.OrdinalIgnoreCase) == true ? "https://" : "http://";
@@ -1095,10 +1083,8 @@ public static class Utils
     public static void PrintDict(IDictionary<string, string> d)
     {
         if (d is not null)
-        {
             foreach (var kv in d)
                 Console.WriteLine("DEBUG >>             Dictionary({0} => {1})", kv.Key, kv.Value);
-        }
 
         Console.WriteLine("DEBUG >>             Dictionary: Done printing\n");
     }

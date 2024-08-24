@@ -26,6 +26,11 @@ namespace Minio;
 /// </summary>
 internal class V4Authenticator
 {
+    private const string Scheme = "AWS4";
+    private const string SigningAlgorithm = "HMAC-SHA256";
+
+    public const string Terminator = "aws4_request";
+
     //
     // Excerpts from @lsegal - https://github.com/aws/aws-sdk-js/issues/659#issuecomment-120477258
     //
@@ -44,19 +49,15 @@ internal class V4Authenticator
         "authorization", "user-agent"
     };
 
+    public static readonly byte[] TerminatorBytes = Encoding.UTF8.GetBytes(Terminator);
+
     private readonly string accessKey;
+    public readonly string AWS4AlgorithmTag = string.Format("{0}-{1}", Scheme, SigningAlgorithm);
     private readonly string region;
     private readonly string secretKey;
     private readonly string sessionToken;
 
     private readonly string sha256EmptyFileHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-
-    private const string Scheme = "AWS4";
-    private const string SigningAlgorithm = "HMAC-SHA256";
-    public readonly string AWS4AlgorithmTag = string.Format("{0}-{1}", Scheme, SigningAlgorithm);
-
-    public const string Terminator = "aws4_request";
-    public static readonly byte[] TerminatorBytes = Encoding.UTF8.GetBytes(Terminator);
 
     /// <summary>
     ///     Authenticator constructor.
@@ -280,7 +281,8 @@ internal class V4Authenticator
         var signedHeaders = GetSignedHeaders(headersToSign);
 
         var requestQuery = GetCanonicalQueryString(requestBuilder.RequestUri, reqDate, region, expires, signedHeaders);
-        var canonicalRequest = GetPresignCanonicalRequest(requestBuilder.Method, requestUri, headersToSign, requestQuery);
+        var canonicalRequest =
+            GetPresignCanonicalRequest(requestBuilder.Method, requestUri, headersToSign, requestQuery);
 
         var canonicalRequestHash = Utils.BytesToHex(Utils.ComputeSha256(canonicalRequest));
         var stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash);
@@ -297,7 +299,8 @@ internal class V4Authenticator
         string signature)
     {
         var authParams = new StringBuilder(queryParams)
-                    .AppendFormat(CultureInfo.InvariantCulture, "&{0}={1}", Utils.UrlEncode(Constants.XAmzSignature), Utils.UrlEncode(signature));
+            .AppendFormat(CultureInfo.InvariantCulture, "&{0}={1}", Utils.UrlEncode(Constants.XAmzSignature),
+                Utils.UrlEncode(signature));
 
         var signedUri = new UriBuilder(presignUri) { Query = authParams.ToString() };
         if (signedUri.Uri.IsDefaultPort) signedUri.Port = -1;
@@ -305,7 +308,7 @@ internal class V4Authenticator
     }
 
     /// <summary>
-    /// Generates canonical query string.
+    ///     Generates canonical query string.
     /// </summary>
     /// <param name="requestUri"></param>
     /// <param name="reqDate"></param>
@@ -325,26 +328,29 @@ internal class V4Authenticator
         var canonicalQueryString = new StringBuilder(requestUri.Query);
         if (canonicalQueryString.Length != 0) _ = canonicalQueryString.Append("&");
         var signingDate = reqDate ?? DateTime.UtcNow;
-        var creds = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}/{3}/{4}", accessKey, Utils.FormatDate(signingDate), region, GetService(isSts), Terminator);
+        var creds = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}/{3}/{4}", accessKey,
+            Utils.FormatDate(signingDate), region, GetService(isSts), Terminator);
         var queryParams = new SortedDictionary<string, string>(StringComparer.Ordinal)
         {
-            { Constants.XAmzAlgorithm, AWS4AlgorithmTag},
+            { Constants.XAmzAlgorithm, AWS4AlgorithmTag },
             { Constants.XAmzCredential, creds },
-            { Constants.XAmzDate, Utils.FormatDateTime(signingDate)},
+            { Constants.XAmzDate, Utils.FormatDateTime(signingDate) },
             { Constants.XAmzExpires, Convert.ToString(expires) },
-            { Constants.XAmzSignedHeaders, signedHeaders}
+            { Constants.XAmzSignedHeaders, signedHeaders }
         };
         foreach (var query in queryParams)
         {
             if (canonicalQueryString.Length > 0)
                 _ = canonicalQueryString.Append("&");
-            _ = canonicalQueryString.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}", Utils.UrlEncode(query.Key), Utils.UrlEncode(query.Value));
+            _ = canonicalQueryString.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}", Utils.UrlEncode(query.Key),
+                Utils.UrlEncode(query.Value));
         }
+
         return canonicalQueryString.ToString();
     }
 
     /// <summary>
-    /// Generates canonical headers
+    ///     Generates canonical headers
     /// </summary>
     /// <param name="headers">Headers that will be formatted</param>
     /// <returns>Formatted headers</returns>
@@ -362,6 +368,7 @@ internal class V4Authenticator
             _ = canonicalHeaders.Append(S3utils.TrimAll(header.Value));
             _ = canonicalHeaders.Append("\n");
         }
+
         return canonicalHeaders.ToString();
     }
 
@@ -374,6 +381,7 @@ internal class V4Authenticator
     ///     X-Amz-Signature
     /// </param>
     /// <param name="headersToSign">The key-value of headers.</param>
+    /// <param name="canonicalQueryString">Canonical query string</param>
     /// <returns>Presigned canonical requestBuilder</returns>
     internal string GetPresignCanonicalRequest(
         HttpMethod requestMethod,
@@ -409,10 +417,8 @@ internal class V4Authenticator
 
         var queryParamsDict = new Dictionary<string, string>(StringComparer.Ordinal);
         if (requestBuilder.QueryParameters is not null)
-        {
             foreach (var kvp in requestBuilder.QueryParameters)
                 queryParamsDict[kvp.Key] = Uri.EscapeDataString(kvp.Value);
-        }
 
         var queryParams = "";
         if (queryParamsDict.Count > 0)
@@ -432,10 +438,8 @@ internal class V4Authenticator
 
         var isFormData = false;
         if (requestBuilder.Request.Content?.Headers?.ContentType is not null)
-        {
             isFormData = string.Equals(requestBuilder.Request.Content.Headers.ContentType.ToString(),
                 "application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase);
-        }
 
         if (string.IsNullOrEmpty(queryParams) && isFormData)
         {
@@ -451,9 +455,7 @@ internal class V4Authenticator
         if (!string.IsNullOrEmpty(queryParams) &&
             !isFormData &&
             !string.Equals(requestBuilder.RequestUri.Query, "?location=", StringComparison.OrdinalIgnoreCase))
-        {
             requestBuilder.RequestUri = new Uri(requestBuilder.RequestUri + "?" + queryParams);
-        }
 
         _ = canonicalStringList.AddLast(requestBuilder.RequestUri.AbsolutePath);
         _ = canonicalStringList.AddLast(queryParams);
@@ -485,6 +487,7 @@ internal class V4Authenticator
             if (string.Equals(header.Key, "versionId", StringComparison.Ordinal)) headerName = "versionId";
             if (!ignoredHeaders.Contains(headerName)) sortedHeaders.Add(headerName, headerValue);
         }
+
         return sortedHeaders;
     }
 
@@ -532,10 +535,8 @@ internal class V4Authenticator
         // or the command method is not a Post to delete multiple files
         var isMultiDeleteRequest = false;
         if (requestBuilder.Method == HttpMethod.Post)
-        {
             isMultiDeleteRequest =
                 requestBuilder.QueryParameters.Any(p => p.Key.Equals("delete", StringComparison.OrdinalIgnoreCase));
-        }
 
         if ((IsSecure && !isSts) || isMultiDeleteRequest)
         {

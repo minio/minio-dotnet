@@ -93,10 +93,8 @@ public static class RequestExtensions
                 .ConfigureAwait(false);
             responseResult = new ResponseResult(request, response);
             if (requestMessageBuilder.ResponseWriter is not null)
-            {
                 await requestMessageBuilder.ResponseWriter(responseResult.ContentStream, cancellationToken)
                     .ConfigureAwait(false);
-            }
 
             var path = request.RequestUri.LocalPath.TrimStart('/').TrimEnd('/')
                 .Split('/', StringSplitOptions.RemoveEmptyEntries);
@@ -200,7 +198,8 @@ public static class RequestExtensions
     private static string GetContentType(IDictionary<string, string> headerMap)
     {
         var contentType = "application/octet-stream";
-        if (headerMap is not null && headerMap.TryGetValue(HttpRequestMessageBuilder.ContentTypeKey, out var value) && !string.IsNullOrEmpty(value))
+        if (headerMap is not null && headerMap.TryGetValue(HttpRequestMessageBuilder.ContentTypeKey, out var value) &&
+            !string.IsNullOrEmpty(value))
             contentType = value;
         return contentType;
     }
@@ -229,8 +228,6 @@ public static class RequestExtensions
         string resourcePath = null,
         bool isBucketCreationRequest = false)
     {
-
-
         var region = string.Empty;
         if (bucketName is not null)
         {
@@ -314,10 +311,12 @@ public static class RequestExtensions
             messageBuilder.SetBody(body);
             messageBuilder.AddOrUpdateHeaderParameter(HttpRequestMessageBuilder.ContentTypeKey, contentType);
         }
+
         //
         if (headerMap is not null)
         {
-            if (headerMap.TryGetValue(HttpRequestMessageBuilder.ContentTypeKey, out var value) && !string.IsNullOrEmpty(value))
+            if (headerMap.TryGetValue(HttpRequestMessageBuilder.ContentTypeKey, out var value) &&
+                !string.IsNullOrEmpty(value))
                 headerMap[HttpRequestMessageBuilder.ContentTypeKey] = contentType;
 
             foreach (var entry in headerMap) messageBuilder.AddOrUpdateHeaderParameter(entry.Key, entry.Value);
@@ -334,10 +333,8 @@ public static class RequestExtensions
     private static void ArgsCheck(RequestArgs args)
     {
         if (args is null)
-        {
             throw new ArgumentNullException(nameof(args),
                 "Args object cannot be null. It needs to be assigned to an instantiated child object of Args.");
-        }
     }
 
     /// <summary>
@@ -358,11 +355,9 @@ public static class RequestExtensions
 
         // Pick region from location HEAD request
         if (rgn?.Length == 0)
-        {
             rgn = BucketRegionCache.Instance.Exists(bucketName)
                 ? await BucketRegionCache.Update(minioClient, bucketName).ConfigureAwait(false)
                 : BucketRegionCache.Instance.Region(bucketName);
-        }
 
         // Defaults to us-east-1 if region could not be found
         return rgn?.Length == 0 ? "us-east-1" : rgn;
@@ -390,14 +385,10 @@ public static class RequestExtensions
             throw response.Exception;
 
         if (handlers.Any())
-        {
             // Run through handlers passed to take up error handling
             foreach (var handler in handlers)
                 handler.Handle(response);
-        }
         else
-        {
             minioClient.DefaultErrorHandler.Handle(response);
-        }
     }
 }
