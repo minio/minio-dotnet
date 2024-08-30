@@ -279,8 +279,18 @@ internal class V4Authenticator
 
         var headersToSign = GetHeadersToSign(requestBuilder);
         var signedHeaders = GetSignedHeaders(headersToSign);
+        var parametersToCanonicalize = GetParametersToCanonicalize(requestBuilder);
 
-        var requestQuery = GetCanonicalQueryString(requestBuilder.RequestUri, reqDate, region, expires, signedHeaders);
+        var credentials = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}/{3}/{4}", accessKey,
+            Utils.FormatDate(signingDate), region, GetService(false), Terminator);
+
+        parametersToCanonicalize.Add(Constants.XAmzAlgorithm, AWS4AlgorithmTag);
+        parametersToCanonicalize.Add(Constants.XAmzCredential, credentials);
+        parametersToCanonicalize.Add(Constants.XAmzDate, Utils.FormatDateTime(signingDate));
+        parametersToCanonicalize.Add(Constants.XAmzExpires, Convert.ToString(expires));
+        parametersToCanonicalize.Add(Constants.XAmzSignedHeaders, signedHeaders);
+
+        var requestQuery = GetCanonicalQueryString(requestBuilder.RequestUri, parametersToCanonicalize);
         var canonicalRequest =
             GetPresignCanonicalRequest(requestBuilder.Method, requestUri, headersToSign, requestQuery);
 
@@ -291,6 +301,15 @@ internal class V4Authenticator
         var signatureBytes = Utils.SignHmac(signingKey, Encoding.UTF8.GetBytes(stringToSign));
         var signature = Utils.BytesToHex(signatureBytes);
         return ComposePresignedPutUrl(requestUri, requestQuery, signature);
+    }
+
+    private IDictionary<string, string> GetParametersToCanonicalize(HttpRequestMessageBuilder request)
+    {
+        var parameters = new SortedDictionary<string, string>(StringComparer.Ordinal);
+        foreach (var param in request.QueryParameters)
+            if (param.Value is not null)
+                parameters.Add(param.Key, param.Value);
+        return parameters;
     }
 
     private string ComposePresignedPutUrl(
@@ -310,34 +329,16 @@ internal class V4Authenticator
     /// <summary>
     ///     Generates canonical query string.
     /// </summary>
-    /// <param name="requestUri"></param>
-    /// <param name="reqDate"></param>
-    /// <param name="region"></param>
-    /// <param name="expires"></param>
-    /// <param name="signedHeaders"></param>
-    /// <param name="isSts"></param>
+    /// <param name="requestUri">Request uri</param>
+    /// <param name="queryParams">Query parameters to be included in signed url</param>
     /// <returns>Canonical query string</returns>
     internal string GetCanonicalQueryString(
         Uri requestUri,
-        DateTime? reqDate,
-        string region,
-        int expires,
-        string signedHeaders,
-        bool isSts = false)
+        IDictionary<string, string> queryParams
+    )
     {
         var canonicalQueryString = new StringBuilder(requestUri.Query);
         if (canonicalQueryString.Length != 0) _ = canonicalQueryString.Append("&");
-        var signingDate = reqDate ?? DateTime.UtcNow;
-        var creds = string.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}/{3}/{4}", accessKey,
-            Utils.FormatDate(signingDate), region, GetService(isSts), Terminator);
-        var queryParams = new SortedDictionary<string, string>(StringComparer.Ordinal)
-        {
-            { Constants.XAmzAlgorithm, AWS4AlgorithmTag },
-            { Constants.XAmzCredential, creds },
-            { Constants.XAmzDate, Utils.FormatDateTime(signingDate) },
-            { Constants.XAmzExpires, Convert.ToString(expires) },
-            { Constants.XAmzSignedHeaders, signedHeaders }
-        };
         foreach (var query in queryParams)
         {
             if (canonicalQueryString.Length > 0)

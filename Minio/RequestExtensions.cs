@@ -191,6 +191,7 @@ public static class RequestExtensions
                 args.BucketName,
                 args.ObjectName,
                 args.Headers,
+                args.Parameters,
                 args.RequestBody).ConfigureAwait(false);
         return args.BuildRequest(requestMessageBuilder);
     }
@@ -214,6 +215,7 @@ public static class RequestExtensions
     /// <param name="bucketName">Bucket Name</param>
     /// <param name="objectName">Object Name</param>
     /// <param name="headerMap">headerMap</param>
+    /// <param name="parameterMap">parameterMap</param>
     /// <param name="body">request body</param>
     /// <param name="resourcePath">query string</param>
     /// <param name="isBucketCreationRequest">boolean to define bucket creation</param>
@@ -224,6 +226,7 @@ public static class RequestExtensions
         string bucketName = null,
         string objectName = null,
         IDictionary<string, string> headerMap = null,
+        IDictionary<string, string> parameterMap = null,
         ReadOnlyMemory<byte> body = default,
         string resourcePath = null,
         bool isBucketCreationRequest = false)
@@ -321,6 +324,10 @@ public static class RequestExtensions
 
             foreach (var entry in headerMap) messageBuilder.AddOrUpdateHeaderParameter(entry.Key, entry.Value);
         }
+
+        if (parameterMap is not null)
+            foreach (var entry in parameterMap)
+                messageBuilder.AddQueryParameter(entry.Key, entry.Value);
 
         return messageBuilder;
     }

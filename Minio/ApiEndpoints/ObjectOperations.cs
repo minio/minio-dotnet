@@ -267,6 +267,7 @@ public partial class MinioClient : IObjectOperations
         var requestMessageBuilder = await this.CreateRequest(HttpMethod.Put, args.BucketName,
             args.ObjectName,
             args.Headers,
+            args.Parameters,
             Utils.ObjectToByteArray(args.RequestBody)).ConfigureAwait(false);
         var authenticator = new V4Authenticator(Config.Secure, Config.AccessKey, Config.SecretKey, Config.Region,
             Config.SessionToken);
