@@ -42,7 +42,7 @@ public class AndOperator
             Tags = new Collection<Tag>(tag);
     }
 
-    public AndOperator(string prefix, IDictionary<string, string> tags)
+    public AndOperator(string prefix, IReadOnlyDictionary<string, string> tags)
     {
         Prefix = prefix;
         if (tags is null || tags.Count == 0)
