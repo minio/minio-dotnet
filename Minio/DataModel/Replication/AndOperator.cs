@@ -50,7 +50,7 @@ public class AndOperator
         Tags = tag;
     }
 
-    public AndOperator(string prefix, IDictionary<string, string> tags)
+    public AndOperator(string prefix, IReadOnlyDictionary<string, string> tags)
     {
         if (tags is null) throw new ArgumentNullException(nameof(tags));
 
