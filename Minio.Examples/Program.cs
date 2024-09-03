@@ -20,6 +20,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using Minio.DataModel;
+using Minio.DataModel.Args;
 using Minio.DataModel.Encryption;
 using Minio.DataModel.Notification;
 using Minio.DataModel.ObjectLock;
@@ -261,6 +262,9 @@ public static class Program
 
         // Get the presigned url for a PUT object request
         await PresignedPutObject.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
+        
+        // Get the presigned url's of an object for HTTP methods
+        await GetPresignedUrl.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
 
         // Delete the list of objects
         await RemoveObjects.Run(minioClient, bucketName, objectsList).ConfigureAwait(false);
