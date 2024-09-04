@@ -15,32 +15,9 @@
  * limitations under the License.
  */
 
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Net;
-using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Web;
-using System.Xml;
-using System.Xml.Serialization;
-using CommunityToolkit.HighPerformance;
-using ICSharpCode.SharpZipLib.Core;
-using ICSharpCode.SharpZipLib.Zip;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minio.DataModel;
-using Minio.DataModel.Args;
-using Minio.DataModel.Encryption;
-using Minio.DataModel.ILM;
-using Minio.DataModel.Notification;
-using Minio.DataModel.ObjectLock;
-using Minio.DataModel.Select;
-using Minio.DataModel.Tags;
-using Minio.Exceptions;
-using Minio.Helper;
 
 namespace Minio.Functional.Tests;
 
@@ -107,6 +84,9 @@ public static partial class FunctionalTest
 
     private const string presignedGetObjectSignature =
         "Task<string> PresignedGetObjectAsync(PresignedGetObjectArgs args)";
+
+    private const string getPresignedUrlSignature =
+        "Task<string> GetPresignedUrlAsync(GetPresignedUrlArgs args)";
 
     private const string presignedPostPolicySignature =
         "Task<Dictionary<string, string>> PresignedPostPolicyAsync(PresignedPostPolicyArgs args)";

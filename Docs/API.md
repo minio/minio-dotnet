@@ -2762,6 +2762,48 @@ catch(MinioException e)
 }
 ```
 
+<a name="getPresignedUrl"></a>
+### GetPresignedUrlAsync(GetPresignedUrlArgs args)
+
+`Task<string> GetPresignedUrlAsync(GetPresignedUrlArgs args)`
+
+Generates a presigned URL for HTTP operation using the giving HTTP method (GET, PUT, DELETE). Browsers/Mobile clients may point to this URL to upload objects directly to a bucket even if it is private. This presigned URL can have an associated expiration time in seconds after which it is no longer operational. The default expiry is set to 7 days.
+
+__Parameters__
+
+
+| Param    | Type                    | Description                                                                          |
+|:---------|:------------------------|:-------------------------------------------------------------------------------------|
+| ``args`` | _GetPresignedUrlArgs_   | GetPresignedUrlArgs arguments object with HTTP method, bucket, object names & expiry |
+
+| Return Type                                                 | Exceptions                                                         |
+|:------------------------------------------------------------|:-------------------------------------------------------------------|
+| ``Task<string>`` : string contains URL to upload the object | Listed Exceptions:                                                 |
+|                                                             | ``InvalidBucketNameException`` : upon invalid bucket name          |
+|                                                             | ``InvalidKeyException`` : upon an invalid access key or secret key |
+|                                                             | ``ConnectionException`` : upon connection error                    |
+|                                                             | ``InvalidExpiryRangeException`` : upon invalid expiry range.       |
+
+
+__Example__
+
+```cs
+try
+{
+    var httpMethod = GetPresignedUrlArgs.PresignedUrlHttpMethod.Put;
+    GetPresignedUrlArgs args = GetPresignedUrlArgs(httpMethod)
+                                      .WithBucket("mybucket")
+                                      .WithObject("myobject")
+                                      .WithExpiry(60 * 60 * 24);
+    String url = await minioClient.GetPresignedUrlAsync(args);
+    Console.WriteLine(url);
+}
+catch(MinioException e)
+{
+    Console.WriteLine("Error occurred: " + e);
+}
+```
+
 <a name="presignedPostPolicy"></a>
 ### PresignedPostPolicy(PresignedPostPolicyArgs args)
 

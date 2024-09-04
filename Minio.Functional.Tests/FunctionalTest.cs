@@ -5737,13 +5737,13 @@ public static partial class FunctionalTest
             // Compare the size of the file downloaded using the generated
             // presigned_url (expected value) and the actual object size on the server
             Assert.AreEqual(file_read_size, stats.Size);
-            new MintLogger("GetPresignedUrl_Get_Test1", presignedGetObjectSignature,
+            new MintLogger("GetPresignedUrl_Get_Test1", getPresignedUrlSignature,
                 "Tests whether GetPresignedUrl url retrieves object from bucket", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
         }
         catch (Exception ex)
         {
-            new MintLogger("GetPresignedUrl_Get_Test1", presignedGetObjectSignature,
+            new MintLogger("GetPresignedUrl_Get_Test1", getPresignedUrlSignature,
                 "Tests whether GetPresignedUrl url retrieves object from bucket", TestStatus.FAIL,
                 DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
             throw;
@@ -5797,20 +5797,20 @@ public static partial class FunctionalTest
         }
         catch (InvalidExpiryRangeException)
         {
-            new MintLogger("GetPresignedUrl_Get_Test2", presignedGetObjectSignature,
+            new MintLogger("GetPresignedUrl_Get_Test2", getPresignedUrlSignature,
                 "Tests whether GetPresignedUrl url retrieves object from bucket when invalid expiry is set.",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
         catch (InvalidOperationException ex)
         {
-            new MintLogger("GetPresignedUrl_Get_Test2", presignedGetObjectSignature,
+            new MintLogger("GetPresignedUrl_Get_Test2", getPresignedUrlSignature,
                 "Tests whether GetPresignedUrl url retrieves object from bucket when invalid expiry is set.",
                 TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
             throw;
         }
         catch (Exception ex)
         {
-            new MintLogger("GetPresignedUrl_Get_Test2", presignedGetObjectSignature,
+            new MintLogger("GetPresignedUrl_Get_Test2", getPresignedUrlSignature,
                 "Tests whether GetPresignedUrl url retrieves object from bucket when invalid expiry is set.",
                 TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
             throw;
@@ -5897,13 +5897,13 @@ public static partial class FunctionalTest
             // Compare the size of the file downloaded with the generated
             // presigned_url (expected) and the actual object size on the server
             Assert.AreEqual(file_read_size, stats.Size);
-            new MintLogger("GetPresignedUrl_Get_Test3", presignedGetObjectSignature,
+            new MintLogger("GetPresignedUrl_Get_Test3", getPresignedUrlSignature,
                 "Tests whether GetPresignedUrl url retrieves object from bucket when override response headers sent",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
         catch (Exception ex)
         {
-            new MintLogger("GetPresignedUrl_Get_Test3", presignedGetObjectSignature,
+            new MintLogger("GetPresignedUrl_Get_Test3", getPresignedUrlSignature,
                 "Tests whether GetPresignedUrl url retrieves object from bucket when override response headers sent",
                 TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
             throw;
@@ -5950,7 +5950,7 @@ public static partial class FunctionalTest
             var writtenInfo = new FileInfo(fileName);
             var file_written_size = writtenInfo.Length;
             Assert.AreEqual(file_written_size, stats.Size);
-            new MintLogger("GetPresignedUrl_Put_Delete_Test1", presignedPutObjectSignature,
+            new MintLogger("GetPresignedUrl_Put_Delete_Test1", getPresignedUrlSignature,
                 "Tests whether GetPresignedUrl url uploads object to bucket", TestStatus.PASS,
                 DateTime.Now - startTime, args: args).Log();
 
@@ -5962,10 +5962,14 @@ public static partial class FunctionalTest
                 .WithExpiry(1000);
             presigned_url = await minio.GetPresignedUrlAsync(presignedPutObjectArgs).ConfigureAwait(false);
             await DeleteObjectAsync(minio, presigned_url).ConfigureAwait(false);
+
+            new MintLogger("GetPresignedUrl_Put_Delete_Test1", getPresignedUrlSignature,
+                "Tests whether GetPresignedUrl url deletes object from bucket", TestStatus.PASS,
+                DateTime.Now - startTime, args: args).Log();
         }
         catch (Exception ex)
         {
-            new MintLogger("GetPresignedUrl_Put_Delete_Test1", presignedPutObjectSignature,
+            new MintLogger("GetPresignedUrl_Put_Delete_Test1", getPresignedUrlSignature,
                 "Tests whether GetPresignedUrl url uploads object to bucket", TestStatus.FAIL,
                 DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
             throw;
@@ -6015,7 +6019,7 @@ public static partial class FunctionalTest
                 .WithObject(objectName)
                 .WithExpiry(0);
             var presigned_url = await minio.GetPresignedUrlAsync(presignedPutObjectArgs).ConfigureAwait(false);
-            new MintLogger("GetPresignedUrl_Put_Delete_Test2", presignedPutObjectSignature,
+            new MintLogger("GetPresignedUrl_Put_Delete_Test2", getPresignedUrlSignature,
                 "Tests whether GetPresignedUrl url retrieves object from bucket when invalid expiry is set.",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
 
@@ -6027,16 +6031,20 @@ public static partial class FunctionalTest
                 .WithExpiry(1000);
             presigned_url = await minio.GetPresignedUrlAsync(presignedPutObjectArgs).ConfigureAwait(false);
             await DeleteObjectAsync(minio, presigned_url).ConfigureAwait(false);
+
+            new MintLogger("GetPresignedUrl_Put_Delete_Test1", getPresignedUrlSignature,
+                "Tests whether GetPresignedUrl url deletes object from bucket", TestStatus.PASS,
+                DateTime.Now - startTime, args: args).Log();
         }
         catch (InvalidExpiryRangeException)
         {
-            new MintLogger("GetPresignedUrl_Put_Delete_Test2", presignedPutObjectSignature,
+            new MintLogger("GetPresignedUrl_Put_Delete_Test2", getPresignedUrlSignature,
                 "Tests whether GetPresignedUrl url retrieves object from bucket when invalid expiry is set.",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
         catch (Exception ex)
         {
-            new MintLogger("GetPresignedUrl_Put_Delete_Test2", presignedPutObjectSignature,
+            new MintLogger("GetPresignedUrl_Put_Delete_Test2", getPresignedUrlSignature,
                 "Tests whether GetPresignedUrl url retrieves object from bucket when invalid expiry is set.",
                 TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
             throw;
