@@ -19,11 +19,11 @@ using Minio.Helper;
 
 namespace Minio.DataModel.Args;
 
-public class PresignedGetObjectArgs : ObjectArgs<PresignedGetObjectArgs>
+public class GetPresignedUrlArgs : ObjectArgs<GetPresignedUrlArgs>
 {
-    public PresignedGetObjectArgs()
+    public GetPresignedUrlArgs(PresignedUrlHttpMethod requestMethod)
     {
-        RequestMethod = HttpMethod.Get;
+        RequestMethod = ToHttpMethod(requestMethod);
     }
 
     internal int Expiry { get; set; }
@@ -37,15 +37,33 @@ public class PresignedGetObjectArgs : ObjectArgs<PresignedGetObjectArgs>
                                                   Constants.DefaultExpiryTime);
     }
 
-    public PresignedGetObjectArgs WithExpiry(int expiry)
+    public GetPresignedUrlArgs WithExpiry(int expiry)
     {
         Expiry = expiry;
         return this;
     }
 
-    public PresignedGetObjectArgs WithRequestDate(DateTime? d)
+    public GetPresignedUrlArgs WithRequestDate(DateTime? d)
     {
         RequestDate = d;
         return this;
+    }
+    
+    public enum PresignedUrlHttpMethod
+    {
+        Get,
+        Put,
+        Delete
+    }
+    
+    private static HttpMethod ToHttpMethod(PresignedUrlHttpMethod method)
+    {
+        return method switch
+        {
+            PresignedUrlHttpMethod.Get => HttpMethod.Get,
+            PresignedUrlHttpMethod.Put => HttpMethod.Put,
+            PresignedUrlHttpMethod.Delete => HttpMethod.Delete,
+            _ => throw new ArgumentOutOfRangeException(nameof(method), method, null)
+        };
     }
 }
