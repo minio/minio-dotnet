@@ -411,10 +411,7 @@ public partial class MinioClient : IMinioClient
     {
         var startTime = DateTime.Now;
         // Logs full url when HTTPtracing is enabled.
-        if (trace)
-        {
-            var fullUrl = requestMessageBuilder.RequestUri;
-        }
+        if (trace) _ = requestMessageBuilder.RequestUri;
 
         var v4Authenticator = new V4Authenticator(Secure,
             AccessKey, SecretKey, Region,

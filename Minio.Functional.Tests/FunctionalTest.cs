@@ -994,7 +994,6 @@ public static class FunctionalTest
         {
             var file_write_size = filestream.Length;
             var tempFileName = "tempfile-" + GetRandomName();
-            if (size == 0) size = filestream.Length;
             var putObjectArgs = new PutObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
@@ -1047,8 +1046,8 @@ public static class FunctionalTest
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
-            await PutObject_Tester(minio, bucketName, objectName, null, null, 0, null,
-                rsg.GenerateStreamFromSeed(1 * KB)).ConfigureAwait(false);
+            await PutObject_Tester(minio, bucketName, objectName, null, null,
+                1*KB, null, rsg.GenerateStreamFromSeed(1*KB)).ConfigureAwait(false);
             new MintLogger(nameof(StatObject_Test1), statObjectSignature, "Tests whether StatObject passes",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
@@ -2687,7 +2686,7 @@ public static class FunctionalTest
             );
 
             await PutObject_Tester(minio, bucketName, objectName, null, contentType,
-                0, null, rsg.GenerateStreamFromSeed(1 * KB)).ConfigureAwait(false);
+                1*KB, null, rsg.GenerateStreamFromSeed(1*KB)).ConfigureAwait(false);
 
             // wait for notifications
             var eventDetected = false;
@@ -3230,13 +3229,13 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var contentType = "application/octet-stream";
-        var size = 1 * MB;
+        var size = 0;
         var args = new Dictionary<string, string>
         {
             { "bucketName", bucketName },
             { "objectName", objectName },
             { "contentType", contentType },
-            { "size", "1MB" }
+            { "size", "0B" }
         };
         try
         {
@@ -3246,13 +3245,13 @@ public static class FunctionalTest
             Assert.AreEqual(size, resp.Size);
             Assert.AreEqual(objectName, objectName);
             new MintLogger(nameof(PutObject_Test1), putObjectSignature,
-                "Tests whether PutObject passes for small object", TestStatus.PASS, DateTime.Now - startTime,
+                "Tests whether PutObject passes for zero sized object", TestStatus.PASS, DateTime.Now - startTime,
                 args: args).Log();
         }
         catch (Exception ex)
         {
             new MintLogger(nameof(PutObject_Test1), putObjectSignature,
-                "Tests whether PutObject passes for small object", TestStatus.FAIL, DateTime.Now - startTime, "",
+                "Tests whether PutObject passes for zero sized object", TestStatus.FAIL, DateTime.Now - startTime, "",
                 ex.Message, ex.ToString(), args).Log();
             throw;
         }
@@ -3278,8 +3277,8 @@ public static class FunctionalTest
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
-            await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
-                rsg.GenerateStreamFromSeed(6 * MB)).ConfigureAwait(false);
+            await PutObject_Tester(minio, bucketName, objectName, null, contentType,
+                6*MB, null, rsg.GenerateStreamFromSeed(6*MB)).ConfigureAwait(false);
             new MintLogger(nameof(PutObject_Test2), putObjectSignature, "Tests whether multipart PutObject passes",
                 TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
         }
@@ -3312,8 +3311,8 @@ public static class FunctionalTest
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
-            await PutObject_Tester(minio, bucketName, objectName, null, contentType, 0, null,
-                rsg.GenerateStreamFromSeed(1 * MB)).ConfigureAwait(false);
+            await PutObject_Tester(minio, bucketName, objectName, null, contentType,
+                 1*MB, null, rsg.GenerateStreamFromSeed(1*MB)).ConfigureAwait(false);
             new MintLogger(nameof(PutObject_Test3), putObjectSignature,
                 "Tests whether PutObject with custom content-type passes", TestStatus.PASS, DateTime.Now - startTime,
                 args: args).Log();
@@ -3355,7 +3354,7 @@ public static class FunctionalTest
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
             var statObject =
-                await PutObject_Tester(minio, bucketName, objectName, fileName, contentType, metaData: metaData)
+                await PutObject_Tester(minio, bucketName, objectName, fileName, contentType, 1, metaData: metaData)
                     .ConfigureAwait(false);
             Assert.IsTrue(statObject is not null);
             Assert.IsTrue(statObject.MetaData is not null);
@@ -3397,7 +3396,7 @@ public static class FunctionalTest
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
-            await PutObject_Tester(minio, bucketName, objectName, null, null, 0, null, rsg.GenerateStreamFromSeed(1))
+            await PutObject_Tester(minio, bucketName, objectName, null, null, 1, null, rsg.GenerateStreamFromSeed(1))
                 .ConfigureAwait(false);
             new MintLogger(nameof(PutObject_Test5), putObjectSignature,
                 "Tests whether PutObject with no content-type passes for small object", TestStatus.PASS,
