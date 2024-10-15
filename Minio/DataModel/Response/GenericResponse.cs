@@ -20,12 +20,12 @@ namespace Minio.DataModel.Response;
 
 public class GenericResponse
 {
-    internal GenericResponse(HttpStatusCode statusCode, string responseContent)
+    public GenericResponse(HttpStatusCode statusCode, string responseContent)
     {
         ResponseContent = responseContent;
         ResponseStatusCode = statusCode;
     }
 
-    internal string ResponseContent { get; }
-    internal HttpStatusCode ResponseStatusCode { get; }
+    public string ResponseContent { get; }
+    public HttpStatusCode ResponseStatusCode { get; }
 }
