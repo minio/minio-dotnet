@@ -1838,7 +1838,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
 
         if (!string.IsNullOrWhiteSpace(FileName)) Utils.ValidateFile(FileName);
         // Check object size when using stream data
-        if (ObjectStreamData is not null && ObjectSize == 0)
+        if (ObjectStreamData is not null && ObjectSize == -1)
             ObjectSize = ObjectStreamData.Length;
         Populate();
     }
