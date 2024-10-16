@@ -410,11 +410,6 @@ public partial class MinioClient : IMinioClient
         CancellationToken cancellationToken = default)
     {
         var startTime = DateTime.Now;
-        // Logs full url when HTTPtracing is enabled.
-        if (trace)
-        {
-            var fullUrl = requestMessageBuilder.RequestUri;
-        }
 
         var v4Authenticator = new V4Authenticator(Secure,
             AccessKey, SecretKey, Region,
@@ -731,5 +726,4 @@ public partial class MinioClient : IMinioClient
 
 internal delegate void ApiResponseErrorHandlingDelegate(ResponseResult response);
 
-public delegate Task<ResponseResult> RetryPolicyHandlingDelegate(
-    Func<Task<ResponseResult>> executeRequestCallback);
+public delegate Task<ResponseResult> RetryPolicyHandlingDelegate(Func<Task<ResponseResult>> executeRequestCallback);
