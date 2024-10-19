@@ -58,7 +58,7 @@ internal static class Program
             accessKey = "Q3AM3UQ867SPQQA43P2F";
             secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
             isSecure = true;
-            port = 443;
+            port = 9000;
             kmsEnabled = "1";
         }
 
