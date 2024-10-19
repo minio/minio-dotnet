@@ -582,7 +582,34 @@ public partial class MinioClient : IMinioClient
             throw new BucketNotFoundException(bucketName, "Not found.");
         }
 
+        // TODO: This is rather inefficient, because it reads everything into memory
         using var stream = Encoding.UTF8.GetBytes(response.Content).AsMemory().AsStream();
+
+        // Detailed error responses should
+        var contentType = response.Response.Content.Headers.ContentType?.MediaType;
+        if (contentType != "application/xml")
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Backend returned status-code {response.StatusCode}");
+
+            // read first 256 bytes of the response
+            var errorBuffer = new byte[256];
+            var bytesRead = stream.Read(errorBuffer, 0, errorBuffer.Length);
+            if (bytesRead > 0)
+            {
+                var msg = Encoding.UTF8.GetString(errorBuffer, 0, bytesRead);
+                sb.AppendLine($"Response: {msg}");
+            }
+
+            var requestId = response.Response.Headers.TryGetValues("x-amz-request-id", out var x) ? x.FirstOrDefault() : null;
+            if (!string.IsNullOrEmpty(requestId))
+                sb.AppendLine($"Request ID: {requestId}");
+            else
+                sb.AppendLine("No request ID (check if endpoint is an S3 endpoint)");
+            
+            throw new UnexpectedMinioException(sb.ToString());
+        }
+
         var errResponse = Utils.DeserializeXml<ErrorResponse>(stream);
 
         if (response.StatusCode.Equals(HttpStatusCode.Forbidden)
