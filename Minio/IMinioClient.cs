@@ -30,5 +30,6 @@ public interface IMinioClient : IBucketOperations, IObjectOperations, IDisposabl
     void SetTraceOff();
     void SetTraceOn(IRequestLogger logger = null);
     Task<HttpResponseMessage> WrapperGetAsync(Uri uri);
+    Task<HttpResponseMessage> WrapperDeleteAsync(Uri uri);
     Task WrapperPutAsync(Uri uri, StreamContent strm);
 }
