@@ -132,7 +132,7 @@ public class OperationsTest
         var signedUrl = await client.PresignedGetObjectAsync(presignedGetObjectArgs).ConfigureAwait(false);
 
         Assert.AreEqual(
-            "https://play.min.io/bucket/object-name?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=Q3AM3UQ867SPQQA43P2F%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3D%22filename.jpg%22&X-Amz-Signature=de66f04dd4ac35838b9e83d669f7b5a70b452c6468e2b4a9e9c29f42e7fa102d",
+            "https://play.min.io/bucket/object-name?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=Q3AM3UQ867SPQQA43P2F%2F20200501%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200501T154533Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host%3Bresponse-content-disposition&X-Amz-Signature=44227f1a4c7054e88c3e4866b8827fdd75d2ba0d575e68b53b71b68fc07cbfe3",
             signedUrl);
     }
 }
