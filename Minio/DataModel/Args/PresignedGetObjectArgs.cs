@@ -29,7 +29,7 @@ public class PresignedGetObjectArgs : ObjectArgs<PresignedGetObjectArgs>
     internal int Expiry { get; set; }
     internal DateTime? RequestDate { get; set; }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (!Utils.IsValidExpiry(Expiry))

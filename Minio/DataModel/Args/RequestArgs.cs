@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@ public abstract class RequestArgs
     // RequestMethod will be the HTTP Method for request variable,
     // which is of type HttpRequestMessage.
     // Will be one of the types: - HEAD, GET, PUT, DELETE. etc.
-    internal HttpMethod RequestMethod { get; set; }
+    public HttpMethod RequestMethod { get; set; }
 
     internal virtual HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {

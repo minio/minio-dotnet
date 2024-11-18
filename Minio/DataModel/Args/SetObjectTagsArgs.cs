@@ -46,7 +46,7 @@ public class SetObjectTagsArgs : ObjectVersionArgs<SetObjectTagsArgs>
         return requestMessageBuilder;
     }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (ObjectTags is null || ObjectTags.Tags.Count == 0)

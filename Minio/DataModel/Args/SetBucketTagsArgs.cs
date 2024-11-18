@@ -51,7 +51,7 @@ public class SetBucketTagsArgs : BucketArgs<SetBucketTagsArgs>
         return requestMessageBuilder;
     }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (BucketTags is null || BucketTags.Tags.Count == 0)

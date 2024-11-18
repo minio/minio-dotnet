@@ -34,7 +34,7 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
     internal string FileName { get; private set; }
     internal bool OffsetLengthSet { get; set; }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (CallBack is null && string.IsNullOrEmpty(FileName))
