@@ -39,7 +39,7 @@ public class StatObjectArgs : ObjectConditionalQueryArgs<StatObjectArgs>
         return requestMessageBuilder;
     }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (!string.IsNullOrEmpty(NotMatchETag) && !string.IsNullOrEmpty(MatchETag))

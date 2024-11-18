@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,9 +25,9 @@ public abstract class BucketArgs<T> : RequestArgs
 
     public bool IsBucketCreationRequest { get; set; }
 
-    internal string BucketName { get; set; }
+    public string BucketName { get; set; }
 
-    internal IDictionary<string, string> Headers { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal);
+    public IDictionary<string, string> Headers { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal);
 
     public T WithBucket(string bucket)
     {
@@ -48,7 +48,7 @@ public abstract class BucketArgs<T> : RequestArgs
         return (T)this;
     }
 
-    internal virtual void Validate()
+    public virtual void Validate()
     {
         Utils.ValidateBucketName(BucketName);
     }

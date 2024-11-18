@@ -30,7 +30,7 @@ public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
         SelectOptions = new SelectObjectOptions();
     }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (string.IsNullOrEmpty(SelectOptions.Expression))

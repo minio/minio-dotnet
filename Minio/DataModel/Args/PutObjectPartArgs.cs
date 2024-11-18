@@ -18,14 +18,14 @@ using Minio.Helper;
 
 namespace Minio.DataModel.Args;
 
-internal class PutObjectPartArgs : PutObjectArgs
+public class PutObjectPartArgs : PutObjectArgs
 {
     public PutObjectPartArgs()
     {
         RequestMethod = HttpMethod.Put;
     }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (string.IsNullOrWhiteSpace(UploadId))

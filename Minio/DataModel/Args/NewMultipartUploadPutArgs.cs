@@ -16,7 +16,7 @@
 
 namespace Minio.DataModel.Args;
 
-internal class NewMultipartUploadPutArgs : NewMultipartUploadArgs<NewMultipartUploadPutArgs>
+public class NewMultipartUploadPutArgs : NewMultipartUploadArgs<NewMultipartUploadPutArgs>
 {
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
     {

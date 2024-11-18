@@ -639,7 +639,7 @@ public partial class MinioClient : IObjectOperations
             .ConfigureAwait(false);
         putObjectResponse.Size = args.ObjectSize;
         return putObjectResponse;
-    }
+    } 
 
     /// <summary>
     ///     Copy a source object into a new destination object.
@@ -804,7 +804,7 @@ public partial class MinioClient : IObjectOperations
     /// <param name="args">RemoveUploadArgs Arguments Object which encapsulates bucket, object names, upload Id</param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns></returns>
-    private async Task RemoveUploadAsync(RemoveUploadArgs args, CancellationToken cancellationToken)
+    public async Task RemoveUploadAsync(RemoveUploadArgs args, CancellationToken cancellationToken)
     {
         args?.Validate();
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
@@ -835,7 +835,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="NotSupportedException">The file stream cannot be read from</exception>
     /// <exception cref="InvalidOperationException">The file stream is currently in a read operation</exception>
     /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
-    private async Task<PutObjectResponse> PutObjectSinglePartAsync(PutObjectArgs args,
+    public async Task<PutObjectResponse> PutObjectSinglePartAsync(PutObjectArgs args,
         CancellationToken cancellationToken = default,
         bool singleFile = false)
     {
@@ -915,10 +915,10 @@ public partial class MinioClient : IObjectOperations
             {
                 PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize
             };
-            etags[partNumber] = etag;
             if (!dataToCopy.IsEmpty) progressReport.TotalBytesTransferred += dataToCopy.Length;
             if (args.ObjectSize != -1) progressReport.Percentage = (int)(100 * partNumber / partCount);
             args.Progress?.Report(progressReport);
+            etags[partNumber] = etag;
         }
 
         // This shouldn't happen where stream size is known.
@@ -1034,7 +1034,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
-    private async Task<string> NewMultipartUploadAsync(NewMultipartUploadPutArgs args,
+    public async Task<string> NewMultipartUploadAsync(NewMultipartUploadPutArgs args,
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
@@ -1062,7 +1062,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
-    private async Task<string> NewMultipartUploadAsync(NewMultipartUploadCopyArgs args,
+    public async Task<string> NewMultipartUploadAsync(NewMultipartUploadCopyArgs args,
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
@@ -1105,7 +1105,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
-    private async Task<PutObjectResponse> CompleteMultipartUploadAsync(CompleteMultipartUploadArgs args,
+    public async Task<PutObjectResponse> CompleteMultipartUploadAsync(CompleteMultipartUploadArgs args,
         CancellationToken cancellationToken)
     {
         args?.Validate();

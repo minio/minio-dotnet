@@ -31,7 +31,7 @@ public class RemoveUploadArgs : EncryptionArgs<RemoveUploadArgs>
         return this;
     }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (string.IsNullOrEmpty(UploadId))
