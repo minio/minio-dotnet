@@ -19,7 +19,7 @@ using Minio.Helper;
 
 namespace Minio.DataModel.Args;
 
-internal class NewMultipartUploadArgs<T> : ObjectWriteArgs<T>
+public class NewMultipartUploadArgs<T> : ObjectWriteArgs<T>
     where T : NewMultipartUploadArgs<T>
 {
     internal NewMultipartUploadArgs()

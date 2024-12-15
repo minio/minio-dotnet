@@ -19,9 +19,9 @@ using System.Xml.Linq;
 
 namespace Minio.DataModel.Args;
 
-internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUploadArgs>
+public class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUploadArgs>
 {
-    internal CompleteMultipartUploadArgs()
+    public CompleteMultipartUploadArgs()
     {
         RequestMethod = HttpMethod.Post;
     }
@@ -40,10 +40,10 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
                 .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
     }
 
-    internal string UploadId { get; set; }
+    public string UploadId { get; set; }
     internal Dictionary<int, string> ETags { get; set; }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (string.IsNullOrWhiteSpace(UploadId))
@@ -52,13 +52,13 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
             throw new InvalidOperationException(nameof(ETags) + " dictionary cannot be empty.");
     }
 
-    internal CompleteMultipartUploadArgs WithUploadId(string uploadId)
+    public CompleteMultipartUploadArgs WithUploadId(string uploadId)
     {
         UploadId = uploadId;
         return this;
     }
 
-    internal CompleteMultipartUploadArgs WithETags(IDictionary<int, string> etags)
+    public CompleteMultipartUploadArgs WithETags(IDictionary<int, string> etags)
     {
         if (etags?.Count > 0) ETags = new Dictionary<int, string>(etags);
         return this;

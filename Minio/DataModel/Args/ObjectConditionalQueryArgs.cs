@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,12 +21,12 @@ namespace Minio.DataModel.Args;
 public abstract class ObjectConditionalQueryArgs<T> : ObjectVersionArgs<T>
     where T : ObjectConditionalQueryArgs<T>
 {
-    internal string MatchETag { get; set; }
-    internal string NotMatchETag { get; set; }
-    internal DateTime ModifiedSince { get; set; }
-    internal DateTime UnModifiedSince { get; set; }
+    public string MatchETag { get; set; }
+    public string NotMatchETag { get; set; }
+    public DateTime ModifiedSince { get; set; }
+    public DateTime UnModifiedSince { get; set; }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (!string.IsNullOrEmpty(MatchETag) && !string.IsNullOrEmpty(NotMatchETag))

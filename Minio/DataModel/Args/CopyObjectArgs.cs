@@ -41,7 +41,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
     internal DateTime RetentionUntilDate { get; set; }
     internal bool ObjectLockSet { get; set; }
 
-    internal override void Validate()
+    public override void Validate()
     {
         Utils.ValidateBucketName(BucketName);
         if (SourceObject is null)

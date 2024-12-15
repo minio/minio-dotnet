@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,7 @@ public class SetVersioningArgs : BucketArgs<SetVersioningArgs>
         CurrentVersioningStatus = VersioningStatus.Off;
     }
 
-    internal override void Validate()
+    public override void Validate()
     {
         Utils.ValidateBucketName(BucketName);
         if (CurrentVersioningStatus > VersioningStatus.Suspended)
