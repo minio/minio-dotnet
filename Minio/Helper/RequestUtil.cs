@@ -51,9 +51,8 @@ internal static class RequestUtil
     {
         // For Amazon S3 endpoint, try to fetch location based endpoint.
         var host = endPoint;
-        if (S3utils.IsAmazonEndPoint(endPoint))
-            // Fetch new host based on the bucket location.
-            host = AWSS3Endpoints.Endpoint(region);
+        if (S3utils.IsAmazonEndPoint(endPoint) && !string.IsNullOrEmpty(region))
+            host = $"s3.{region}.amazonaws.com";
 
         if (!usePathStyle)
         {
