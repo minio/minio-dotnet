@@ -26,8 +26,7 @@ internal static class ListenBucketNotifications
         string bucketName = "my-bucket-name",
         List<EventType> events = null,
         string prefix = "",
-        string suffix = "",
-        bool recursive = true)
+        string suffix = "")
     {
         try
         {
