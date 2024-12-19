@@ -22,7 +22,7 @@ namespace SimpleTest;
 
 public static class Program
 {
-    private static async Task Main(string[] args)
+    private static async Task Main()
     {
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                                | SecurityProtocolType.Tls11

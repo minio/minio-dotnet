@@ -123,7 +123,7 @@ public static class Program
         for (var i = 0; i < 10; i++) objectsList.Add(objectName + i);
 
         // Set app Info 
-        minioClient.SetAppInfo("app-name", "app-version");
+        _ = minioClient.SetAppInfo("app-name", "app-version");
 
         // Set HTTP Tracing On
         // minioClient.SetTraceOn();

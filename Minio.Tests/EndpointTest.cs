@@ -27,14 +27,6 @@ public class EndpointTest
     public void TestGetEndpointURL()
     {
         _ = RequestUtil.GetEndpointURL("s3.amazonaws.com", true);
-        object[] parameterValuesArray =
-        {
-            new object[] { "s3.amazonaws.com", true, "testbucket", null, false },
-            new object[] { "testbucket.s3.amazonaws.com", true }
-        };
-
-        object[] parameterValuesArray1 = { "s3.amazonaws.com", true, "testbucket", "testobject", false };
-
         object[][] testCases =
         {
             new object[]
@@ -165,10 +157,7 @@ public class EndpointTest
             };
 
         foreach (var testCase in testAmazonDict)
-        {
-            var value = S3utils.IsAmazonEndPoint(testCase.Key);
             Assert.AreEqual(S3utils.IsAmazonEndPoint(testCase.Key), testCase.Value);
-        }
     }
 
     [TestMethod]
@@ -188,9 +177,6 @@ public class EndpointTest
             };
 
         foreach (var testCase in testAmazonDict)
-        {
-            var value = S3utils.IsAmazonChinaEndPoint(testCase.Key);
             Assert.AreEqual(S3utils.IsAmazonChinaEndPoint(testCase.Key), testCase.Value);
-        }
     }
 }

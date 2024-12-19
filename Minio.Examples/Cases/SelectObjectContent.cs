@@ -26,8 +26,7 @@ internal static class SelectObjectContent
     // Get object in a bucket
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
-        string objectName = "my-object-name",
-        string fileName = "my-file-name")
+        string objectName = "my-object-name")
     {
         if (minio is null) throw new ArgumentNullException(nameof(minio));
 

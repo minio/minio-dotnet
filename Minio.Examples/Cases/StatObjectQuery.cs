@@ -59,8 +59,7 @@ internal static class StatObjectQuery
         {
             var objectNameInfo = $"{bucketName}-{bucketObject}";
             if (!string.IsNullOrEmpty(versionID))
-                objectNameInfo = objectNameInfo +
-                                 $" (Version ID) {me.Response.VersionId} (Marked DEL) {me.Response.DeleteMarker}";
+                objectNameInfo += $" (Version ID) {me.Response.VersionId} (Marked DEL) {me.Response.DeleteMarker}";
 
             Console.WriteLine($"[StatObject] {objectNameInfo} Exception: {me}");
         }

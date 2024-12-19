@@ -103,7 +103,7 @@ public class UnitTest1
         using var client = new MinioClient()
             .WithEndpoint("localhost", 9000)
             .Build();
-        client.SetAppInfo(null, "1.2.2");
+        _ = client.SetAppInfo(null, "1.2.2");
     }
 
     [TestMethod]
@@ -113,7 +113,7 @@ public class UnitTest1
         using var client = new MinioClient()
             .WithEndpoint("localhost", 9000)
             .Build();
-        client.SetAppInfo("Hello-App", null);
+        _ = client.SetAppInfo("Hello-App", null);
     }
 
     [TestMethod]
@@ -122,7 +122,7 @@ public class UnitTest1
         using var client = new MinioClient()
             .WithEndpoint("localhost", 9000)
             .Build();
-        client.SetAppInfo("Hello-App", "1.2.1");
+        _ = client.SetAppInfo("Hello-App", "1.2.1");
     }
 
     [TestMethod]
