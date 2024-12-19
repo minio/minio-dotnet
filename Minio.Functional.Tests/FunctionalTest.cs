@@ -1266,7 +1266,7 @@ public static class FunctionalTest
                 .WithBucket(bucketName)
                 .WithObjectsVersions(objVersions);
 
-            await minio.RemoveObjectsAsync(removeObjectsArgs).ConfigureAwait(false);
+            _ = await minio.RemoveObjectsAsync(removeObjectsArgs).ConfigureAwait(false);
 
             await TearDown(minio, bucketName).ConfigureAwait(false);
 
