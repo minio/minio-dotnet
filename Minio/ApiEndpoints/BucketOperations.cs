@@ -760,18 +760,6 @@ public partial class MinioClient : IBucketOperations
     }
 
     /// <summary>
-    ///     Subscribes to global change notifications (a Minio-only extension)
-    /// </summary>
-    /// <param name="args">ListenBucketNotificationsArgs to listen events</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns>An observable of JSON-based notification events</returns>
-    public IObservable<MinioNotificationRaw> ListenNotifications(ListenBucketNotificationsArgs args,
-        CancellationToken cancellationToken = default)
-    {
-        return ListenBucketNotificationsAsync(args, cancellationToken);
-    }
-
-    /// <summary>
     ///     Subscribes to bucket change notifications (a Minio-only extension)
     /// </summary>
     /// <param name="bucketName">Bucket to get notifications from</param>
