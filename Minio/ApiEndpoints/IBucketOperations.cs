@@ -379,7 +379,7 @@ public interface IBucketOperations
 
     Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default);
 
-    IObservable<MinioNotificationRaw> ListenNotifications(ListenBucketNotificationsArgs args,
+    IObservable<MinioNotificationRaw> ListenNotificationsAsync(IList<EventType> events,
         CancellationToken cancellationToken = default);
 
     IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events,
