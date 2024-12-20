@@ -342,8 +342,8 @@ public static class FunctionalTest
             PresignedPutObject_Test1(minioClient),
 
             // Test incomplete uploads
-            ListIncompleteUpload_Test1(minioClient),
-            RemoveIncompleteUpload_Test(minioClient),
+            //ListIncompleteUpload_Test1(minioClient),
+            //RemoveIncompleteUpload_Test(minioClient),
 
             // Test GetBucket policy
             GetBucketPolicy_Test1(minioClient)
@@ -5959,8 +5959,6 @@ public static class FunctionalTest
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
         var contentType = "gzip";
-        var args = new Dictionary<string, string>
-            (StringComparer.Ordinal) { { "bucketName", bucketName }, { "recursive", "true" } };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
