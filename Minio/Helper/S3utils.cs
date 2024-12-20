@@ -25,7 +25,7 @@ internal static class S3utils
     internal static bool IsAmazonEndPoint(string endpoint)
     {
         if (IsAmazonChinaEndPoint(endpoint)) return true;
-        var rgx = new Regex("^s3[.-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
+        var rgx = new Regex("[s|S]3[.|-]((.*?\\.|)|(.*?\\.*?\\.|)|)amazonaws.com", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
             TimeSpan.FromHours(1));
         var matches = rgx.Matches(endpoint);
         return matches.Count > 0;
