@@ -158,14 +158,15 @@ jobs:
       # Execute all functional tests in the solution
       - name: Execute Functional Tests Linux
         env:
+          CI: 1
           MINT_MODE: full
           SERVER_ENDPOINT: localhost:9000
           ACCESS_KEY: minio
           SECRET_KEY: minio123
           ENABLE_HTTPS: 1
           ENABLE_KMS: 1
-          MINIO_ACCESS_KEY: minio
-          MINIO_SECRET_KEY: minio123
+          MINIO_ROOT_USER: minio
+          MINIO_ROOT_PASSWORD: minio123
           MINIO_KMS_SECRET_KEY: my-minio-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
         run: |
             wget --quiet -O /tmp/minio https://dl.min.io/server/minio/release/linux-amd64/minio
@@ -175,7 +176,11 @@ jobs:
             sudo cp /tmp/minio-config/certs/public.crt /etc/ssl/certs/
             sudo cp /tmp/minio-config/certs/private.key /etc/ssl/private/
             /tmp/minio --certs-dir /tmp/minio-config/certs server /tmp/fs{1...4} &
-            sleep 10
+
+            wget --quiet -O /tmp/mc https://dl.min.io/client/mc/release/linux-amd64/mc
+            chmod +x /tmp/mc
+            MC_HOST_test=https://minio:minio123@localhost:9000 /tmp/mc --insecure ready test
+            
             dotnet Minio.Functional.Tests/bin/Release/net8.0/Minio.Functional.Tests.dll
 
   push_to_nuget:

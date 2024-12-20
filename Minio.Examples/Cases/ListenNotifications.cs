@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2024 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,7 +40,7 @@ internal static class ListenNotifications
                 () => Console.WriteLine("Stopped listening for bucket notifications\n"));
 
             Console.WriteLine("Press any key to stop listening for notifications...");
-            Console.ReadLine();
+            _ = Console.ReadLine();
         }
         catch (Exception e)
         {
