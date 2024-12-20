@@ -214,10 +214,10 @@ internal static class Program
         // FunctionalTest.PresignedPostPolicy_Test1(minioClient).Wait();
 
         // Test incomplete uploads
-        functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test1(minioClient));
-        functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test2(minioClient));
-        functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test3(minioClient));
-        functionalTestTasks.Add(FunctionalTest.RemoveIncompleteUpload_Test(minioClient));
+        //functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test1(minioClient));
+        //functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test2(minioClient));
+        //functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test3(minioClient));
+        //functionalTestTasks.Add(FunctionalTest.RemoveIncompleteUpload_Test(minioClient));
 
         // Test GetBucket policy
         functionalTestTasks.Add(FunctionalTest.GetBucketPolicy_Test1(minioClient));

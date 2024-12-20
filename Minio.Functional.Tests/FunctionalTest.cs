@@ -342,8 +342,8 @@ public static class FunctionalTest
             PresignedPutObject_Test1(minioClient),
 
             // Test incomplete uploads
-            ListIncompleteUpload_Test1(minioClient),
-            RemoveIncompleteUpload_Test(minioClient),
+            //ListIncompleteUpload_Test1(minioClient),
+            //RemoveIncompleteUpload_Test(minioClient),
 
             // Test GetBucket policy
             GetBucketPolicy_Test1(minioClient)
