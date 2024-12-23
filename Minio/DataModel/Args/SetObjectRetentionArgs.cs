@@ -33,7 +33,7 @@ public class SetObjectRetentionArgs : ObjectVersionArgs<SetObjectRetentionArgs>
     internal ObjectRetentionMode Mode { get; set; }
     internal DateTime RetentionUntilDate { get; set; }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (RetentionUntilDate.Equals(default))

@@ -49,7 +49,7 @@ public class SetBucketLifecycleArgs : BucketArgs<SetBucketLifecycleArgs>
         return requestMessageBuilder;
     }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (BucketLifecycle is null || BucketLifecycle.Rules.Count == 0)

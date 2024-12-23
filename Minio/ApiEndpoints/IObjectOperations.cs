@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017-2021 MinIO, Inc.
  *
@@ -358,4 +358,67 @@ public interface IObjectOperations
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
     Task RemoveObjectTagsAsync(RemoveObjectTagsArgs args, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Upload object part to bucket for particular uploadId
+    /// </summary>
+    /// <param name="args">
+    ///     PutObjectArgs encapsulates bucket name, object name, upload id, part number, object data(body),
+    ///     Headers, SSE Headers
+    /// </param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <param name="singleFile">
+    ///     This boolean parameter differentiates single part file upload and
+    ///     multi part file upload as this function is shared by both.
+    /// </param>
+    /// <returns></returns>
+    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+    /// <exception cref="ObjectDisposedException">The file stream has been disposed</exception>
+    /// <exception cref="NotSupportedException">The file stream cannot be read from</exception>
+    /// <exception cref="InvalidOperationException">The file stream is currently in a read operation</exception>
+    /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
+    Task<PutObjectResponse> PutObjectSinglePartAsync(PutObjectArgs args, CancellationToken cancellationToken = default, bool singleFile = false);
+
+
+    /// <summary>
+    ///     Remove object with matching uploadId from bucket
+    /// </summary>
+    /// <param name="args">RemoveUploadArgs Arguments Object which encapsulates bucket, object names, upload Id</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns></returns>
+    Task RemoveUploadAsync(RemoveUploadArgs args, CancellationToken cancellationToken);
+
+    /// <summary>
+    ///     Start a new multi-part upload request
+    /// </summary>
+    /// <param name="args">
+    ///     NewMultipartUploadPutArgs arguments object encapsulating bucket name, object name, Headers, SSE
+    ///     Headers
+    /// </param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns></returns>
+    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+    /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
+    Task<string> NewMultipartUploadAsync(NewMultipartUploadPutArgs args, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Internal method to complete multi part upload of object to server.
+    /// </summary>
+    /// <param name="args">CompleteMultipartUploadArgs Arguments object with bucket name, object name, upload id, Etags</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns></returns>
+    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+    /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
+    Task<PutObjectResponse> CompleteMultipartUploadAsync(CompleteMultipartUploadArgs args, CancellationToken cancellationToken);
 }

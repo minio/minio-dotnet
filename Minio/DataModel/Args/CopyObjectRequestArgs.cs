@@ -170,7 +170,7 @@ internal class CopyObjectRequestArgs : ObjectWriteArgs<CopyObjectRequestArgs>
         return this;
     }
 
-    internal override void Validate()
+    public override void Validate()
     {
         Utils.ValidateBucketName(BucketName); //Object name can be same as that of source.
         if (SourceObject is null) throw new InvalidOperationException(nameof(SourceObject) + " has not been assigned.");
