@@ -5788,11 +5788,11 @@ public static class FunctionalTest
                 .WithBucket(bucketName)
                 .WithObject(objectName)
                 .WithExpiry(1000)
-                .WithHeaders(reqParams)
+                .WithParameters(reqParams)
                 .WithRequestDate(reqDate);
             var presigned_url = await minio.PresignedGetObjectAsync(preArgs).ConfigureAwait(false);
-
             using var response = await minio.WrapperGetAsync(presigned_url).ConfigureAwait(false);
+
             if (response.StatusCode != HttpStatusCode.OK ||
                 string.IsNullOrEmpty(Convert.ToString(response.Content, CultureInfo.InvariantCulture)))
                 throw new InvalidOperationException("Unable to download via presigned URL " + nameof(response.Content));
