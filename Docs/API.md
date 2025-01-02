@@ -1153,25 +1153,28 @@ catch(MinioException e)
 
 
 <a name="listObjects"></a>
-### ListObjectsAsync(ListObjectArgs args)
+### ListObjectsEnumAsync(ListObjectsArgs args)
 
-`IObservable<Item> ListObjectsAsync(ListObjectArgs args, CancellationToken cancellationToken = default(CancellationToken))`
+`IAsyncEnumerable<Item> ListObjectsEnumAsync(ListObjectsArgs args, CancellationToken cancellationToken = default(CancellationToken))`
 
-Lists all objects (with version IDs, if existing) in a bucket.
+Lists all objects in a bucket.
 
 __Parameters__
 
 
 | Param                 | Type                                 | Description                                                                                |
 |:----------------------|:-------------------------------------|:-------------------------------------------------------------------------------------------|
-| ``args``              | _ListObjectArgs_                     | ListObjectArgs object - encapsulates bucket name, prefix, show recursively, show versions. |
+| ``args``              | _ListObjectsArgs_                     | ListObjectsArgs object - encapsulates bucket name, prefix, show recursively, show versions. |
 | ``cancellationToken`` | _System.Threading.CancellationToken_ | Optional parameter. Defaults to default(CancellationToken)                                 |
 
 
-| Return Type                                   | Exceptions |
-|:----------------------------------------------|:-----------|
-| ``IObservable<Item>``:an Observable of Items. | _None_     |
-
+| Return Type                                        | Exceptions                                                                                                            |
+|----------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| ``IAsyncEnumerable``: an IAsyncEnumerable of Items. | Listed Exceptions:                                                                                                    |
+|                                                    | ``AuthorizationException`` : upon access or secret key wrong or not found                                             |
+|                                                    | ``InvalidBucketNameException`` : upon invalid bucket name                                                             |
+|                                                    | ``BucketNotFoundException`` : upon bucket with name not found                                                         |
+|                                                    | ``InvalidOperationException`` : upon call ListObjectsAsync on a bucket with versioning enabled or object lock enabled |
 
 __Example__
 
@@ -1181,19 +1184,22 @@ try
 {
     // Just list of objects
     // Check whether 'mybucket' exists or not.
-    bool found = minioClient.BucketExistsAsync("mybucket");
+    BucketExistsArgs bucketArgs = new BucketExistsArgs()
+        .WithBucket("mybucket");
+    bool found = await minioClient.BucketExistsAsync(bucketArgs);
     if (found)
     {
         // List objects from 'my-bucketname'
-        ListObjectArgs args = new ListObjectArgs()
-                                  .WithBucket("mybucket")
-                                  .WithPrefix("prefix")
-                                  .WithRecursive(true);
-        IObservable<Item> observable = minioClient.ListObjectsAsync(args);
-        IDisposable subscription = observable.Subscribe(
-                item => Console.WriteLine("OnNext: {0}", item.Key),
-                ex => Console.WriteLine("OnError: {0}", ex.Message),
-                () => Console.WriteLine("OnComplete: {0}"));
+        ListObjectsArgs args = new ListObjectsArgs()
+            .WithBucket("mybucket")
+            .WithPrefix("prefix")
+            .WithRecursive(true);
+        IAsyncEnumerable<Item> items = minioClient.ListObjectsEnumAsync(args);
+
+        await foreach (Item item in items)
+        {
+            Console.WriteLine($"Key: {item.Key}: version: {item.VersionId}");
+        }
     }
     else
     {
@@ -1204,36 +1210,6 @@ catch (MinioException e)
 {
     Console.WriteLine("Error occurred: " + e);
 }
-
-try
-{
-    // List of objects with version IDs.
-    // Check whether 'mybucket' exists or not.
-    bool found = minioClient.BucketExistsAsync("mybucket");
-    if (found)
-    {
-        // List objects from 'my-bucketname'
-        ListObjectArgs args = new ListObjectArgs()
-                                  .WithBucket("mybucket")
-                                  .WithPrefix("prefix")
-                                  .WithRecursive(true)
-                                  .WithVersions(true)
-        IObservable<Item> observable = minioClient.ListObjectsAsync(args, true);
-        IDisposable subscription = observable.Subscribe(
-                item => Console.WriteLine("OnNext: {0} - {1}", item.Key, item.VersionId),
-                ex => Console.WriteLine("OnError: {0}", ex.Message),
-                () => Console.WriteLine("OnComplete: {0}"));
-    }
-    else
-    {
-        Console.WriteLine("mybucket does not exist");
-    }
-}
-catch (MinioException e)
-{
-    Console.WriteLine("Error occurred: " + e);
-}
-
 ```
 
 
