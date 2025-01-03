@@ -151,7 +151,7 @@ public interface IObjectOperations
     /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
-    Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args,
+    Task<IList<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -233,7 +233,7 @@ public interface IObjectOperations
     /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    IObservable<Upload> ListIncompleteUploads(ListIncompleteUploadsArgs args,
+    IAsyncEnumerable<Upload> ListIncompleteUploadsEnumAsync(ListIncompleteUploadsArgs args,
         CancellationToken cancellationToken = default);
 
     /// <summary>

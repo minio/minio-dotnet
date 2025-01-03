@@ -16,7 +16,7 @@
         <RepositoryUrl>https://github.com/minio/minio-dotnet</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <Product>$(AssemblyName) ($(TargetFramework))</Product>
-        <Version>6.0.3</Version>
+        <Version>6.0.5</Version>
 
         <!--<Nullable>enable</Nullable>-->
         <ImplicitUsings>enable</ImplicitUsings>
@@ -61,7 +61,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-        <PackageReference Include="Meziantou.Polyfill" Version="1.0.38">
+        <PackageReference Include="Meziantou.Polyfill" Version="1.0.42">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
@@ -69,11 +69,11 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Roslynator.Analyzers" Version="4.12.2">
+        <PackageReference Include="Roslynator.Analyzers" Version="4.12.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.12.2">
+        <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.12.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
@@ -85,7 +85,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.150">
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.163">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>

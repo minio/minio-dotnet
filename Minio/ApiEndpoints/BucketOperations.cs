@@ -18,6 +18,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
+using System.Web;
+using System.Xml.Linq;
 using CommunityToolkit.HighPerformance;
 using Minio.ApiEndpoints;
 using Minio.DataModel;
@@ -87,10 +90,9 @@ public partial class MinioClient : IBucketOperations
                     HttpStatusCode.NotFound != ice.ServerResponse.StatusCode) &&
                    ice.ServerResponse is not null;
         }
-        catch (Exception ex)
+        catch (BucketNotFoundException)
         {
-            if (ex.GetType() == typeof(BucketNotFoundException)) return false;
-            throw;
+            return false;
         }
     }
 
@@ -201,62 +203,102 @@ public partial class MinioClient : IBucketOperations
     ///     For example, if you call ListObjectsAsync on a bucket with versioning
     ///     enabled or object lock enabled
     /// </exception>
-    public IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<Item> ListObjectsEnumAsync(ListObjectsArgs args,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        args?.Validate();
-        return Observable.Create<Item>(
-            async (obs, ct) =>
+        if (args == null) throw new ArgumentNullException(nameof(args));
+
+        args.Validate();
+
+        var goArgs = new GetObjectListArgs()
+            .WithBucket(args.BucketName)
+            .WithPrefix(args.Prefix)
+            .WithDelimiter(args.Recursive ? string.Empty : "/")
+            .WithVersions(args.Versions)
+            .WithIncludeUserMetadata(args.IncludeUserMetadata)
+            .WithMarker(string.Empty)
+            .WithListObjectsV1(!args.UseV2)
+            .WithHeaders(args.Headers)
+            .WithVersionIdMarker(string.Empty);
+
+        XNamespace ns = "http://s3.amazonaws.com/doc/2006-03-01/";
+        var tag = ns + (args.Versions ? "Version" : "Contents");
+
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var requestMessageBuilder = await this.CreateRequest(goArgs).ConfigureAwait(false);
+            using var responseResult = await this
+                .ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
+            if (responseResult.StatusCode != HttpStatusCode.OK)
+                throw new ErrorResponseException(
+                    $"HTTP status-code {responseResult.StatusCode:D}: {responseResult.StatusCode}", responseResult);
+
+#if NET2_0_OR_GREATER
+    var root = await XDocument.LoadAsync(responseResult.ContentStream, LoadOptions.None, ct).ConfigureAwait(false);
+#else
+            var root = XDocument.Load(responseResult.ContentStream);
+#endif
+
+            var items = root.Root.Descendants(tag).Select(t =>
             {
-                var isRunning = true;
-                var delimiter = args.Recursive ? string.Empty : "/";
-                var marker = string.Empty;
-                uint count = 0;
-                var versionIdMarker = string.Empty;
-                var nextContinuationToken = string.Empty;
-                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ct);
-                while (isRunning)
+                string contentType = null;
+                string expires = null;
+                Dictionary<string, string> userMetaData = null;
+
+                if (args.IncludeUserMetadata)
                 {
-                    var goArgs = new GetObjectListArgs()
-                        .WithBucket(args.BucketName)
-                        .WithPrefix(args.Prefix)
-                        .WithDelimiter(delimiter)
-                        .WithVersions(args.Versions)
-                        .WithContinuationToken(nextContinuationToken)
-                        .WithMarker(marker)
-                        .WithListObjectsV1(!args.UseV2)
-                        .WithHeaders(args.Headers)
-                        .WithVersionIdMarker(versionIdMarker);
-                    if (args.Versions)
+                    var xUserMetadata = t.Element(ns + "UserMetadata");
+                    if (xUserMetadata == null)
+                        throw new InvalidOperationException(
+                            "Client doesn't support metadata while listing objects (MinIO specific feature)");
+
+                    contentType = xUserMetadata.Element(ns + "content-type")?.Value;
+                    expires = xUserMetadata.Element(ns + "expires")?.Value;
+                    const string metaElementPrefix = "X-Amz-Meta-";
+                    userMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var xHeader in xUserMetadata.Elements().Where(x =>
+                                 x.Name.Namespace == ns && x.Name.LocalName.StartsWith(metaElementPrefix,
+                                     StringComparison.OrdinalIgnoreCase)))
                     {
-                        var objectList = await GetObjectVersionsListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                        var listObjectsItemResponse = new ListObjectVersionResponse(args, objectList, obs);
-                        if (objectList.Item2.Count == 0 && count == 0) return;
-
-                        obs = listObjectsItemResponse.ItemObservable;
-                        marker = listObjectsItemResponse.NextKeyMarker;
-                        versionIdMarker = listObjectsItemResponse.NextVerMarker;
-                        isRunning = objectList.Item1.IsTruncated;
+                        var key = xHeader.Name.LocalName[metaElementPrefix.Length..];
+                        userMetaData[key] = xHeader.Value;
                     }
-                    else
-                    {
-                        var objectList = await GetObjectListAsync(goArgs, cts.Token).ConfigureAwait(false);
-                        if (objectList.Item2.Count == 0 &&
-                            objectList.Item1.KeyCount.Equals("0", StringComparison.OrdinalIgnoreCase) && count == 0)
-                            return;
-
-                        var listObjectsItemResponse = new ListObjectsItemResponse(args, objectList, obs);
-                        marker = listObjectsItemResponse.NextMarker;
-                        isRunning = objectList.Item1.IsTruncated;
-                        nextContinuationToken = objectList.Item1.IsTruncated
-                            ? objectList.Item1.NextContinuationToken
-                            : string.Empty;
-                    }
-
-                    cts.Token.ThrowIfCancellationRequested();
-                    count++;
                 }
-            }
-        );
+
+                var objectKey = t.Element(ns + "Key")?.Value;
+                if (objectKey != null)
+                    objectKey = HttpUtility.UrlDecode(objectKey);
+
+                return new Item
+                {
+                    Key = objectKey,
+                    LastModified = t.Element(ns + "LastModified")?.Value,
+                    ETag = t.Element(ns + "ETag")?.Value,
+                    Size = ulong.TryParse(t.Element(ns + "Size")?.Value, out var size) ? size : 0,
+                    VersionId = t.Element(ns + "VersionId")?.Value,
+                    ContentType = contentType,
+                    Expires = expires,
+                    UserMetadata = userMetaData,
+                    IsDir = false
+                };
+            });
+            foreach (var item in items)
+                yield return item;
+
+            var prefixes = from c in root.Root.Descendants(ns + "CommonPrefixes")
+                select new Item { Key = c.Element(ns + "Prefix")?.Value, IsDir = true };
+            foreach (var item in prefixes)
+                yield return item;
+
+            var nextContinuationToken = root.Root.Element(ns + "NextContinuationToken")?.Value;
+            if (string.IsNullOrEmpty(nextContinuationToken)) break;
+
+            goArgs.WithContinuationToken(nextContinuationToken);
+        }
     }
 
     /// <summary>
@@ -718,6 +760,18 @@ public partial class MinioClient : IBucketOperations
     }
 
     /// <summary>
+    ///     Subscribes to global change notifications (a Minio-only extension)
+    /// </summary>
+    /// <param name="args">ListenBucketNotificationsArgs to listen events</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns>An observable of JSON-based notification events</returns>
+    public IObservable<MinioNotificationRaw> ListenNotifications(ListenBucketNotificationsArgs args,
+        CancellationToken cancellationToken = default)
+    {
+        return ListenBucketNotificationsAsync(args, cancellationToken);
+    }
+
+    /// <summary>
     ///     Subscribes to bucket change notifications (a Minio-only extension)
     /// </summary>
     /// <param name="bucketName">Bucket to get notifications from</param>
@@ -805,69 +859,5 @@ public partial class MinioClient : IBucketOperations
             await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    ///     Gets the list of objects in the bucket filtered by prefix
-    /// </summary>
-    /// <param name="args">
-    ///     GetObjectListArgs Arguments Object with information like Bucket name, prefix, delimiter, marker,
-    ///     versions(get version IDs of the objects)
-    /// </param>
-    /// <returns>Task with a tuple populated with objects</returns>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    private async Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(GetObjectListArgs args,
-        CancellationToken cancellationToken = default)
-    {
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var responseResult =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-        var getObjectsListResponse = new GetObjectsListResponse(responseResult.StatusCode, responseResult.Content);
-        return getObjectsListResponse.ObjectsTuple;
-    }
-
-    /// <summary>
-    ///     Gets the list of objects along with version IDs in the bucket filtered by prefix
-    /// </summary>
-    /// <param name="args">
-    ///     GetObjectListArgs Arguments Object with information like Bucket name, prefix, delimiter, marker,
-    ///     versions(get version IDs of the objects)
-    /// </param>
-    /// <returns>Task with a tuple populated with objects</returns>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    private async Task<Tuple<ListVersionsResult, List<Item>>> GetObjectVersionsListAsync(GetObjectListArgs args,
-        CancellationToken cancellationToken = default)
-    {
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var responseResult =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-        var getObjectsVersionsListResponse =
-            new GetObjectsVersionsListResponse(responseResult.StatusCode, responseResult.Content);
-        return getObjectsVersionsListResponse.ObjectsTuple;
-    }
-
-    /// <summary>
-    ///     Gets the list of objects in the bucket filtered by prefix
-    /// </summary>
-    /// <param name="bucketName">Bucket to list objects from</param>
-    /// <param name="prefix">Filters all objects starting with a given prefix</param>
-    /// <param name="delimiter">Delimit the output upto this character</param>
-    /// <param name="marker">marks location in the iterator sequence</param>
-    /// <returns>Task with a tuple populated with objects</returns>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    private Task<Tuple<ListBucketResult, List<Item>>> GetObjectListAsync(string bucketName, string prefix,
-        string delimiter, string marker, CancellationToken cancellationToken = default)
-    {
-        // null values are treated as empty strings.
-        var args = new GetObjectListArgs()
-            .WithBucket(bucketName)
-            .WithPrefix(prefix)
-            .WithDelimiter(delimiter)
-            .WithMarker(marker);
-        return GetObjectListAsync(args, cancellationToken);
     }
 }

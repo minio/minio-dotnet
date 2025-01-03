@@ -18,7 +18,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
-using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using Minio.ApiEndpoints;
 using Minio.DataModel;
 using Minio.DataModel.Args;
@@ -93,38 +93,36 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    public IObservable<Upload> ListIncompleteUploads(ListIncompleteUploadsArgs args,
-        CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<Upload> ListIncompleteUploadsEnumAsync(ListIncompleteUploadsArgs args,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        return Observable.Create<Upload>(
-            async obs =>
+        string nextKeyMarker = null;
+        string nextUploadIdMarker = null;
+        var isRunning = true;
+
+        while (isRunning)
+        {
+            var getArgs = new GetMultipartUploadsListArgs()
+                .WithBucket(args.BucketName)
+                .WithDelimiter(args.Delimiter)
+                .WithPrefix(args.Prefix)
+                .WithKeyMarker(nextKeyMarker)
+                .WithUploadIdMarker(nextUploadIdMarker);
+            var uploads = await GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
+            if (uploads is null)
             {
-                string nextKeyMarker = null;
-                string nextUploadIdMarker = null;
-                var isRunning = true;
+                isRunning = false;
+                continue;
+            }
 
-                while (isRunning)
-                {
-                    var getArgs = new GetMultipartUploadsListArgs()
-                        .WithBucket(args.BucketName)
-                        .WithDelimiter(args.Delimiter)
-                        .WithPrefix(args.Prefix)
-                        .WithKeyMarker(nextKeyMarker)
-                        .WithUploadIdMarker(nextUploadIdMarker);
-                    var uploads = await GetMultipartUploadsListAsync(getArgs, cancellationToken).ConfigureAwait(false);
-                    if (uploads is null)
-                    {
-                        isRunning = false;
-                        continue;
-                    }
+            foreach (var upload in uploads.Item2)
+                yield return upload;
 
-                    foreach (var upload in uploads.Item2) obs.OnNext(upload);
-                    nextKeyMarker = uploads.Item1.NextKeyMarker;
-                    nextUploadIdMarker = uploads.Item1.NextUploadIdMarker;
-                    isRunning = uploads.Item1.IsTruncated;
-                }
-            });
+            nextKeyMarker = uploads.Item1.NextKeyMarker;
+            nextUploadIdMarker = uploads.Item1.NextUploadIdMarker;
+            isRunning = uploads.Item1.IsTruncated;
+        }
     }
 
     /// <summary>
@@ -147,26 +145,23 @@ public partial class MinioClient : IObjectOperations
             .WithBucket(args.BucketName)
             .WithPrefix(args.ObjectName);
 
-        Upload[] uploads;
         try
         {
-            uploads = await ListIncompleteUploads(listUploadArgs, cancellationToken)?.ToArray();
+            await foreach (var upload in ListIncompleteUploadsEnumAsync(listUploadArgs, cancellationToken)
+                               .ConfigureAwait(false))
+                if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
+                {
+                    var rmArgs = new RemoveUploadArgs()
+                        .WithBucket(args.BucketName)
+                        .WithObject(args.ObjectName)
+                        .WithUploadId(upload.UploadId);
+                    await RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
+                }
         }
         catch (Exception ex) when (ex.GetType() == typeof(BucketNotFoundException))
         {
             throw;
         }
-
-        if (uploads is null) return;
-        foreach (var upload in uploads)
-            if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
-            {
-                var rmArgs = new RemoveUploadArgs()
-                    .WithBucket(args.BucketName)
-                    .WithObject(args.ObjectName)
-                    .WithUploadId(upload.UploadId);
-                await RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
-            }
     }
 
     /// <summary>
@@ -220,13 +215,10 @@ public partial class MinioClient : IObjectOperations
         var authenticator = new V4Authenticator(Config.Secure, Config.AccessKey, Config.SecretKey,
             region, Config.SessionToken);
 
-        // Get base64 encoded policy.
-        var policyBase64 = args.Policy.Base64();
-
         var t = DateTime.UtcNow;
         const string signV4Algorithm = "AWS4-HMAC-SHA256";
         var credential = authenticator.GetCredentialString(t, region);
-        var signature = authenticator.PresignPostSignature(region, t, policyBase64);
+
         args = args.WithDate(t)
             .WithAlgorithm(signV4Algorithm)
             .WithSessionToken(Config.SessionToken)
@@ -239,12 +231,18 @@ public partial class MinioClient : IObjectOperations
 
         args.Policy.FormData["key"] = args.ObjectName;
 
-        args.Policy.FormData["policy"] = policyBase64;
         args.Policy.FormData["x-amz-algorithm"] = signV4Algorithm;
         args.Policy.FormData["x-amz-credential"] = credential;
         args.Policy.FormData["x-amz-date"] = t.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
+
         if (!string.IsNullOrEmpty(Config.SessionToken))
             args.Policy.FormData["x-amz-security-token"] = Config.SessionToken;
+
+        // Get base64 encoded policy.
+        var policyBase64 = args.Policy.Base64();
+        args.Policy.FormData["policy"] = policyBase64;
+
+        var signature = authenticator.PresignPostSignature(region, t, policyBase64);
         args.Policy.FormData["x-amz-signature"] = signature;
 
         Config.Uri = RequestUtil.MakeTargetURL(Config.BaseUrl, Config.Secure, args.BucketName, region, false);
@@ -400,7 +398,7 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="NotImplementedException">When a functionality or extension is not implemented</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
-    public async Task<IObservable<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args,
+    public async Task<IList<DeleteError>> RemoveObjectsAsync(RemoveObjectsArgs args,
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
@@ -409,13 +407,7 @@ public partial class MinioClient : IObjectOperations
             ? await RemoveObjectVersionsHelper(args, errs.ToList(), cancellationToken).ConfigureAwait(false)
             : await RemoveObjectsHelper(args, errs, cancellationToken).ConfigureAwait(false);
 
-        return Observable.Create<DeleteError>( // From Current change
-            async obs =>
-            {
-                await Task.Yield();
-                foreach (var error in errs) obs.OnNext(error);
-            }
-        );
+        return errs;
     }
 
     /// <summary>

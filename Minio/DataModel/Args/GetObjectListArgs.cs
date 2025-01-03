@@ -35,6 +35,7 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
     internal string Marker { get; private set; }
     internal string VersionIdMarker { get; private set; }
     internal bool Versions { get; private set; }
+    internal bool IncludeUserMetadata { get; private set; }
     internal string ContinuationToken { get; set; }
 
     public GetObjectListArgs WithDelimiter(string delim)
@@ -64,6 +65,12 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
     public GetObjectListArgs WithVersions(bool versions)
     {
         Versions = versions;
+        return this;
+    }
+
+    public GetObjectListArgs WithIncludeUserMetadata(bool includeUserMetadata)
+    {
+        IncludeUserMetadata = includeUserMetadata;
         return this;
     }
 
@@ -110,6 +117,9 @@ internal class GetObjectListArgs : BucketArgs<GetObjectListArgs>
         {
             throw new InvalidOperationException("Wrong set of properties set.");
         }
+
+        if (IncludeUserMetadata)
+            requestMessageBuilder.AddQueryParameter("metadata", "true");
 
         return requestMessageBuilder;
     }

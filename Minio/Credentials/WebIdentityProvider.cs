@@ -66,7 +66,7 @@ public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityPr
     internal override AccessCredentials ParseResponse(HttpResponseMessage response)
     {
         Validate();
-        var credentials = base.ParseResponse(response);
+        _ = base.ParseResponse(response);
         using var stream = Encoding.UTF8.GetBytes(Convert.ToString(response.Content, CultureInfo.InvariantCulture))
             .AsMemory().AsStream();
         return Utils.DeserializeXml<AccessCredentials>(stream);

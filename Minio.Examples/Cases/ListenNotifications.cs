@@ -1,5 +1,5 @@
 ﻿/*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2024 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,37 +19,36 @@ using Minio.DataModel.Notification;
 
 namespace Minio.Examples.Cases;
 
-internal static class ListenBucketNotifications
+internal static class ListenNotifications
 {
-    // Listen for notifications from a specified bucket (a Minio-only extension)
+    // Listen for gloabal notifications (a Minio-only extension)
     public static void Run(IMinioClient minio,
-        string bucketName = "my-bucket-name",
-        List<EventType> events = null,
-        string prefix = "",
-        string suffix = "")
+        List<EventType> events = null)
     {
+        IDisposable subscription = null;
         try
         {
-            Console.WriteLine("Running example for API: ListenBucketNotifications");
+            Console.WriteLine("Running example for API: ListenNotifications");
             Console.WriteLine();
-            events ??= new List<EventType> { EventType.ObjectCreatedAll };
-            var args = new ListenBucketNotificationsArgs()
-                .WithBucket(bucketName)
-                .WithPrefix(prefix)
-                .WithEvents(events)
-                .WithSuffix(suffix);
-            var observable = minio.ListenBucketNotificationsAsync(bucketName, events, prefix, suffix);
+            events ??= new List<EventType> { EventType.BucketCreatedAll };
+            var args = new ListenBucketNotificationsArgs().WithEvents(events);
+            var observable = minio.ListenNotifications(args);
 
-            var subscription = observable.Subscribe(
+            subscription = observable.Subscribe(
                 notification => Console.WriteLine($"Notification: {notification.Json}"),
                 ex => Console.WriteLine($"OnError: {ex}"),
                 () => Console.WriteLine("Stopped listening for bucket notifications\n"));
 
-            // subscription.Dispose();
+            Console.WriteLine("Press any key to stop listening for notifications...");
+            _ = Console.ReadLine();
         }
         catch (Exception e)
         {
             Console.WriteLine($"[Bucket]  Exception: {e}");
+        }
+        finally
+        {
+            subscription?.Dispose();
         }
     }
 }
