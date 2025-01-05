@@ -578,9 +578,6 @@ public partial class MinioClient : IObjectOperations
         {
             var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
             var bytesRead = bytes.Length;
-            if (bytesRead != (int)args.ObjectSize)
-                throw new UnexpectedShortReadException(
-                    $"Data read {bytesRead.ToString(CultureInfo.InvariantCulture)} is shorter than the size {args.ObjectSize.ToString(CultureInfo.InvariantCulture)} of input buffer.");
 
             args = args.WithRequestBody(bytes)
                 .WithStreamData(null)
