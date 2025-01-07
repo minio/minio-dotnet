@@ -1014,8 +1014,8 @@ public static class FunctionalTest
                 .WithStreamData(filestream)
                 .WithObjectSize(size)
                 .WithProgress(progress)
-                .WithContentType(contentType)
-                .WithHeaders(metaData);
+                .WithHeaders(metaData)
+                .WithContentType(contentType);
             var statPutObj = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
             var statObjectArgs = new StatObjectArgs()
@@ -3228,7 +3228,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(10);
-        var contentType = "application/octet-stream";
+        var contentType = "image/png";
         var size = 1 * MB;
         var args = new Dictionary<string, string>
             (StringComparer.Ordinal)
