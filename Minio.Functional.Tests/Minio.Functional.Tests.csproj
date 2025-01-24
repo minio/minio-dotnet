@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSTest.TestFramework" Version="3.7.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.7.2" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <ProjectReference Include="..\Minio\Minio.csproj" />
   </ItemGroup>
