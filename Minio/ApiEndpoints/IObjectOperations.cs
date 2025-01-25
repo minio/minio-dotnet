@@ -293,6 +293,20 @@ public interface IObjectOperations
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
     Task<string> PresignedPutObjectAsync(PresignedPutObjectArgs args);
+    
+    /// <summary>
+    ///     Get Presigned Url -returns a presigned url of an object for HTTP method without credentials.URL can have a maximum expiry of
+    ///     upto 7 days or a minimum of 1 second.
+    /// </summary>
+    /// <param name="args">GetPresignedUrlArgs Arguments Object which encapsulates HTTP method, bucket, object names, expiry</param>
+    /// <returns></returns>
+    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+    /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
+    Task<string> GetPresignedUrlAsync(GetPresignedUrlArgs args);
 
     /// <summary>
     ///     Tests the object's existence and returns metadata about existing objects.
