@@ -63,7 +63,7 @@ jobs:
 
       # Upload the normal artifacts
       - name: Upload the build output
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: |
@@ -75,7 +75,7 @@ jobs:
 
       # Upload the Nuget packages
       - name: Upload the Nuget packages output
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nuget-packages
           path: ./artifacts/*
@@ -123,7 +123,7 @@ jobs:
 
       # Download the build artifacts
       - name: Download the build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: .
@@ -150,7 +150,7 @@ jobs:
 
       # Download the build artifacts
       - name: Download the build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: .
@@ -191,7 +191,7 @@ jobs:
     steps:
       # Download the Nuget artifacts
       - name: Download the Nuget artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: nuget-packages
           path: ./artifacts
