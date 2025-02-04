@@ -73,12 +73,12 @@ jobs:
             **/*.key
             **/*.crt
 
-      # Upload the Nuget packages
-      - name: Upload the Nuget packages output
-        uses: actions/upload-artifact@v4
-        with:
-          name: nuget-packages
-          path: ./artifacts/*
+      # # Upload the Nuget packages
+      # - name: Upload the Nuget packages output
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: nuget-packages
+      #     path: ./artifacts/*
 
   format-check:
     runs-on: ubuntu-latest
