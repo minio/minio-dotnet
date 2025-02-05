@@ -61,21 +61,8 @@ jobs:
       - name: Create the Nuget package
         run: dotnet pack ${{ env.Minio_Project_Path }} --no-restore --no-build --configuration Release --output ./artifacts
 
-      # Artifact clean up
-      - name: Delete all artifacts
-        uses: actions/delete-artifact@v4
-        with:
-          name: build-artifacts
-          path: |
-            **/bin/Release/
-            **/obj/Release/
-            **/*.csproj
-            **/*.key
-            **/*.crt
-
       # Upload the normal artifacts
       - name: Upload the build output
-        if: ${{ !success() }}
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
@@ -85,6 +72,7 @@ jobs:
             **/*.csproj
             **/*.key
             **/*.crt
+        if: ${{ always() }}
 
   format-check:
     runs-on: ubuntu-latest
