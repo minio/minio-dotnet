@@ -61,10 +61,16 @@ jobs:
       - name: Create the Nuget package
         run: dotnet pack ${{ env.Minio_Project_Path }} --no-restore --no-build --configuration Release --output ./artifacts
 
+      # Empty 'artifacts' directory for windows upload
+      - name: Remove 'artifact' directory
+        run: |
+          if [[ matrix.os == 'windows-latest' ]]; then
+            sudo rm -rf './Minio/bin/Release' './Minio/obj/Release' './Minio/Minio.csproj' './Minio/*.key' './Minio/*.crt'
+          fi
+
       # Upload the normal artifacts
       - name: Upload the build output
         uses: actions/upload-artifact@v4
-        if: ${{ always() }}
         with:
           name: build-artifacts
           path: |
