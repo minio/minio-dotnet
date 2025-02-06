@@ -63,10 +63,9 @@ jobs:
 
       # Empty 'artifacts' directory for windows upload
       - name: Remove 'artifact' directory
+        if: ${{ matrix.os == 'windows-latest' }}
         run: |
-          if [[ matrix.os == 'windows-latest' ]]; then
             sudo rm -rf './Minio/bin/Release' './Minio/obj/Release' './Minio/Minio.csproj' './Minio/*.key' './Minio/*.crt'
-          fi
 
       # Upload the normal artifacts
       - name: Upload the build output
