@@ -266,8 +266,8 @@ public partial class MinioClient : IObjectOperations
         args?.Validate();
         var requestMessageBuilder = await this.CreateRequest(HttpMethod.Put, args.BucketName,
             args.ObjectName,
-            args.Headers, // contentType
-            Convert.ToString(args.GetType(), CultureInfo.InvariantCulture), // metaData
+            args.Headers,
+            args.Parameters,
             Utils.ObjectToByteArray(args.RequestBody)).ConfigureAwait(false);
         var authenticator = new V4Authenticator(Config.Secure, Config.AccessKey, Config.SecretKey, Config.Region,
             Config.SessionToken);
@@ -402,7 +402,7 @@ public partial class MinioClient : IObjectOperations
         CancellationToken cancellationToken = default)
     {
         args?.Validate();
-        IList<DeleteError> errs = new List<DeleteError>();
+        IList<DeleteError> errs = [];
         errs = args.ObjectNamesVersions.Count > 0
             ? await RemoveObjectVersionsHelper(args, errs.ToList(), cancellationToken).ConfigureAwait(false)
             : await RemoveObjectsHelper(args, errs, cancellationToken).ConfigureAwait(false);
@@ -693,8 +693,7 @@ public partial class MinioClient : IObjectOperations
             throw new InvalidDataException($"Specified byte range ({args.SourceObject
                 .CopyOperationConditions
                 .byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{args.SourceObject
-                .CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)
-            }) does not fit within source object (size={args.SourceObjectInfo.Size
+                .CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)}) does not fit within source object (size={args.SourceObjectInfo.Size
                 .ToString(CultureInfo.InvariantCulture)})");
 
         if (copySize > Constants.MaxSingleCopyObjectSize ||
