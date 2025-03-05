@@ -221,7 +221,7 @@ public partial class MinioClient : IBucketOperations
             .WithHeaders(args.Headers)
             .WithVersionIdMarker(string.Empty);
 
-        XNamespace ns = "http://s3.amazonaws.com/doc/2006-03-01/";
+        XNamespace ns = args.Namespace ?? "http://s3.amazonaws.com/doc/2006-03-01/";
         var tag = ns + (args.Versions ? "Version" : "Contents");
 
         while (true)
