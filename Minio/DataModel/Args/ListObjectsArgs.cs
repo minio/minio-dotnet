@@ -30,6 +30,7 @@ public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
     internal bool Versions { get; private set; }
     internal bool IncludeUserMetadata { get; private set; }
     internal bool UseV2 { get; private set; }
+    internal string Namespace { get; private set; }
 
     public ListObjectsArgs WithPrefix(string prefix)
     {
@@ -58,6 +59,12 @@ public class ListObjectsArgs : BucketArgs<ListObjectsArgs>
     public ListObjectsArgs WithListObjectsV1(bool useV1)
     {
         UseV2 = !useV1;
+        return this;
+    }
+  
+    public ListObjectsArgs WithNamespace(string ns)
+    {
+        Namespace = ns;
         return this;
     }
 }
