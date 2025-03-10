@@ -31,7 +31,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       # Install .NET
       - name: Setup .NET ${{ matrix.dotnet-version }}
@@ -89,7 +89,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       # Install .NET
       - name: Setup .NET
