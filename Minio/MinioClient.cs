@@ -119,16 +119,32 @@ public partial class MinioClient : IMinioClient
 
     private static void ParseErrorNoContent(ResponseResult response)
     {
-        if (HttpStatusCode.Forbidden == response.StatusCode
-            || HttpStatusCode.BadRequest == response.StatusCode
-            || HttpStatusCode.NotFound == response.StatusCode
-            || HttpStatusCode.MethodNotAllowed == response.StatusCode
-            || HttpStatusCode.NotImplemented == response.StatusCode)
-            ParseWellKnownErrorNoContent(response);
+        var statusCodeStrs = new[]
+        {
+            nameof(HttpStatusCode.Forbidden), nameof(HttpStatusCode.BadRequest), nameof(HttpStatusCode.NotFound),
+            nameof(HttpStatusCode.MethodNotAllowed), nameof(HttpStatusCode.NotImplemented)
+        };
 
+        if (response?.Exception != null)
+        {
+            foreach (var exception in statusCodeStrs)
+                if ((bool)response?.ErrorMessage.Contains(exception, StringComparison.InvariantCulture) ||
+                    (bool)response?.ErrorMessage.Contains(response.StatusCode.ToString(),
+                        StringComparison.InvariantCulture))
+                {
+                    ParseWellKnownErrorNoContent(response);
+                    break;
+                }
+        }
+        else if (statusCodeStrs.Contains(response.StatusCode.ToString(), StringComparer.Ordinal))
+        {
+            ParseWellKnownErrorNoContent(response);
+        }
 #pragma warning disable MA0099 // Use Explicit enum value instead of 0
         if (response.StatusCode == 0)
             throw new ConnectionException("Connection error:" + response.ErrorMessage, response);
+        if (response.Exception.GetType() == typeof(TaskCanceledException))
+            throw response.Exception;
 #pragma warning restore MA0099 // Use Explicit enum value instead of 0
         throw new InternalClientException(
             "Unsuccessful response from server without XML:" + response.ErrorMessage, response);
@@ -158,7 +174,8 @@ public partial class MinioClient : IMinioClient
         // zero, one or two segments
         var resourceSplits = pathAndQuery.Split(separator, 2, StringSplitOptions.RemoveEmptyEntries);
 
-        if (HttpStatusCode.NotFound == response.StatusCode)
+        if (HttpStatusCode.NotFound == response.StatusCode || response.Exception.ToString()
+                .Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase))
         {
             var pathLength = resourceSplits.Length;
             var isAWS = host.EndsWith("s3.amazonaws.com", StringComparison.OrdinalIgnoreCase);
@@ -168,22 +185,22 @@ public partial class MinioClient : IMinioClient
             {
                 var objectName = resourceSplits[1];
                 errorResponse.Code = "NoSuchKey";
-                error = new ObjectNotFoundException(objectName, "Not found.");
+                error = new ObjectNotFoundException(objectName, "Object NotFound.");
             }
             else if (pathLength == 1)
             {
                 var resource = resourceSplits[0];
 
-                if (isAWS && isVirtual && !string.IsNullOrEmpty(pathAndQuery))
+                if (isAWS && isVirtual)
                 {
                     errorResponse.Code = "NoSuchKey";
-                    error = new ObjectNotFoundException(resource, "Not found.");
+                    error = new ObjectNotFoundException(resource, "Object NotFound.");
                 }
                 else
                 {
                     errorResponse.Code = "NoSuchBucket";
                     BucketRegionCache.Instance.Remove(resource);
-                    error = new BucketNotFoundException(resource, "Not found.");
+                    error = new BucketNotFoundException(resource, "Bucket NotFound.");
                 }
             }
             else
@@ -214,7 +231,7 @@ public partial class MinioClient : IMinioClient
             error = new AccessDeniedException("Access denied on the resource: " + pathAndQuery);
         }
 
-        error.Response = errorResponse;
+        response.Exception = error;
         throw error;
     }
 
@@ -229,7 +246,7 @@ public partial class MinioClient : IMinioClient
         {
             var bucketName = response.Request.RequestUri.PathAndQuery.Split('?')[0];
             BucketRegionCache.Instance.Remove(bucketName);
-            throw new BucketNotFoundException(bucketName, "Not found.");
+            throw new BucketNotFoundException(bucketName, "NotFound.");
         }
 
         var errResponse = Utils.DeserializeXml<ErrorResponse>(response.Content);
@@ -248,7 +265,7 @@ public partial class MinioClient : IMinioClient
 
         if (response.StatusCode == HttpStatusCode.NotFound
             && string.Equals(errResponse.Code, "NoSuchBucket", StringComparison.OrdinalIgnoreCase))
-            throw new BucketNotFoundException(errResponse.BucketName, "Not found.");
+            throw new BucketNotFoundException(errResponse.BucketName, "NotFound.");
 
         if (response.StatusCode == HttpStatusCode.BadRequest
             && errResponse.Code.Equals("MalformedXML", StringComparison.OrdinalIgnoreCase))

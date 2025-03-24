@@ -26,7 +26,7 @@ namespace Minio.Functional.Tests;
 internal static class Program
 {
     [SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to run all tests")]
-    public static async Task Main(string[] args)
+    public static async Task Main()
     {
         string endPoint = null;
         string accessKey = null;
@@ -107,6 +107,12 @@ internal static class Program
 
         ConcurrentBag<Task> functionalTestTasks = new();
 
+        // Test incomplete uploads
+        await FunctionalTest.ListIncompleteUpload_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListIncompleteUpload_Test2(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListIncompleteUpload_Test3(minioClient).ConfigureAwait(false);
+        await FunctionalTest.RemoveIncompleteUpload_Test(minioClient).ConfigureAwait(false);
+
         // Global Notification
         await FunctionalTest.ListenNotifications_Test1(minioClient).ConfigureAwait(false);
 
@@ -139,14 +145,14 @@ internal static class Program
 
         // Test Putobject function
         functionalTestTasks.Add(FunctionalTest.PutObject_Test1(minioClient));
-        functionalTestTasks.Add(FunctionalTest.PutObject_Test2(minioClient));
+        // functionalTestTasks.Add(FunctionalTest.PutObject_Test2(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test3(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test4(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test5(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test7(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test8(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test9(minioClient));
-        functionalTestTasks.Add(FunctionalTest.PutObject_Test10(minioClient));
+//         functionalTestTasks.Add(FunctionalTest.PutObject_Test10(minioClient));
 
         // Test StatObject function
         functionalTestTasks.Add(FunctionalTest.StatObject_Test1(minioClient));
@@ -154,8 +160,8 @@ internal static class Program
         // Test GetObjectAsync function
         functionalTestTasks.Add(FunctionalTest.GetObject_Test1(minioClient));
         functionalTestTasks.Add(FunctionalTest.GetObject_Test2(minioClient));
-        functionalTestTasks.Add(FunctionalTest.GetObjectNegObjNotFound_Test3(minioClient));
-        functionalTestTasks.Add(FunctionalTest.GetObjectNegBcktNotFound_Test4(minioClient));
+        functionalTestTasks.Add(FunctionalTest.GetObjectNegObjNotFound_Test1andTest2(minioClient));
+        functionalTestTasks.Add(FunctionalTest.GetObjectNegBcktNotFound_Test3(minioClient));
         // 3 tests will run to check different values of offset and length parameters
         // when GetObject api returns part of the object as defined by the offset
         // and length parameters. Tests will be reported as GetObject_Test3,
@@ -213,12 +219,6 @@ internal static class Program
         functionalTestTasks.Add(FunctionalTest.PresignedPutObject_Test2(minioClient));
         // FunctionalTest.PresignedPostPolicy_Test1(minioClient).Wait();
 
-        // Test incomplete uploads
-        //functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test1(minioClient));
-        //functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test2(minioClient));
-        //functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test3(minioClient));
-        //functionalTestTasks.Add(FunctionalTest.RemoveIncompleteUpload_Test(minioClient));
-
         // Test GetBucket policy
         functionalTestTasks.Add(FunctionalTest.GetBucketPolicy_Test1(minioClient));
 
@@ -259,5 +259,7 @@ internal static class Program
         }
 
         await functionalTestTasks.ForEachAsync().ConfigureAwait(false);
+        await FunctionalTest.PutObject_Test2(minioClient).ConfigureAwait(false);
+        await FunctionalTest.PutObject_Test10(minioClient).ConfigureAwait(false);
     }
 }
