@@ -9,7 +9,8 @@ public class DefaultErrorHandler : IApiResponseErrorHandler
     {
         if (response is null) throw new ArgumentNullException(nameof(response));
 
-        if (response.StatusCode is < HttpStatusCode.OK or >= HttpStatusCode.BadRequest)
+        if (response.StatusCode is < HttpStatusCode.OK or >= HttpStatusCode.BadRequest ||
+            response.Exception is not null)
             MinioClient.ParseError(response);
     }
 }

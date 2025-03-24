@@ -22,25 +22,25 @@ namespace Minio.DataModel.Args;
 
 public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
 {
-    private readonly SelectObjectOptions SelectOptions;
+    private readonly SelectObjectOptions selectOptions;
 
     public SelectObjectContentArgs()
     {
         RequestMethod = HttpMethod.Post;
-        SelectOptions = new SelectObjectOptions();
+        selectOptions = new SelectObjectOptions();
     }
 
     internal override void Validate()
     {
         base.Validate();
-        if (string.IsNullOrEmpty(SelectOptions.Expression))
-            throw new InvalidOperationException("The Expression " + nameof(SelectOptions.Expression) +
+        if (string.IsNullOrEmpty(selectOptions.Expression))
+            throw new InvalidOperationException("The Expression " + nameof(selectOptions.Expression) +
                                                 " for Select Object Content cannot be empty.");
 
-        if (SelectOptions.InputSerialization is null || SelectOptions.OutputSerialization is null)
+        if (selectOptions.InputSerialization is null || selectOptions.OutputSerialization is null)
             throw new InvalidOperationException(
                 "The Input/Output serialization members for SelectObjectContentArgs should be initialized " +
-                nameof(SelectOptions.InputSerialization) + " " + nameof(SelectOptions.OutputSerialization));
+                nameof(selectOptions.InputSerialization) + " " + nameof(selectOptions.OutputSerialization));
     }
 
     internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
@@ -50,7 +50,7 @@ public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
 
         if (RequestBody.IsEmpty)
         {
-            RequestBody = Encoding.UTF8.GetBytes(SelectOptions.MarshalXML());
+            RequestBody = Encoding.UTF8.GetBytes(selectOptions.MarshalXML());
             requestMessageBuilder.SetBody(RequestBody);
         }
 
@@ -62,31 +62,31 @@ public class SelectObjectContentArgs : EncryptionArgs<SelectObjectContentArgs>
 
     public SelectObjectContentArgs WithExpressionType(QueryExpressionType e)
     {
-        SelectOptions.ExpressionType = e;
+        selectOptions.ExpressionType = e;
         return this;
     }
 
     public SelectObjectContentArgs WithQueryExpression(string expr)
     {
-        SelectOptions.Expression = expr;
+        selectOptions.Expression = expr;
         return this;
     }
 
     public SelectObjectContentArgs WithInputSerialization(SelectObjectInputSerialization serialization)
     {
-        SelectOptions.InputSerialization = serialization;
+        selectOptions.InputSerialization = serialization;
         return this;
     }
 
     public SelectObjectContentArgs WithOutputSerialization(SelectObjectOutputSerialization serialization)
     {
-        SelectOptions.OutputSerialization = serialization;
+        selectOptions.OutputSerialization = serialization;
         return this;
     }
 
     public SelectObjectContentArgs WithRequestProgress(RequestProgress requestProgress)
     {
-        SelectOptions.RequestProgress = requestProgress;
+        selectOptions.RequestProgress = requestProgress;
         return this;
     }
 }
