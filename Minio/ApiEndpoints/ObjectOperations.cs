@@ -150,6 +150,7 @@ public partial class MinioClient : IObjectOperations
         {
             await foreach (var upload in ListIncompleteUploadsEnumAsync(listUploadArgs, cancellationToken)
                                .ConfigureAwait(false))
+            {
                 if (upload.Key.Equals(args.ObjectName, StringComparison.OrdinalIgnoreCase))
                 {
                     var rmArgs = new RemoveUploadArgs()
@@ -158,6 +159,7 @@ public partial class MinioClient : IObjectOperations
                         .WithUploadId(upload.UploadId);
                     await RemoveUploadAsync(rmArgs, cancellationToken).ConfigureAwait(false);
                 }
+            }
         }
         catch (Exception ex) when (ex.GetType() == typeof(BucketNotFoundException))
         {
