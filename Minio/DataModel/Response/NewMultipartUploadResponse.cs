@@ -15,8 +15,6 @@
  */
 
 using System.Net;
-using System.Text;
-using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Result;
 using Minio.Helper;
 

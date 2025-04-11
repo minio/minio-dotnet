@@ -539,8 +539,11 @@ public static class FunctionalTest
                 {
                     return string.Equals(x.Name, y.Name, StringComparison.Ordinal)
                         ? 0
-                        : x.Name is null ? -1 : y.Name is null ? 1
-                        : string.CompareOrdinal(x.Name, y.Name);
+                        : x.Name is null
+                            ? -1
+                            : y.Name is null
+                                ? 1
+                                : string.CompareOrdinal(x.Name, y.Name);
                 });
                 var indx = 0;
                 foreach (var bucket in bucketListStripped)
@@ -561,10 +564,7 @@ public static class FunctionalTest
         }
         finally
         {
-            foreach (var bucket in bucketListStripped)
-            {
-                await TearDown(minio, bucket.Name).ConfigureAwait(false);
-            }
+            foreach (var bucket in bucketListStripped) await TearDown(minio, bucket.Name).ConfigureAwait(false);
         }
     }
 
@@ -609,7 +609,7 @@ public static class FunctionalTest
             found = await minio.BucketExistsAsync(beArgs, source.Token).ConfigureAwait(false);
             if (!found) await source.CancelAsync().ConfigureAwait(false);
         }
-        catch (Exception ex) when(ex is TaskCanceledException)
+        catch (Exception ex) when (ex is TaskCanceledException)
         {
             // do nothing
             return;
@@ -631,9 +631,7 @@ public static class FunctionalTest
                 if (versioningConfig is not null &&
                     (versioningConfig.Status.Contains("Enabled", StringComparison.Ordinal) ||
                      versioningConfig.Status.Contains("Suspended", StringComparison.Ordinal)))
-                {
                     getVersions = true;
-                }
 
                 lockConfig = await minio.GetObjectLockConfigurationAsync(lockConfigurationArgs, source.Token)
                     .ConfigureAwait(false);
@@ -658,12 +656,10 @@ public static class FunctionalTest
             var objectNames = new List<string>();
             var listObjects = minio.ListObjectsEnumAsync(listObjectsArgs, source.Token);
             await foreach (var item in listObjects.WithCancellation(source.Token).ConfigureAwait(false))
-            {
                 if (getVersions)
                     objectNamesVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
                 else
                     objectNames.Add(item.Key);
-            }
 
             if (lockConfig?.ObjectLockEnabled.Equals(ObjectLockConfiguration.LockEnabled,
                     StringComparison.OrdinalIgnoreCase) == true)
@@ -1450,20 +1446,20 @@ public static class FunctionalTest
             {
                 var file_write_size = filestream.Length;
 
-            var putObjectArgs = new PutObjectArgs()
-                .WithBucket(bucketName)
-                .WithObject(objectName)
-                .WithStreamData(filestream)
-                .WithObjectSize(filestream.Length)
-                .WithContentType(contentType);
-            _ = await minio.PutObjectAsync(putObjectArgs, cts.Token).ConfigureAwait(false);
+                var putObjectArgs = new PutObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithStreamData(filestream)
+                    .WithObjectSize(filestream.Length)
+                    .WithContentType(contentType);
+                _ = await minio.PutObjectAsync(putObjectArgs, cts.Token).ConfigureAwait(false);
 
-            new MintLogger("RemoveIncompleteUpload_Test", removeIncompleteUploadSignature,
+                new MintLogger("RemoveIncompleteUpload_Test", removeIncompleteUploadSignature,
                     "Tests whether RemoveIncompleteUpload passes.", TestStatus.PASS, DateTime.Now - startTime,
                     args: args).Log();
             }
         }
-        catch (Exception ex) when(ex.GetType() == typeof(TaskCanceledException))
+        catch (Exception ex) when (ex.GetType() == typeof(TaskCanceledException))
         {
             var rmArgs = new RemoveIncompleteUploadArgs()
                 .WithBucket(bucketName)
@@ -1474,14 +1470,13 @@ public static class FunctionalTest
             var listArgs = new ListIncompleteUploadsArgs()
                 .WithBucket(bucketName);
             await foreach (var item in minio.ListIncompleteUploadsEnumAsync(listArgs).ConfigureAwait(false))
-            {
                 new MintLogger("RemoveIncompleteUpload_Test", removeIncompleteUploadSignature,
-                    "Tests whether RemoveIncompleteUpload passes.", TestStatus.FAIL, DateTime.Now - startTime, ex.Message,
+                    "Tests whether RemoveIncompleteUpload passes.", TestStatus.FAIL, DateTime.Now - startTime,
+                    ex.Message,
                     ex.ToString(), args: args).Log();
-            }
             new MintLogger("RemoveIncompleteUpload_Test", removeIncompleteUploadSignature,
-                    "Tests whether RemoveIncompleteUpload passes.", TestStatus.PASS, DateTime.Now - startTime,
-                    args: args).Log();
+                "Tests whether RemoveIncompleteUpload passes.", TestStatus.PASS, DateTime.Now - startTime,
+                args: args).Log();
         }
         catch (Exception ex)
         {
@@ -6032,7 +6027,7 @@ public static class FunctionalTest
                     .WithContentType(contentType);
                 _ = await minio.PutObjectAsync(putObjectArgs, cts.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) when(ex is TaskCanceledException)
+            catch (Exception ex) when (ex is TaskCanceledException)
             {
                 new MintLogger("ListIncompleteUpload_Test1", listIncompleteUploadsSignature,
                     "Tests whether ListIncompleteUpload passes", TestStatus.PASS, DateTime.Now - startTime).Log();
@@ -6082,7 +6077,7 @@ public static class FunctionalTest
                     "Tests whether ListIncompleteUpload passes when qualified by prefix", TestStatus.PASS,
                     DateTime.Now - startTime, args: args).Log();
             }
-            catch (Exception ex) when(ex is TaskCanceledException)
+            catch (Exception ex) when (ex is TaskCanceledException)
             {
                 var listArgs = new ListIncompleteUploadsArgs()
                     .WithBucket(bucketName)
@@ -6135,7 +6130,7 @@ public static class FunctionalTest
                     "Tests whether ListIncompleteUpload passes when qualified by prefix and recursive", TestStatus.PASS,
                     DateTime.Now - startTime, args: args).Log();
             }
-            catch (Exception ex) when(ex is TaskCanceledException)
+            catch (Exception ex) when (ex is TaskCanceledException)
             {
                 try
                 {

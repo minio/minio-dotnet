@@ -63,8 +63,8 @@ public static class RequestExtensions
             async Task<ResponseResult> () => await minioClient.ExecuteTaskCoreAsync(
                 requestMessageBuilder,
                 isSts, cancellationToken).ConfigureAwait(false)).ConfigureAwait(false);
-        if (responseResult is not null &&
-            responseResult.Exception?.GetType().Equals(ignoreExceptionType) == false ||
+        if ((responseResult is not null &&
+             responseResult.Exception?.GetType().Equals(ignoreExceptionType) == false) ||
             responseResult.StatusCode != HttpStatusCode.OK)
         {
             var handler = new DefaultErrorHandler();
