@@ -82,21 +82,23 @@ public partial class MinioClient : IBucketOperations
     public async Task<bool> BucketExistsAsync(BucketExistsArgs args,
         CancellationToken cancellationToken = default)
     {
-        args?.Validate();
+        try
+        {
+            args?.Validate();
 
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response = await this
-            .ExecuteTaskAsync(requestMessageBuilder, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+            var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
+            using var response = await this
+                .ExecuteTaskAsync(requestMessageBuilder, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
 
-        if (response?.Exception is null &&
-            response.StatusCode == HttpStatusCode.OK)
-            return true;
-        if (!response.ErrorMessage.Contains("Bucket NotFound") &&
-            response.Exception.GetType() != typeof(BucketNotFoundException))
-            throw response.Exception;
-
-        return false;
+            if (response?.Exception is null && response.StatusCode == HttpStatusCode.OK)
+                return true;
+            return false;
+        }
+        catch (Exception ex) when (ex.GetType() == typeof(BucketNotFoundException))
+        {
+            return false;
+        }
     }
 
     /// <summary>

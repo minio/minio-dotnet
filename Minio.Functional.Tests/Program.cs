@@ -122,8 +122,8 @@ internal static class Program
         // "Listening for bucket notification is specific only to `minio`
         // server endpoints".
         await FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListenBucketNotificationsAsync_Test3(minioClient).ConfigureAwait(false);
         functionalTestTasks.Add(FunctionalTest.ListenBucketNotificationsAsync_Test2(minioClient));
-        functionalTestTasks.Add(FunctionalTest.ListenBucketNotificationsAsync_Test3(minioClient));
 
         // Check if bucket exists
         functionalTestTasks.Add(FunctionalTest.BucketExists_Test(minioClient));
@@ -145,14 +145,12 @@ internal static class Program
 
         // Test Putobject function
         functionalTestTasks.Add(FunctionalTest.PutObject_Test1(minioClient));
-        // functionalTestTasks.Add(FunctionalTest.PutObject_Test2(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test3(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test4(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test5(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test7(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test8(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test9(minioClient));
-//         functionalTestTasks.Add(FunctionalTest.PutObject_Test10(minioClient));
 
         // Test StatObject function
         functionalTestTasks.Add(FunctionalTest.StatObject_Test1(minioClient));

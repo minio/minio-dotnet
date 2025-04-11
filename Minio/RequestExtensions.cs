@@ -50,39 +50,28 @@ public static class RequestExtensions
     {
         var startTime = DateTime.Now;
         var responseResult = new ResponseResult(requestMessageBuilder.Request, response: null);
-        try
+        if (minioClient.Config.RequestTimeout > 0)
         {
-            if (minioClient.Config.RequestTimeout > 0)
-            {
-                using var internalTokenSource =
-                    new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, minioClient.Config.RequestTimeout));
-                using var timeoutTokenSource =
-                    CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
-                cancellationToken = timeoutTokenSource.Token;
-            }
-
-            responseResult = await minioClient.ExecuteWithRetry(
-                async Task<ResponseResult> () => await minioClient.ExecuteTaskCoreAsync(
-                    requestMessageBuilder,
-                    isSts, cancellationToken).ConfigureAwait(false)).ConfigureAwait(false);
-            if (responseResult is not null &&
-                (responseResult.Exception?.GetType().Equals(ignoreExceptionType) == false ||
-                 responseResult.StatusCode != HttpStatusCode.OK))
-            {
-                var handler = new DefaultErrorHandler();
-                handler.Handle(responseResult);
-            }
-
-            return responseResult;
+            using var internalTokenSource =
+                new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, minioClient.Config.RequestTimeout));
+            using var timeoutTokenSource =
+                CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
+            cancellationToken = timeoutTokenSource.Token;
         }
-        catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+
+        responseResult = await minioClient.ExecuteWithRetry(
+            async Task<ResponseResult> () => await minioClient.ExecuteTaskCoreAsync(
+                requestMessageBuilder,
+                isSts, cancellationToken).ConfigureAwait(false)).ConfigureAwait(false);
+        if (responseResult is not null &&
+            responseResult.Exception?.GetType().Equals(ignoreExceptionType) == false ||
+            responseResult.StatusCode != HttpStatusCode.OK)
         {
-            responseResult.Exception ??= ignoreExceptionType is not null &&
-                                         ex.GetType() == ignoreExceptionType
-                ? null
-                : ex;
-            return responseResult;
+            var handler = new DefaultErrorHandler();
+            handler.Handle(responseResult);
         }
+
+        return responseResult;
     }
 
     private static async Task<ResponseResult> ExecuteTaskCoreAsync(this IMinioClient minioClient,
