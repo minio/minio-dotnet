@@ -19,7 +19,6 @@ using System.Net;
 using System.Text.Json;
 using Minio.DataModel;
 using Minio.Exceptions;
-using Minio.Handlers;
 using Minio.Helper;
 
 /*
@@ -152,19 +151,12 @@ public class IAMAWSProvider : IClientProvider
         requestBuilder.AddQueryParameter("location", "");
 
         using var response =
-            await Client.ExecuteTaskAsync(Enumerable.Empty<IApiResponseErrorHandler>(), requestBuilder)
+            await Client.ExecuteTaskAsync(requestBuilder)
                 .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(response.Content) ||
             HttpStatusCode.OK != response.StatusCode)
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
-        /*
-JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-{
-   MissingMemberHandling = MissingMemberHandling.Error,
-   ContractResolver = new CamelCasePropertyNamesContractResolver(),
-   Error = null
-};*/
 
         var credentials = JsonSerializer.Deserialize<ECSCredentials>(response.Content);
         if (credentials.Code?.Equals("success", StringComparison.OrdinalIgnoreCase) == false)
@@ -183,7 +175,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         requestBuilder.AddQueryParameter("location", "");
 
         using var response =
-            await Client.ExecuteTaskAsync(Enumerable.Empty<IApiResponseErrorHandler>(), requestBuilder)
+            await Client.ExecuteTaskAsync(requestBuilder)
                 .ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(response.Content) ||
