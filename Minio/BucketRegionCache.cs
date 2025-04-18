@@ -98,7 +98,7 @@ public sealed class BucketRegionCache
             var requestBuilder = new HttpRequestMessageBuilder(HttpMethod.Get, requestUrl, path);
             requestBuilder.AddQueryParameter("location", "");
             using var response =
-                await client.ExecuteTaskAsync(client.ResponseErrorHandlers, requestBuilder).ConfigureAwait(false);
+                await client.ExecuteTaskAsync(requestBuilder).ConfigureAwait(false);
 
             if (response is not null && HttpStatusCode.OK == response.StatusCode)
             {
