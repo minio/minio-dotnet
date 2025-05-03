@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@ public static class SetObjectTags
     public static async Task Run(IMinioClient minio,
         string bucketName = "my-bucket-name",
         string objectName = "my-object-name",
-        IDictionary<string, string> tags = null,
+        IReadOnlyDictionary<string, string> tags = null,
         string versionId = null)
     {
         if (minio is null) throw new ArgumentNullException(nameof(minio));
