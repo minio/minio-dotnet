@@ -24,6 +24,9 @@ namespace Minio;
 
 internal class HttpRequestMessageBuilder
 {
+    public const string ContentTypeKey = "Content-Type";
+    public const string HostKey = "Host";
+
     internal HttpRequestMessageBuilder(Uri requestUri, HttpMethod method)
     {
         RequestUri = requestUri;
@@ -127,8 +130,6 @@ internal class HttpRequestMessageBuilder
     public Dictionary<string, string> BodyParameters { get; }
 
     public ReadOnlyMemory<byte> Content { get; private set; }
-
-    public string ContentTypeKey => "Content-Type";
 
     public void AddHeaderParameter(string key, string value)
     {

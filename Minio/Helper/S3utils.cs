@@ -51,7 +51,8 @@ internal static class S3utils
         // bucketName can be valid but '.' in the hostname will fail SSL
         // certificate validation. So do not use host-style for such buckets.
         if (string.Equals(endpointURL.Scheme, "https", StringComparison.OrdinalIgnoreCase) &&
-            bucketName.Contains('.', StringComparison.Ordinal)) return false;
+            bucketName.Contains('.', StringComparison.Ordinal))
+            return false;
         // Return true for all other cases
         return IsAmazonEndPoint(endpointURL.Host);
     }
@@ -80,17 +81,13 @@ internal static class S3utils
         if (string.IsNullOrEmpty(ip)) return false;
 
         var splitValues = ip.Split('.');
-        if (splitValues.Length != 4) return false;
-
-        return splitValues.All(r => byte.TryParse(r, out var _));
+        return splitValues.Length == 4 && splitValues.All(r => byte.TryParse(r, out var _));
     }
 
     // TrimAll trims leading and trailing spaces and replace sequential spaces with one space, following Trimall()
     // in http://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
     internal static string TrimAll(string s)
     {
-        if (string.IsNullOrEmpty(s))
-            return s;
-        return TrimWhitespaceRegex.Replace(s, " ").Trim();
+        return string.IsNullOrEmpty(s) ? s : TrimWhitespaceRegex.Replace(s, " ").Trim();
     }
 }
