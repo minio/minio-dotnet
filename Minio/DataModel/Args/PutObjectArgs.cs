@@ -67,9 +67,6 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                                                 " should be set.");
 
         if (!string.IsNullOrWhiteSpace(FileName)) Utils.ValidateFile(FileName);
-        // Check object size when using stream data
-        if (ObjectStreamData is not null && ObjectSize == 0)
-            throw new InvalidOperationException($"{nameof(ObjectSize)} must be set");
         Populate();
     }
 

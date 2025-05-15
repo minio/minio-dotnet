@@ -15,8 +15,6 @@
  */
 
 using System.Net;
-using System.Text;
-using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Result;
 using Minio.Helper;
 
@@ -27,8 +25,7 @@ internal class NewMultipartUploadResponse : GenericResponse
     internal NewMultipartUploadResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-        var newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(stream);
+        var newUpload = Utils.DeserializeXml<InitiateMultipartUploadResult>(responseContent);
 
         UploadId = newUpload.UploadId;
     }
