@@ -43,6 +43,8 @@ namespace Minio;
 public partial class MinioClient : IBucketOperations
 {
     /// <summary>
+    ///
+    ///
     ///     List all the buckets for the current Endpoint URL
     /// </summary>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -60,11 +62,9 @@ public partial class MinioClient : IBucketOperations
         if (HttpStatusCode.OK == response.StatusCode)
         {
             var stream = response.ContentBytes.AsStream();
-            using (stream)
+            await using (stream.ConfigureAwait(false))
             {
-                {
-                    bucketList = Utils.DeserializeXml<ListAllMyBucketsResult>(stream);
-                }
+                bucketList = Utils.DeserializeXml<ListAllMyBucketsResult>(stream);
             }
         }
 
@@ -91,9 +91,7 @@ public partial class MinioClient : IBucketOperations
                 .ExecuteTaskAsync(requestMessageBuilder, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
-            if (response?.Exception is null && response.StatusCode == HttpStatusCode.OK)
-                return true;
-            return false;
+            return response?.Exception is null && response.StatusCode == HttpStatusCode.OK;
         }
         catch (Exception ex) when (ex.GetType() == typeof(BucketNotFoundException))
         {

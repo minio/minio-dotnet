@@ -1470,7 +1470,7 @@ public static class FunctionalTest
             var listArgs = new ListIncompleteUploadsArgs()
                 .WithBucket(bucketName);
             await foreach (var item in minio.ListIncompleteUploadsEnumAsync(listArgs).ConfigureAwait(false))
-                Assert.Fail();
+                Assert.AreEqual(item.Key, objectName);
 
             new MintLogger("RemoveIncompleteUpload_Test", removeIncompleteUploadSignature,
                 "Tests whether RemoveIncompleteUpload passes.", TestStatus.PASS, DateTime.Now - startTime,
@@ -6130,19 +6130,12 @@ public static class FunctionalTest
             }
             catch (Exception ex) when (ex is TaskCanceledException)
             {
-                try
-                {
-                    var listArgs = new ListIncompleteUploadsArgs()
-                        .WithBucket(bucketName)
-                        .WithPrefix(prefix)
-                        .WithRecursive(true);
-                    await foreach (var item in minio.ListIncompleteUploadsEnumAsync(listArgs).ConfigureAwait(false))
-                        Assert.AreEqual(item.Key, objectName);
-                }
-                catch
-                {
-                    Assert.Fail();
-                }
+                var listArgs = new ListIncompleteUploadsArgs()
+                    .WithBucket(bucketName)
+                    .WithPrefix(prefix)
+                    .WithRecursive(true);
+                await foreach (var item in minio.ListIncompleteUploadsEnumAsync(listArgs).ConfigureAwait(false))
+                    Assert.AreEqual(item.Key, objectName);
             }
         }
         catch (Exception ex)

@@ -30,7 +30,7 @@ public class MinioException : Exception
     {
     }
 
-    public MinioException(ResponseResult serverResponse) : this(null, serverResponse)
+    public MinioException(ResponseResult serverResponse) : this(message: null, serverResponse)
     {
     }
 

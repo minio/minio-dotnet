@@ -64,7 +64,7 @@ public static class RequestExtensions
                 requestMessageBuilder,
                 isSts, cancellationToken).ConfigureAwait(false)).ConfigureAwait(false);
         if ((responseResult is not null &&
-             responseResult.Exception?.GetType().Equals(ignoreExceptionType) == false) ||
+            !Equals(responseResult.Exception?.GetType(), ignoreExceptionType)) ||
             responseResult.StatusCode != HttpStatusCode.OK)
         {
             var handler = new DefaultErrorHandler();

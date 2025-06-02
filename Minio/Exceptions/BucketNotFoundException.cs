@@ -24,7 +24,7 @@ public class BucketNotFoundException : MinioException
 {
     private readonly string bucketName;
 
-    public BucketNotFoundException(string bucketName, string message) : base(message)
+    public BucketNotFoundException(string bucketName, string message = "Bucket NotFound") : base(message)
     {
         this.bucketName = bucketName;
     }
@@ -33,11 +33,7 @@ public class BucketNotFoundException : MinioException
     {
     }
 
-    public BucketNotFoundException(string message) : base(message)
-    {
-    }
-
-    public BucketNotFoundException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    public BucketNotFoundException(string message = "Bucket NotFound") : base(message)
     {
     }
 
@@ -45,7 +41,15 @@ public class BucketNotFoundException : MinioException
     {
     }
 
+    public BucketNotFoundException(Exception innerException, string message="Bucket NotFound") : base(message, innerException)
+    {
+    }
+
     public BucketNotFoundException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
+    public BucketNotFoundException(string message, ResponseResult serverResponse) : base(message, serverResponse)
     {
     }
 
