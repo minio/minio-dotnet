@@ -36,7 +36,8 @@ public class ObjectNotFoundException : MinioException
     {
     }
 
-    public ObjectNotFoundException(ResponseResult serverResponse, string message = "Object NotFound")  : base(message, serverResponse)
+    public ObjectNotFoundException(ResponseResult serverResponse, string message = "Object NotFound") : base(message,
+        serverResponse)
     {
     }
 
@@ -44,7 +45,8 @@ public class ObjectNotFoundException : MinioException
     {
     }
 
-    public ObjectNotFoundException(Exception innerException, string message = "Object NotFound") : base(message, innerException)
+    public ObjectNotFoundException(Exception innerException, string message = "Object NotFound") : base(message,
+        innerException)
     {
     }
 

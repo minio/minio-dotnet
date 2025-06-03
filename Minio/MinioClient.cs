@@ -123,24 +123,20 @@ public partial class MinioClient : IMinioClient
             throw new ArgumentNullException(nameof(response));
         var statusCodeStrs = new[]
         {
-            nameof(HttpStatusCode.Forbidden),
-            nameof(HttpStatusCode.BadRequest),
-            nameof(HttpStatusCode.NotFound),
-            nameof(HttpStatusCode.MethodNotAllowed),
-            nameof(HttpStatusCode.NotImplemented)
+            nameof(HttpStatusCode.Forbidden), nameof(HttpStatusCode.BadRequest), nameof(HttpStatusCode.NotFound),
+            nameof(HttpStatusCode.MethodNotAllowed), nameof(HttpStatusCode.NotImplemented)
         };
 
         if (response.Exception != null && !string.IsNullOrEmpty(response.ErrorMessage))
         {
             foreach (var exception in statusCodeStrs)
-            {
-                if (((response.ErrorMessage?.Contains(exception, StringComparison.InvariantCulture)) ?? false) ||
-                    (response.ErrorMessage?.Contains(response.StatusCode.ToString(), StringComparison.InvariantCulture) ?? false))
+                if ((response.ErrorMessage?.Contains(exception, StringComparison.InvariantCulture) ?? false) ||
+                    (response.ErrorMessage?.Contains(response.StatusCode.ToString(),
+                        StringComparison.InvariantCulture) ?? false))
                 {
                     ParseWellKnownErrorNoContent(response);
                     break;
                 }
-            }
         }
         else if (statusCodeStrs.Contains(response.StatusCode.ToString(), StringComparer.Ordinal))
         {
@@ -275,9 +271,11 @@ public partial class MinioClient : IMinioClient
 
         if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
             && errResponse.Code.Equals("MalformedXML", StringComparison.OrdinalIgnoreCase))
-            throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message, errResponse.Key);
+            throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message,
+                errResponse.Key);
 
-        if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotImplemented), StringComparison.OrdinalIgnoreCase)
+        if (response.StatusCode.ToString()
+                .Contains(nameof(HttpStatusCode.NotImplemented), StringComparison.OrdinalIgnoreCase)
             && errResponse.Code.Equals("NotImplemented", StringComparison.OrdinalIgnoreCase))
         {
 #pragma warning disable MA0025 // Implement the functionality instead of throwing NotImplementedException
@@ -308,7 +306,8 @@ public partial class MinioClient : IMinioClient
         if (response.StatusCode == HttpStatusCode.PreconditionFailed
             && errResponse.Code.Equals("PreconditionFailed", StringComparison.OrdinalIgnoreCase))
             throw new PreconditionFailedException("At least one of the pre-conditions you " +
-                                "specified did not hold for object: \"" + errResponse.Resource + "\"");
+                                                  "specified did not hold for object: \"" + errResponse.Resource +
+                                                  "\"");
 
         throw new UnexpectedMinioException(errResponse.Message) { Response = errResponse, XmlError = response.Content };
     }

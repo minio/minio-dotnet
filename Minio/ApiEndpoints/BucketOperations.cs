@@ -43,8 +43,6 @@ namespace Minio;
 public partial class MinioClient : IBucketOperations
 {
     /// <summary>
-    ///
-    ///
     ///     List all the buckets for the current Endpoint URL
     /// </summary>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
@@ -61,8 +59,8 @@ public partial class MinioClient : IBucketOperations
         var bucketList = new ListAllMyBucketsResult();
         if (HttpStatusCode.OK == response.StatusCode)
         {
-            var stream = response.ContentBytes.AsStream();
-            await using (stream.ConfigureAwait(false))
+            var stream = response.ContentBytes.AsBytes().AsStream();
+            using (stream)
             {
                 bucketList = Utils.DeserializeXml<ListAllMyBucketsResult>(stream);
             }

@@ -41,7 +41,8 @@ public class BucketNotFoundException : MinioException
     {
     }
 
-    public BucketNotFoundException(Exception innerException, string message="Bucket NotFound") : base(message, innerException)
+    public BucketNotFoundException(Exception innerException, string message = "Bucket NotFound") : base(message,
+        innerException)
     {
     }
 
