@@ -232,7 +232,7 @@ public partial class MinioClient : IBucketOperations
                     $"HTTP status-code {responseResult.StatusCode:D}: {responseResult.StatusCode}", responseResult);
 
 #if NET2_0_OR_GREATER
-    var root = await XDocument.LoadAsync(modifiedStream, LoadOptions.None, ct).ConfigureAwait(false);
+    var root = await XDocument.LoadAsync(responseResult, LoadOptions.None, ct).ConfigureAwait(false);
 #else
             var root = XDocument.Load(responseResult.ContentStream);
 #endif

@@ -1469,8 +1469,13 @@ public static class FunctionalTest
 
             var listArgs = new ListIncompleteUploadsArgs()
                 .WithBucket(bucketName);
+            // Check if all incomplete upload objects are cleaned up
             await foreach (var item in minio.ListIncompleteUploadsEnumAsync(listArgs).ConfigureAwait(false))
-                Assert.AreEqual(item.Key, objectName);
+                if (item.Key.Equals(objectName, StringComparison.Ordinal))
+                    new MintLogger("RemoveIncompleteUpload_Test", removeIncompleteUploadSignature,
+                        "Tests whether RemoveIncompleteUpload passes.", TestStatus.FAIL, DateTime.Now - startTime,
+                        ex.Message,
+                        ex.ToString(), args: args).Log();
 
             new MintLogger("RemoveIncompleteUpload_Test", removeIncompleteUploadSignature,
                 "Tests whether RemoveIncompleteUpload passes.", TestStatus.PASS, DateTime.Now - startTime,
