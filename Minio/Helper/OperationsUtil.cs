@@ -18,7 +18,7 @@ namespace Minio.Helper;
 
 public static class OperationsUtil
 {
-    private static readonly List<string> SupportedHeaders = new()
+    private static readonly List<string> supportedHeaders = new()
     {
         "cache-control",
         "content-encoding",
@@ -28,7 +28,7 @@ public static class OperationsUtil
         "x-minio-extract"
     };
 
-    private static readonly List<string> SSEHeaders = new()
+    private static readonly List<string> sSEHeaders = new()
     {
         "X-Amz-Server-Side-Encryption-Customer-Algorithm",
         "X-Amz-Server-Side-Encryption-Customer-Key",
@@ -41,12 +41,12 @@ public static class OperationsUtil
     internal static bool IsSupportedHeader(string hdr, IEqualityComparer<string> comparer = null)
     {
         comparer ??= StringComparer.OrdinalIgnoreCase;
-        return SupportedHeaders.Contains(hdr, comparer);
+        return supportedHeaders.Contains(hdr, comparer);
     }
 
     internal static bool IsSSEHeader(string hdr, IEqualityComparer<string> comparer = null)
     {
         comparer ??= StringComparer.OrdinalIgnoreCase;
-        return SSEHeaders.Contains(hdr, comparer);
+        return sSEHeaders.Contains(hdr, comparer);
     }
 }

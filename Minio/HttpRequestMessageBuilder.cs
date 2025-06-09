@@ -76,6 +76,8 @@ internal class HttpRequestMessageBuilder
                     switch (key)
                     {
                         case "content-type":
+                        {
+                            val ??= "application/octet-stream";
                             try
                             {
                                 request.Content.Headers.ContentType = new MediaTypeHeaderValue(val);
@@ -86,6 +88,7 @@ internal class HttpRequestMessageBuilder
                             }
 
                             break;
+                        }
 
                         case "content-length":
                             request.Content.Headers.ContentLength = Convert.ToInt32(val, CultureInfo.InvariantCulture);
