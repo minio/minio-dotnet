@@ -15,8 +15,6 @@
  */
 
 using System.Net;
-using System.Text;
-using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Result;
 using Minio.Helper;
 
@@ -27,11 +25,10 @@ internal class CopyObjectResponse : GenericResponse
     public CopyObjectResponse(HttpStatusCode statusCode, string responseContent, Type reqType)
         : base(statusCode, responseContent)
     {
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
         if (reqType == typeof(CopyObjectResult))
-            CopyObjectRequestResult = Utils.DeserializeXml<CopyObjectResult>(stream);
+            CopyObjectRequestResult = Utils.DeserializeXml<CopyObjectResult>(responseContent);
         else
-            CopyPartRequestResult = Utils.DeserializeXml<CopyPartResult>(stream);
+            CopyPartRequestResult = Utils.DeserializeXml<CopyPartResult>(responseContent);
     }
 
     internal CopyObjectResult CopyObjectRequestResult { get; set; }

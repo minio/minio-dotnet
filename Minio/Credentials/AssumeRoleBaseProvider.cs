@@ -142,7 +142,7 @@ public abstract class AssumeRoleBaseProvider<T> : IClientProvider
     internal virtual AccessCredentials ParseResponse(HttpResponseMessage response)
     {
         var content = Convert.ToString(response.Content, CultureInfo.InvariantCulture);
-        if (string.IsNullOrEmpty(content) || !HttpStatusCode.OK.Equals(response.StatusCode))
+        if (string.IsNullOrEmpty(content) || HttpStatusCode.OK != response.StatusCode)
             throw new ArgumentNullException(nameof(response), "Unable to generate credentials. Response error.");
 
         using var stream = Encoding.UTF8.GetBytes(content).AsMemory().AsStream();

@@ -996,7 +996,10 @@ public static class Utils
                      .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
         {
             var value = prop.GetValue(obj, Array.Empty<object>());
-            Console.WriteLine("DEBUG >>   {0} = {1}", prop.Name, value);
+            if (string.Equals(prop.Name, "Headers", StringComparison.Ordinal))
+                PrintDict((Dictionary<string, string>)value);
+            else
+                Console.WriteLine("DEBUG >>   {0} = {1}", prop.Name, value);
         }
 
         Console.WriteLine("DEBUG >>   Print is DONE!\n\n");
@@ -1006,9 +1009,9 @@ public static class Utils
     {
         if (d is not null)
             foreach (var kv in d)
-                Console.WriteLine("DEBUG >>        {0} = {1}", kv.Key, kv.Value);
+                Console.WriteLine("DEBUG >>             Dictionary({0} => {1})", kv.Key, kv.Value);
 
-        Console.WriteLine("DEBUG >>   Done printing\n");
+        Console.WriteLine("DEBUG >>             Dictionary: Done printing\n");
     }
 
     public static string DetermineNamespace(XDocument document)
@@ -1062,26 +1065,39 @@ public static class Utils
             XmlResolver = null
         };
 
+        var xRoot = (XmlRootAttribute)typeof(T).GetCustomAttributes(typeof(XmlRootAttribute), true).FirstOrDefault();
+
+        var serializer = new XmlSerializer(typeof(T), xRoot);
+
         using var stringReader = new StringReader(xml);
         using var xmlReader = XmlReader.Create(stringReader, settings);
+        if (xml.Contains("<Error><Code>", StringComparison.Ordinal))
+        {
+            // Skip the first line
+            xml = xml[(xml.IndexOf('\n', StringComparison.Ordinal) + 1)..];
+            stringReader.Dispose();
+            using var stringReader1 = new StringReader(xml);
+            xRoot = new XmlRootAttribute { ElementName = "Error", IsNullable = true };
+            serializer = new XmlSerializer(typeof(T), xRoot);
+            return (T)serializer.Deserialize(new NamespaceIgnorantXmlTextReader(stringReader1));
+        }
 
-        try
-        {
-            var serializer = new XmlSerializer(typeof(T));
-            return (T)serializer.Deserialize(xmlReader);
-        }
-        catch (InvalidOperationException)
-        {
-            return default;
-        }
+        return (T)serializer.Deserialize(xmlReader);
     }
 
     private static string GetNamespace<T>()
     {
-        if (typeof(T).GetCustomAttributes(typeof(XmlRootAttribute), true)
-                .FirstOrDefault() is XmlRootAttribute xmlRootAttribute)
-            return xmlRootAttribute.Namespace;
+        return typeof(T).GetCustomAttributes(typeof(XmlRootAttribute), true)
+            .FirstOrDefault() is XmlRootAttribute xmlRootAttribute
+            ? xmlRootAttribute.Namespace
+            : null;
+    }
 
-        return null;
+    // Class to ignore namespaces when de-serializing
+    public class NamespaceIgnorantXmlTextReader : XmlTextReader
+    {
+        public NamespaceIgnorantXmlTextReader(TextReader reader) : base(reader) { }
+
+        public override string NamespaceURI => string.Empty;
     }
 }

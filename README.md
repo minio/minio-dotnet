@@ -22,8 +22,8 @@ using Minio.DataModel.Args;
 public static class Program
 {
     var endpoint = "play.min.io";
-    var accessKey = "Q3AM3UQ867SPQQA43P2F";
-    var secretKey = "zuf+tfteSlswRu7BJ86wtrueekitnifILbZam1KYY3TG";
+    var accessKey = "minioadmin";
+    var secretKey = "minioadmin";
 
     public static void Main(string[] args)
     {
@@ -35,7 +35,8 @@ public static class Program
         // Add Minio using the custom endpoint and configure additional settings for default MinioClient initialization
         builder.Services.AddMinio(configureClient => configureClient
             .WithEndpoint(endpoint)
-            .WithCredentials(accessKey, secretKey));
+            .WithCredentials(accessKey, secretKey)
+	    .Build());
 
         // NOTE: SSL and Build are called by the build-in services already.
 
@@ -59,7 +60,7 @@ public class ExampleController : ControllerBase
     public async Task<IActionResult> GetUrl(string bucketID)
     {
         return Ok(await minioClient.PresignedGetObjectAsync(new PresignedGetObjectArgs()
-                .WithBucket(bucketID)
+                .WithBucket(bucketID))
             .ConfigureAwait(false));
     }
 }
@@ -81,7 +82,7 @@ public class ExampleFactoryController : ControllerBase
         var minioClient = minioClientFactory.CreateClient(); //Has optional argument to configure specifics
 
         return Ok(await minioClient.PresignedGetObjectAsync(new PresignedGetObjectArgs()
-                .WithBucket(bucketID)
+                .WithBucket(bucketID))
             .ConfigureAwait(false));
     }
 }
@@ -104,8 +105,8 @@ The following examples uses a freely hosted public MinIO service "play.min.io" f
 using Minio;
 
 var endpoint = "play.min.io";
-var accessKey = "Q3AM3UQ867trueSPQQA43P2F";
-var secretKey = "zuf+tfteSlswRu7BJ86wtrueekitnifILbZam1KYY3TG";
+var accessKey = "minioadmin";
+var secretKey = "minioadmin";
 var secure = true;
 // Initialize the client with access credentials.
 private static IMinioClient minio = new MinioClient()
@@ -145,8 +146,8 @@ namespace FileUploader
         static void Main(string[] args)
         {
             var endpoint  = "play.min.io";
-            var accessKey = "Q3AM3UQ867SPQQA43P2F";
-            var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
+            var accessKey = "minioadmin";
+            var secretKey = "minioadmin";
             try
             {
                 var minio = new MinioClient()
@@ -164,7 +165,7 @@ namespace FileUploader
         }
 
         // File uploader task.
-        private async static Task Run(MinioClient minio)
+        private async static Task Run(IMinioClient minio)
         {
             var bucketName = "mymusic";
             var location   = "us-east-1";

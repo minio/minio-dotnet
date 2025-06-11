@@ -89,7 +89,7 @@ public class ReuseTcpConnectionTest
         var getObjectArgs = new GetObjectArgs()
             .WithBucket(bucket)
             .WithObject(objectName)
-            .WithCallbackStream(stream => stream.Dispose());
+            .WithCallbackStream(async (stream, _) => await stream.DisposeAsync().ConfigureAwait(false));
         _ = await minioClient.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
 
         return objectLength;

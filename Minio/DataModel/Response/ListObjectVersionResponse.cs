@@ -25,7 +25,7 @@ internal class ListObjectVersionResponse
     internal Item BucketObjectsLastItem;
     internal IObserver<Item> ItemObservable;
 
-    internal ListObjectVersionResponse(ListObjectsArgs args, Tuple<ListVersionsResult, List<Item>> objectList,
+    internal ListObjectVersionResponse(ListObjectsArgs _, Tuple<ListVersionsResult, List<Item>> objectList,
         IObserver<Item> obs)
     {
         ItemObservable = obs;

@@ -28,7 +28,7 @@ internal class GetBucketNotificationsResponse : GenericResponse
         : base(statusCode, responseContent)
     {
         if (string.IsNullOrEmpty(responseContent) ||
-            !HttpStatusCode.OK.Equals(statusCode))
+            HttpStatusCode.OK != statusCode)
         {
             BucketNotificationConfiguration = new BucketNotification();
             return;

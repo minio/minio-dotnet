@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-using System.Runtime.Serialization;
 using Minio.DataModel.Result;
 
 namespace Minio.Exceptions;
@@ -47,11 +46,6 @@ public class BucketNotFoundException : MinioException
     }
 
     public BucketNotFoundException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
-
-    protected BucketNotFoundException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
-        serializationInfo, streamingContext)
     {
     }
 

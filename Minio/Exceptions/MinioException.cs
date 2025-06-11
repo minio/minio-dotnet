@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-using System.Runtime.Serialization;
 using Minio.DataModel.Result;
 
 namespace Minio.Exceptions;
@@ -36,11 +35,6 @@ public class MinioException : Exception
     }
 
     public MinioException(string message) : this(message, serverResponse: null)
-    {
-    }
-
-    protected MinioException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
-        serializationInfo, streamingContext)
     {
     }
 
@@ -69,11 +63,8 @@ public class MinioException : Exception
 
         var contentString = serverResponse.Content;
 
-        if (message is null)
-            return
-                $"MinIO API responded with status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={contentString}";
-
-        return
-            $"MinIO API responded with message={message}. Status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={contentString}";
+        return message is null
+            ? $"MinIO API responded with status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={contentString}"
+            : $"MinIO API responded with message={message}. Status code={serverResponse.StatusCode}, response={serverResponse.ErrorMessage}, content={contentString}";
     }
 }

@@ -81,7 +81,7 @@ public class NegativeTest
             var ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(
                 () => minio.StatObjectAsync(statObjArgs)).ConfigureAwait(false);
             for (var i = 0;
-                 i < tryCount && ex.ServerResponse?.StatusCode.Equals(HttpStatusCode.ServiceUnavailable) == true;
+                 i < tryCount && ex.ServerResponse?.StatusCode == HttpStatusCode.ServiceUnavailable;
                  ++i)
                 ex = await Assert.ThrowsExceptionAsync<InvalidObjectNameException>(
                     () => minio.StatObjectAsync(statObjArgs)).ConfigureAwait(false);

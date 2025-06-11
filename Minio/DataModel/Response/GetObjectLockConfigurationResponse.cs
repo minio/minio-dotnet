@@ -27,7 +27,7 @@ internal class GetObjectLockConfigurationResponse : GenericResponse
     internal GetObjectLockConfigurationResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+        if (string.IsNullOrEmpty(responseContent) || HttpStatusCode.OK != statusCode)
         {
             LockConfiguration = null;
             return;

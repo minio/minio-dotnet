@@ -155,7 +155,7 @@ public class IAMAWSProvider : IClientProvider
             await Client.ExecuteTaskAsync(Enumerable.Empty<IApiResponseErrorHandler>(), requestBuilder)
                 .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(response.Content) ||
-            !HttpStatusCode.OK.Equals(response.StatusCode))
+            HttpStatusCode.OK != response.StatusCode)
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
         /*
@@ -187,7 +187,7 @@ JsonConvert.DefaultSettings = () => new JsonSerializerSettings
                 .ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(response.Content) ||
-            !HttpStatusCode.OK.Equals(response.StatusCode))
+            HttpStatusCode.OK != response.StatusCode)
             throw new CredentialsProviderException("IAMAWSProvider",
                 "Credential Get operation failed with HTTP Status code: " + response.StatusCode);
 

@@ -89,7 +89,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         if (string.IsNullOrWhiteSpace(ContentType)) ContentType = "application/octet-stream";
         if (!Headers.ContainsKey("Content-Type")) Headers["Content-Type"] = ContentType;
 
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type", Headers["Content-Type"]);
+        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type", ContentType);
         if (!string.IsNullOrWhiteSpace(UploadId) && PartNumber > 0)
         {
             requestMessageBuilder.AddQueryParameter("uploadId", $"{UploadId}");
@@ -151,7 +151,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
             }
 
         if (string.IsNullOrWhiteSpace(ContentType)) ContentType = "application/octet-stream";
-        if (!Headers.ContainsKey("Content-Type")) Headers["Content-Type"] = ContentType;
+        Headers["Content-Type"] = ContentType;
         return this;
     }
 

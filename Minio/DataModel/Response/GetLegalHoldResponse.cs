@@ -27,7 +27,7 @@ public class GetLegalHoldResponse : GenericResponse
     public GetLegalHoldResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        if (string.IsNullOrEmpty(responseContent) || !HttpStatusCode.OK.Equals(statusCode))
+        if (string.IsNullOrEmpty(responseContent) || HttpStatusCode.OK != statusCode)
         {
             CurrentLegalHoldConfiguration = null;
             return;

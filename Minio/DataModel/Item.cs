@@ -43,6 +43,10 @@ public class Item
     public bool IsDir { get; set; }
 
     public string VersionId { get; set; }
+    public string ContentType { get; set; }
+    public string Expires { get; set; }
+    public IDictionary<string, string> UserMetadata { get; set; }
+
     public bool IsLatest { get; set; }
 
     public DateTime? LastModifiedDateTime

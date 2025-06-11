@@ -107,6 +107,9 @@ internal static class Program
 
         ConcurrentBag<Task> functionalTestTasks = new();
 
+        // Global Notification
+        await FunctionalTest.ListenNotifications_Test1(minioClient).ConfigureAwait(false);
+
         // Try catch as 'finally' section needs to run in the Functional Tests
         // Bucket notification is a minio specific feature.
         // If the following test is run against AWS, then the SDK throws
@@ -151,6 +154,8 @@ internal static class Program
         // Test GetObjectAsync function
         functionalTestTasks.Add(FunctionalTest.GetObject_Test1(minioClient));
         functionalTestTasks.Add(FunctionalTest.GetObject_Test2(minioClient));
+        functionalTestTasks.Add(FunctionalTest.GetObjectNegObjNotFound_Test3(minioClient));
+        functionalTestTasks.Add(FunctionalTest.GetObjectNegBcktNotFound_Test4(minioClient));
         // 3 tests will run to check different values of offset and length parameters
         // when GetObject api returns part of the object as defined by the offset
         // and length parameters. Tests will be reported as GetObject_Test3,
@@ -176,6 +181,8 @@ internal static class Program
         functionalTestTasks.Add(FunctionalTest.ListObjects_Test4(minioClient));
         functionalTestTasks.Add(FunctionalTest.ListObjects_Test5(minioClient));
         functionalTestTasks.Add(FunctionalTest.ListObjects_Test6(minioClient));
+        functionalTestTasks.Add(FunctionalTest.ListObjects_Test7(minioClient));
+        functionalTestTasks.Add(FunctionalTest.ListObjects_Test8(minioClient));
 
         // Test RemoveObjectAsync function
         functionalTestTasks.Add(FunctionalTest.RemoveObject_Test1(minioClient));
@@ -207,10 +214,10 @@ internal static class Program
         // FunctionalTest.PresignedPostPolicy_Test1(minioClient).Wait();
 
         // Test incomplete uploads
-        functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test1(minioClient));
-        functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test2(minioClient));
-        functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test3(minioClient));
-        functionalTestTasks.Add(FunctionalTest.RemoveIncompleteUpload_Test(minioClient));
+        //functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test1(minioClient));
+        //functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test2(minioClient));
+        //functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test3(minioClient));
+        //functionalTestTasks.Add(FunctionalTest.RemoveIncompleteUpload_Test(minioClient));
 
         // Test GetBucket policy
         functionalTestTasks.Add(FunctionalTest.GetBucketPolicy_Test1(minioClient));

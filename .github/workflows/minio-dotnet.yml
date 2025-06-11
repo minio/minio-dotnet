@@ -25,7 +25,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         configuration: [Release]
-        dotnet-version: ["7.0.x"]
+        dotnet-version: ["8.0.x"]
 
     steps:
       - name: Checkout
@@ -63,7 +63,7 @@ jobs:
 
       # Upload the normal artifacts
       - name: Upload the build output
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: |
@@ -72,13 +72,15 @@ jobs:
             **/*.csproj
             **/*.key
             **/*.crt
+          overwrite: true
 
       # Upload the Nuget packages
       - name: Upload the Nuget packages output
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nuget-packages
           path: ./artifacts/*
+          overwrite: true
 
   format-check:
     runs-on: ubuntu-latest
@@ -93,7 +95,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: "7.0.x"
+          dotnet-version: "8.0.x"
 
       # Install regitlint
       - name: Install tool dependencies
@@ -112,7 +114,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         configuration: [Release]
-        dotnet-version: ["7.0.x"]
+        dotnet-version: ["8.0.x"]
 
     steps:
       # Install .NET
@@ -123,7 +125,7 @@ jobs:
 
       # Download the build artifacts
       - name: Download the build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: .
@@ -139,7 +141,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         configuration: [Release]
-        dotnet-version: ["7.0.x"]
+        dotnet-version: ["8.0.x"]
 
     steps:
       # Install .NET
@@ -150,7 +152,7 @@ jobs:
 
       # Download the build artifacts
       - name: Download the build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: .
@@ -158,14 +160,15 @@ jobs:
       # Execute all functional tests in the solution
       - name: Execute Functional Tests Linux
         env:
+          CI: 1
           MINT_MODE: full
           SERVER_ENDPOINT: localhost:9000
           ACCESS_KEY: minio
           SECRET_KEY: minio123
           ENABLE_HTTPS: 1
           ENABLE_KMS: 1
-          MINIO_ACCESS_KEY: minio
-          MINIO_SECRET_KEY: minio123
+          MINIO_ROOT_USER: minio
+          MINIO_ROOT_PASSWORD: minio123
           MINIO_KMS_SECRET_KEY: my-minio-key:OSMM+vkKUTCvQs9YL/CVMIMt43HFhkUpqJxTmGl6rYw=
         run: |
             wget --quiet -O /tmp/minio https://dl.min.io/server/minio/release/linux-amd64/minio
@@ -174,8 +177,13 @@ jobs:
             cp Minio.Functional.Tests/certs/* /tmp/minio-config/certs/
             sudo cp /tmp/minio-config/certs/public.crt /etc/ssl/certs/
             sudo cp /tmp/minio-config/certs/private.key /etc/ssl/private/
-            /tmp/minio -C /tmp/minio-config server /tmp/fs{1...4} &
-            dotnet Minio.Functional.Tests/bin/Release/net7.0/Minio.Functional.Tests.dll
+            /tmp/minio --certs-dir /tmp/minio-config/certs server /tmp/fs{1...4} &
+
+            wget --quiet -O /tmp/mc https://dl.min.io/client/mc/release/linux-amd64/mc
+            chmod +x /tmp/mc
+            MC_HOST_test=https://minio:minio123@localhost:9000 /tmp/mc --insecure ready test
+            
+            dotnet Minio.Functional.Tests/bin/Release/net8.0/Minio.Functional.Tests.dll
 
   push_to_nuget:
     needs: [build, unit_tests, functional_tests, format-check]
@@ -185,7 +193,7 @@ jobs:
     steps:
       # Download the Nuget artifacts
       - name: Download the Nuget artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: nuget-packages
           path: ./artifacts
@@ -194,7 +202,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: "7.0.x"
+          dotnet-version: "8.0.x"
 
       # Push to NuGet
       - name: Push to NuGet

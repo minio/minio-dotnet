@@ -16,7 +16,7 @@
         <RepositoryUrl>https://github.com/minio/minio-dotnet</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <Product>$(AssemblyName) ($(TargetFramework))</Product>
-        <Version>6.0.2</Version>
+        <Version>6.0.5</Version>
 
         <!--<Nullable>enable</Nullable>-->
         <ImplicitUsings>enable</ImplicitUsings>
@@ -60,20 +60,20 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-        <PackageReference Include="Meziantou.Polyfill" Version="1.0.30">
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+        <PackageReference Include="Meziantou.Polyfill" Version="1.0.48">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Roslynator.Analyzers" Version="4.6.1">
+        <PackageReference Include="Roslynator.Analyzers" Version="4.13.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.6.1">
+        <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.13.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
@@ -81,11 +81,11 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Nullable.Extended.Analyzer" Version="1.10.4539">
+        <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6495">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.104">
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.201">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>

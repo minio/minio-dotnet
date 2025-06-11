@@ -51,8 +51,7 @@ internal class HttpRequestMessageBuilder
     }
 
     public Uri RequestUri { get; set; }
-    public Action<Stream> ResponseWriter { get; set; }
-    public Func<Stream, CancellationToken, Task> FunctionResponseWriter { get; set; }
+    public Func<Stream, CancellationToken, Task> ResponseWriter { get; set; }
     public HttpMethod Method { get; }
 
     public HttpRequestMessage Request

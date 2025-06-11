@@ -28,8 +28,7 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
         OffsetLengthSet = false;
     }
 
-    internal Action<Stream> CallBack { get; private set; }
-    internal Func<Stream, CancellationToken, Task> FuncCallBack { get; private set; }
+    internal Func<Stream, CancellationToken, Task> CallBack { get; private set; }
     internal long ObjectOffset { get; private set; }
     internal long ObjectLength { get; private set; }
     internal string FileName { get; private set; }
@@ -38,7 +37,7 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
     internal override void Validate()
     {
         base.Validate();
-        if (CallBack is null && FuncCallBack is null && string.IsNullOrEmpty(FileName))
+        if (CallBack is null && string.IsNullOrEmpty(FileName))
             throw new MinioException("Atleast one of " + nameof(CallBack) + ", CallBack method or " + nameof(FileName) +
                                      " file path to save need to be set for GetObject operation.");
 
@@ -76,8 +75,7 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
     {
         if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
 
-        if (CallBack is not null) requestMessageBuilder.ResponseWriter = CallBack;
-        else requestMessageBuilder.FunctionResponseWriter = FuncCallBack;
+        requestMessageBuilder.ResponseWriter = CallBack;
 
         if (Headers.TryGetValue(S3ZipExtractKey, out var value))
             requestMessageBuilder.AddQueryParameter(S3ZipExtractKey, value);
@@ -87,13 +85,31 @@ public class GetObjectArgs : ObjectConditionalQueryArgs<GetObjectArgs>
 
     public GetObjectArgs WithCallbackStream(Action<Stream> cb)
     {
-        CallBack = cb;
+        CallBack = (stream, cancellationToken) =>
+        {
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+
+            if (cancellationToken.IsCancellationRequested)
+                taskCompletionSource.SetCanceled();
+            else
+                try
+                {
+                    cb(stream);
+                    taskCompletionSource.SetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    taskCompletionSource.SetException(ex);
+                }
+
+            return taskCompletionSource.Task;
+        };
         return this;
     }
 
     public GetObjectArgs WithCallbackStream(Func<Stream, CancellationToken, Task> cb)
     {
-        FuncCallBack = cb;
+        CallBack = cb;
         return this;
     }
 

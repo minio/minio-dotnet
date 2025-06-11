@@ -17,7 +17,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using Minio.DataModel;
@@ -25,6 +24,7 @@ using Minio.DataModel.Encryption;
 using Minio.DataModel.Notification;
 using Minio.DataModel.ObjectLock;
 using Minio.Examples.Cases;
+using Minio.Helper;
 
 namespace Minio.Examples;
 
@@ -111,7 +111,7 @@ public static class Program
         var destBucketName = GetRandomName();
         var destObjectName = GetRandomName();
         var lockBucketName = GetRandomName();
-        var progress = new Progress<ProgressReport>(progressReport =>
+        var progress = new SyncProgress<ProgressReport>(progressReport =>
         {
             Console.WriteLine(
                 $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
@@ -123,7 +123,7 @@ public static class Program
         for (var i = 0; i < 10; i++) objectsList.Add(objectName + i);
 
         // Set app Info 
-        minioClient.SetAppInfo("app-name", "app-version");
+        _ = minioClient.SetAppInfo("app-name", "app-version");
 
         // Set HTTP Tracing On
         // minioClient.SetTraceOn();
@@ -152,6 +152,9 @@ public static class Program
         // Start listening for bucket notifications
         ListenBucketNotifications.Run(minioClient, bucketName, new List<EventType> { EventType.ObjectCreatedAll });
 
+        // Start listening for global notifications
+        ListenNotifications.Run(minioClient, new List<EventType> { EventType.BucketCreatedAll });
+
         // Put an object to the new bucket
         await PutObject.Run(minioClient, bucketName, objectName, smallFileName, progress).ConfigureAwait(false);
 
@@ -159,7 +162,7 @@ public static class Program
         await StatObject.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
 
         // List the objects in the new bucket
-        ListObjects.Run(minioClient, bucketName);
+        await ListObjects.Run(minioClient, bucketName).ConfigureAwait(false);
 
         // Get the file and Download the object as file
         await GetObject.Run(minioClient, bucketName, objectName, smallFileName).ConfigureAwait(false);
@@ -210,7 +213,7 @@ public static class Program
         await FGetObject.Run(minioClient, destBucketName, objectName, bigFileName, ssec).ConfigureAwait(false);
 
         // List the incomplete uploads
-        ListIncompleteUploads.Run(minioClient, bucketName);
+        await ListIncompleteUploads.Run(minioClient, bucketName).ConfigureAwait(false);
 
         // Remove all the incomplete uploads
         await RemoveIncompleteUpload.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
@@ -282,6 +285,6 @@ public static class Program
         File.Delete(smallFileName);
         File.Delete(bigFileName);
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) _ = Console.ReadLine();
+        if (OperatingSystem.IsWindows()) _ = Console.ReadLine();
     }
 }

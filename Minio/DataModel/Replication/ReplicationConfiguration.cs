@@ -38,7 +38,7 @@ public class ReplicationConfiguration
     {
     }
 
-    public ReplicationConfiguration(string role, Collection<ReplicationRule> rules)
+    public ReplicationConfiguration(string role, ICollection<ReplicationRule> rules)
     {
         if (string.IsNullOrEmpty(role) || string.IsNullOrWhiteSpace(role))
             throw new ArgumentNullException(nameof(role), nameof(role) + " member cannot be empty.");
@@ -49,7 +49,7 @@ public class ReplicationConfiguration
                 nameof(rules) + " Count of rules cannot exceed maximum limit of 1000.");
 
         Role = role;
-        Rules = rules;
+        Rules = (Collection<ReplicationRule>)rules;
     }
 
     [XmlElement("Role")] public string Role { get; set; }

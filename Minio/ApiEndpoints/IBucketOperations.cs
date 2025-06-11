@@ -87,7 +87,7 @@ public interface IBucketOperations
     ///     For example, if you call ListObjectsAsync on a bucket with versioning
     ///     enabled or object lock enabled
     /// </exception>
-    IObservable<Item> ListObjectsAsync(ListObjectsArgs args, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<Item> ListObjectsEnumAsync(ListObjectsArgs args, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Gets notification configuration for this bucket
@@ -378,6 +378,9 @@ public interface IBucketOperations
     Task RemoveBucketReplicationAsync(RemoveBucketReplicationArgs args, CancellationToken cancellationToken = default);
 
     Task<string> GetPolicyAsync(GetPolicyArgs args, CancellationToken cancellationToken = default);
+
+    IObservable<MinioNotificationRaw> ListenNotifications(ListenBucketNotificationsArgs args,
+        CancellationToken cancellationToken = default);
 
     IObservable<MinioNotificationRaw> ListenBucketNotificationsAsync(string bucketName, IList<EventType> events,
         string prefix = "", string suffix = "", CancellationToken cancellationToken = default);

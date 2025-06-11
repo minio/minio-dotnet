@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Runtime.Serialization;
 using Minio.DataModel.Result;
 
 namespace Minio.Exceptions;
@@ -39,11 +38,6 @@ public class DeleteObjectException : MinioException
     }
 
     public DeleteObjectException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
-
-    protected DeleteObjectException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(
-        serializationInfo, streamingContext)
     {
     }
 }

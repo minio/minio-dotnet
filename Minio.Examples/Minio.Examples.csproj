@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;net8.0;</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Polly" Version="8.1.0" />
+    <PackageReference Include="Polly" Version="8.5.2" />
     <ProjectReference Include="..\Minio\Minio.csproj" />
   </ItemGroup>
 </Project>
