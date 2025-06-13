@@ -401,5 +401,4 @@ public static class RequestExtensions
         return TimeSpan.FromSeconds(seconds);
 #endif
     }
-
 }
