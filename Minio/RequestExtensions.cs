@@ -53,12 +53,13 @@ public static class RequestExtensions
         Task<ResponseResult> responseResult;
         try
         {
+            using var internalTokenSource =
+                new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, minioClient.Config.RequestTimeout));
+            using var timeoutTokenSource =
+                CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
+
             if (minioClient.Config.RequestTimeout > 0)
             {
-                using var internalTokenSource =
-                    new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, minioClient.Config.RequestTimeout));
-                using var timeoutTokenSource =
-                    CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
                 cancellationToken = timeoutTokenSource.Token;
             }
 
