@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Web;
 using Minio.Credentials;
@@ -80,7 +81,7 @@ public static class RequestExtensions
         bool isSts = false,
         CancellationToken cancellationToken = default)
     {
-        var startTime = DateTime.Now;
+        var startTime = Stopwatch.GetTimestamp();
         var v4Authenticator = new V4Authenticator(minioClient.Config.Secure,
             minioClient.Config.AccessKey, minioClient.Config.SecretKey, minioClient.Config.Region,
             minioClient.Config.SessionToken);
@@ -369,13 +370,13 @@ public static class RequestExtensions
     /// <param name="startTime"></param>
     private static void HandleIfErrorResponse(this IMinioClient minioClient, ResponseResult response,
         IEnumerable<IApiResponseErrorHandler> handlers,
-        DateTime startTime)
+        long startTime)
     {
         // Logs Response if HTTP tracing is enabled
         if (minioClient.Config.TraceHttp)
         {
-            var now = DateTime.Now;
-            minioClient.LogRequest(response.Request, response, (now - startTime).TotalMilliseconds);
+            var elapsed = GetElapsedTime(startTime);
+            minioClient.LogRequest(response.Request, response, elapsed.TotalMilliseconds);
         }
 
         if (response.Exception is not null)
@@ -387,5 +388,17 @@ public static class RequestExtensions
                 handler.Handle(response);
         else
             minioClient.DefaultErrorHandler.Handle(response);
+    }
+
+    private static TimeSpan GetElapsedTime(long startTimestamp)
+    {
+#if NET8_0_OR_GREATER
+        return Stopwatch.GetElapsedTime(startTimestamp);
+#else
+        var endTimestamp = Stopwatch.GetTimestamp();
+        var elapsedTicks = endTimestamp - startTimestamp;
+        var seconds = (double)elapsedTicks / Stopwatch.Frequency;
+        return TimeSpan.FromSeconds(seconds);
+#endif
     }
 }
