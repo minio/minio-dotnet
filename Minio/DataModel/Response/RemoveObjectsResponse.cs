@@ -15,8 +15,6 @@
  */
 
 using System.Net;
-using System.Text;
-using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Result;
 using Minio.Helper;
 
@@ -27,8 +25,7 @@ internal class RemoveObjectsResponse : GenericResponse
     internal RemoveObjectsResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        using var stream = Encoding.UTF8.GetBytes(responseContent).AsMemory().AsStream();
-        DeletedObjectsResult = Utils.DeserializeXml<DeleteObjectsResult>(stream);
+        DeletedObjectsResult = Utils.DeserializeXml<DeleteObjectsResult>(responseContent);
     }
 
     internal DeleteObjectsResult DeletedObjectsResult { get; }

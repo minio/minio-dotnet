@@ -109,7 +109,7 @@ public partial class MinioClient : IMinioClient
     {
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+            await this.ExecuteTaskAsync(requestMessageBuilder,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
@@ -133,7 +133,7 @@ public partial class MinioClient : IMinioClient
     {
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
         using var response =
-            await this.ExecuteTaskAsync(ResponseErrorHandlers, requestMessageBuilder,
+            await this.ExecuteTaskAsync(requestMessageBuilder,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         var removeObjectsResponse = new RemoveObjectsResponse(response.StatusCode, response.Content);
