@@ -1148,21 +1148,15 @@ public partial class MinioClient : IObjectOperations
         var totalRead = 0;
         while (totalRead < currentPartSize)
         {
-            Memory<byte> curData = new byte[currentPartSize - totalRead];
-            var curRead = await data.ReadAsync(curData[..(currentPartSize - totalRead)]).ConfigureAwait(false);
+            var curData = result[totalRead..currentPartSize];
+            var curRead = await data.ReadAsync(curData).ConfigureAwait(false);
             if (curRead == 0) break;
-            for (var i = 0; i < curRead; i++)
-                curData.Slice(i, 1).CopyTo(result[(totalRead + i)..]);
             totalRead += curRead;
         }
 
         if (totalRead == 0) return null;
 
-        if (totalRead == currentPartSize) return result;
-
-        Memory<byte> truncatedResult = new byte[totalRead];
-        for (var i = 0; i < totalRead; i++)
-            result.Slice(i, 1).CopyTo(truncatedResult[i..]);
-        return truncatedResult;
+        // Return only the valid portion without allocating a new buffer
+        return result[..totalRead];
     }
 }
