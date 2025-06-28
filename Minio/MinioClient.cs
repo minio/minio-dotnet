@@ -68,6 +68,14 @@ public partial class MinioClient : IMinioClient
     }
 
     /// <summary>
+    ///     Runs httpClient's DeleteAsync method
+    /// </summary>
+    public Task<HttpResponseMessage> WrapperDeleteAsync(Uri uri)
+    {
+        return Config.HttpClient.DeleteAsync(uri);
+    }
+
+    /// <summary>
     ///     Sets HTTP tracing On.Writes output to Console
     /// </summary>
     public void SetTraceOn(IRequestLogger requestLogger = null)

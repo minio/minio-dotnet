@@ -13,6 +13,9 @@ namespace Minio;
 
 public static class RequestExtensions
 {
+    /// <summary>
+    ///     Runs httpClient's GetObjectAsync method
+    /// </summary>
     [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
         Justification = "This is done in the interface. String is provided here for convenience")]
     public static Task<HttpResponseMessage> WrapperGetAsync(this IMinioClient minioClient, string url)
@@ -20,6 +23,18 @@ public static class RequestExtensions
         return minioClient is null
             ? throw new ArgumentNullException(nameof(minioClient))
             : minioClient.WrapperGetAsync(new Uri(url));
+    }
+
+    /// <summary>
+    ///     Runs httpClient's DeleteObjectAsync method
+    /// </summary>
+    [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
+        Justification = "This is done in the interface. String is provided here for convenience")]
+    public static Task<HttpResponseMessage> WrapperDeleteAsync(this IMinioClient minioClient, string url)
+    {
+        return minioClient is null
+            ? throw new ArgumentNullException(nameof(minioClient))
+            : minioClient.WrapperDeleteAsync(new Uri(url));
     }
 
     /// <summary>
