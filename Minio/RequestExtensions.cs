@@ -55,10 +55,7 @@ public static class RequestExtensions
             new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, minioClient.Config.RequestTimeout));
         using var timeoutTokenSource =
             CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
-        if (minioClient.Config.RequestTimeout > 0)
-        {
-            cancellationToken = timeoutTokenSource.Token;
-        }
+        if (minioClient.Config.RequestTimeout > 0) cancellationToken = timeoutTokenSource.Token;
 
         responseResult = await minioClient.ExecuteWithRetry(
             async Task<ResponseResult> () => await minioClient.ExecuteTaskCoreAsync(
