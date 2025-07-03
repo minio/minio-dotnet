@@ -275,6 +275,31 @@ public partial class MinioClient : IObjectOperations
     }
 
     /// <summary>
+    ///     Get Presigned Url -returns a presigned url of an object for HTTP method without credentials.URL can have a maximum expiry of
+    ///     upto 7 days or a minimum of 1 second.
+    /// </summary>
+    /// <param name="args">GetPresignedUrlArgs Arguments Object which encapsulates HTTP method, bucket, object names, expiry</param>
+    /// <returns></returns>
+    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+    /// <exception cref="MalFormedXMLException">When configuration XML provided is invalid</exception>
+    public async Task<string> GetPresignedUrlAsync(GetPresignedUrlArgs args)
+    {
+        args?.Validate();
+        var requestMessageBuilder = await this.CreateRequest(args.RequestMethod, args.BucketName,
+            args.ObjectName,
+            args.Headers, // contentType
+            Convert.ToString(args.GetType(), CultureInfo.InvariantCulture), // metaData
+            Utils.ObjectToByteArray(args.RequestBody)).ConfigureAwait(false);
+        var authenticator = new V4Authenticator(Config.Secure, Config.AccessKey, Config.SecretKey, Config.Region,
+            Config.SessionToken);
+        return authenticator.PresignURL(requestMessageBuilder, args.Expiry, Config.Region, Config.SessionToken);
+    }
+
+    /// <summary>
     ///     Get the configuration object for Legal Hold Status
     /// </summary>
     /// <param name="args">

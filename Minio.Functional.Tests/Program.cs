@@ -216,6 +216,11 @@ internal static class Program
         functionalTestTasks.Add(FunctionalTest.PresignedPutObject_Test1(minioClient));
         functionalTestTasks.Add(FunctionalTest.PresignedPutObject_Test2(minioClient));
         // FunctionalTest.PresignedPostPolicy_Test1(minioClient).Wait();
+        functionalTestTasks.Add(FunctionalTest.GetPresignedUrl_Get_Test1(minioClient));
+        functionalTestTasks.Add(FunctionalTest.GetPresignedUrl_Get_Test2(minioClient));
+        functionalTestTasks.Add(FunctionalTest.GetPresignedUrl_Get_Test3(minioClient));
+        functionalTestTasks.Add(FunctionalTest.GetPresignedUrl_Put_Delete_Test1(minioClient));
+        functionalTestTasks.Add(FunctionalTest.GetPresignedUrl_Put_Delete_Test2(minioClient));
 
         // Test GetBucket policy
         functionalTestTasks.Add(FunctionalTest.GetBucketPolicy_Test1(minioClient));
