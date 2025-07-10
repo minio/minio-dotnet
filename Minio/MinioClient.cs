@@ -127,7 +127,9 @@ public partial class MinioClient : IMinioClient
             nameof(HttpStatusCode.MethodNotAllowed), nameof(HttpStatusCode.NotImplemented)
         };
 
-        if (response.Exception != null && !string.IsNullOrEmpty(response.ErrorMessage))
+        if (response.Exception != null ||
+            !string.IsNullOrEmpty(response.ErrorMessage) ||
+            response.Headers is not null)
         {
             foreach (var exception in statusCodeStrs)
                 if ((response.ErrorMessage?.Contains(exception, StringComparison.InvariantCulture) ?? false) ||
@@ -136,6 +138,14 @@ public partial class MinioClient : IMinioClient
                 {
                     ParseWellKnownErrorNoContent(response);
                     break;
+                }
+                else if (response.Headers.ContainsKey("X-Minio-Error-Desc") &&
+                         response.Headers["X-Minio-Error-Desc"] is not null &&
+                         response.Headers.ContainsKey("X-Minio-Error-Code") &&
+                         response.Headers["X-Minio-Error-Code"] is not null)
+                {
+                    throw new Exception(response.Headers["X-Minio-Error-Code"] + ": " +
+                                        response.Headers["X-Minio-Error-Desc"]);
                 }
         }
         else if (statusCodeStrs.Contains(response.StatusCode.ToString(), StringComparer.Ordinal))
@@ -268,6 +278,10 @@ public partial class MinioClient : IMinioClient
         if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
             && string.Equals(errResponse.Code, "NoSuchBucket", StringComparison.OrdinalIgnoreCase))
             throw new BucketNotFoundException(errResponse.BucketName);
+
+        if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
+            && string.Equals(errResponse.Code, "NoSuchKey", StringComparison.OrdinalIgnoreCase))
+            throw new ObjectNotFoundException(errResponse.BucketName);
 
         if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
             && errResponse.Code.Equals("MalformedXML", StringComparison.OrdinalIgnoreCase))

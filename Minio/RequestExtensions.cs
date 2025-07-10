@@ -61,12 +61,32 @@ public static class RequestExtensions
             async Task<ResponseResult> () => await minioClient.ExecuteTaskCoreAsync(
                 requestMessageBuilder,
                 isSts, cancellationToken).ConfigureAwait(false)).ConfigureAwait(false);
-        if ((responseResult is not null &&
-             !Equals(responseResult.Exception?.GetType(), ignoreExceptionType)) ||
-            responseResult.StatusCode != HttpStatusCode.OK)
+
+        if (responseResult is not null)
         {
             var handler = new DefaultErrorHandler();
-            handler.Handle(responseResult);
+
+            if (responseResult.StatusCode == HttpStatusCode.Forbidden)
+            {
+                if (responseResult.Headers is not null)
+                    if (responseResult.Headers.ContainsKey("X-Minio-Error-Desc"))
+                        if (responseResult.Headers["X-Minio-Error-Desc"] is null)
+                            if (responseResult.Content is not null)
+                                responseResult.Headers["X-Minio-Error-Desc"] = responseResult.Content;
+                handler.Handle(responseResult);
+            }
+
+            if (responseResult.Exception is not null)
+            {
+                if (!Equals(responseResult.Exception?.GetType(), ignoreExceptionType))
+                {
+                    handler.Handle(responseResult);
+                }
+                else
+                {
+                    if (responseResult.StatusCode != HttpStatusCode.OK) handler.Handle(responseResult);
+                }
+            }
         }
 
         return responseResult;
