@@ -22,6 +22,7 @@ public class AuthorizationException : Exception
 {
     internal readonly string accessKey;
     internal readonly string bucketName;
+    internal readonly string message;
     internal readonly string resource;
 
     public AuthorizationException()
@@ -35,6 +36,7 @@ public class AuthorizationException : Exception
     public AuthorizationException(string resource, string bucketName, string message, string accesskey = null) :
         base(message)
     {
+        this.message = message;
         this.resource = resource;
         this.bucketName = bucketName;
         accessKey = accesskey;
