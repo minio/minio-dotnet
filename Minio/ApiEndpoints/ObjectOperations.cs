@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
@@ -576,8 +577,10 @@ public partial class MinioClient : IObjectOperations
         if ((args.ObjectSize < Constants.MinimumPartSize || isSnowball) && args.ObjectSize >= 0 &&
             args.ObjectStreamData is not null)
         {
-            var bytes = await ReadFullAsync(args.ObjectStreamData, (int)args.ObjectSize).ConfigureAwait(false);
-            var bytesRead = bytes.Length;
+            using var tempMemory = MemoryPool<byte>.Shared.Rent((int)args.ObjectSize);
+            var bytesRead = await ReadFullAsync(args.ObjectStreamData, tempMemory.Memory)
+                .ConfigureAwait(false);
+            var bytes = tempMemory.Memory[..bytesRead];
             if (bytesRead != (int)args.ObjectSize)
                 throw new UnexpectedShortReadException(
                     $"Data read {bytesRead.ToString(CultureInfo.InvariantCulture)} is shorter than the size {args.ObjectSize.ToString(CultureInfo.InvariantCulture)} of input buffer.");
@@ -916,9 +919,11 @@ public partial class MinioClient : IObjectOperations
         var etags = new Dictionary<int, string>();
         var progressReport = new ProgressReport();
         args.Progress?.Report(progressReport);
+        using var tempMemory = MemoryPool<byte>.Shared.Rent((int)partSize);
         for (partNumber = 1; partNumber <= partCount; partNumber++)
         {
-            var dataToCopy = await ReadFullAsync(args.ObjectStreamData, (int)partSize).ConfigureAwait(false);
+            var bytesRead = await ReadFullAsync(args.ObjectStreamData, tempMemory.Memory).ConfigureAwait(false);
+            var dataToCopy = tempMemory.Memory[..bytesRead];
             if (dataToCopy.IsEmpty && numPartsUploaded > 0) break;
             if (partNumber == partCount) expectedReadSize = lastPartSize;
             var putObjectArgs = new PutObjectArgs(args)
@@ -1140,23 +1145,10 @@ public partial class MinioClient : IObjectOperations
     ///     Advances in the stream upto currentPartSize or End of Stream
     /// </summary>
     /// <param name="data"></param>
-    /// <param name="currentPartSize"></param>
-    /// <returns>bytes read in a byte array</returns>
-    internal static async Task<ReadOnlyMemory<byte>> ReadFullAsync(Stream data, int currentPartSize)
+    /// <param name="destination"></param>
+    /// <returns>bytes count read</returns>
+    internal static async Task<int> ReadFullAsync(Stream data, Memory<byte> destination)
     {
-        Memory<byte> result = new byte[currentPartSize];
-        var totalRead = 0;
-        while (totalRead < currentPartSize)
-        {
-            var curData = result[totalRead..currentPartSize];
-            var curRead = await data.ReadAsync(curData).ConfigureAwait(false);
-            if (curRead == 0) break;
-            totalRead += curRead;
-        }
-
-        if (totalRead == 0) return null;
-
-        // Return only the valid portion without allocating a new buffer
-        return result[..totalRead];
+        return await data.ReadAsync(destination).ConfigureAwait(false);
     }
 }
