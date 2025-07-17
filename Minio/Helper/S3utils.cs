@@ -22,13 +22,15 @@ internal static class S3utils
 {
     internal static readonly Regex TrimWhitespaceRegex = new("\\s+", RegexOptions.None, TimeSpan.FromHours(1));
 
+    internal static readonly Regex AmazonEndpointRegex = new(
+        "^s3[.-]?(.*?)\\.amazonaws\\.com$",
+        RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant,
+        TimeSpan.FromHours(1)
+    );
+
     internal static bool IsAmazonEndPoint(string endpoint)
     {
-        if (IsAmazonChinaEndPoint(endpoint)) return true;
-        var rgx = new Regex("^s3[.-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
-            TimeSpan.FromHours(1));
-        var matches = rgx.Matches(endpoint);
-        return matches.Count > 0;
+        return AmazonEndpointRegex.IsMatch(endpoint);
     }
 
     // IsAmazonChinaEndpoint - Match if it is exactly Amazon S3 China endpoint.
