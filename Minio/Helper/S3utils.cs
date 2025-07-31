@@ -30,6 +30,7 @@ internal static class S3utils
 
     internal static bool IsAmazonEndPoint(string endpoint)
     {
+        if (IsAmazonChinaEndPoint(endpoint)) return true;
         return AmazonEndpointRegex.IsMatch(endpoint);
     }
 
