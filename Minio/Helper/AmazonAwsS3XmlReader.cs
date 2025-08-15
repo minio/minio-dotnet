@@ -24,5 +24,9 @@ public class AmazonAwsS3XmlReader : XmlTextReader
     {
     }
 
+    public AmazonAwsS3XmlReader(TextReader textReader) : base(textReader)
+    {
+    }
+
     public override string NamespaceURI => "http://s3.amazonaws.com/doc/2006-03-01/";
 }
