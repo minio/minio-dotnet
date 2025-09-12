@@ -177,7 +177,7 @@ public partial class MinioClient : IMinioClient
         var resourceSplits = pathAndQuery.Split(separator, 2, StringSplitOptions.RemoveEmptyEntries);
 
         if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.Ordinal) ||
-            response.Exception.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.Ordinal))
+            response.Exception?.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.Ordinal) == true)
         {
             var pathLength = resourceSplits.Length;
             var isAWS = host.EndsWith("s3.amazonaws.com", StringComparison.OrdinalIgnoreCase);
