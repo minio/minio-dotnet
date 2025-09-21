@@ -130,34 +130,45 @@ public partial class MinioClient : IMinioClient
         if (response.Exception != null ||
             !string.IsNullOrEmpty(response.ErrorMessage) ||
             response.Headers is not null)
-        {
             foreach (var exception in statusCodeStrs)
-                if ((response.ErrorMessage?.Contains(exception, StringComparison.InvariantCulture) ?? false) ||
-                    (response.ErrorMessage?.Contains(response.StatusCode.ToString(),
-                        StringComparison.InvariantCulture) ?? false))
+            {
+                if (response.StatusCode is not HttpStatusCode.OK)
                 {
                     ParseWellKnownErrorNoContent(response);
                     break;
                 }
-                else if (response.Headers.ContainsKey("X-Minio-Error-Desc") &&
-                         response.Headers["X-Minio-Error-Desc"] is not null &&
-                         response.Headers.ContainsKey("X-Minio-Error-Code") &&
-                         response.Headers["X-Minio-Error-Code"] is not null)
-                {
-                    throw new Exception(response.Headers["X-Minio-Error-Code"] + ": " +
-                                        response.Headers["X-Minio-Error-Desc"]);
-                }
-        }
-        else if (statusCodeStrs.Contains(response.StatusCode.ToString(), StringComparer.Ordinal))
-        {
+
+                if (response.Headers.TryGetValue("X-Minio-Error-Code", out var value1) && value1 is not null &&
+                    response.Headers.TryGetValue("X-Minio-Error-Desc", out var value2) && value2 is not null)
+                    throw new Exception(value1 + ": " + value2);
+            }
+
+        if (statusCodeStrs.Contains(response.StatusCode.ToString(), StringComparer.Ordinal))
             ParseWellKnownErrorNoContent(response);
-        }
 #pragma warning disable MA0099 // Use Explicit enum value instead of 0
-        if (response.StatusCode == 0)
-            throw new ConnectionException("Connection error:" + response.ErrorMessage, response);
+        if (response.ErrorMessage.Contains("Name or service not known", StringComparison.OrdinalIgnoreCase)
+            || response.StatusCode == 0)
+            throw new ConnectionException("Connection error: " + response.ErrorMessage);
+#pragma warning disable MA0099 // Use Explicit enum value instead of 0
+        if (response.ErrorMessage.Contains("No route to host", StringComparison.OrdinalIgnoreCase))
+            throw new ConnectionException("Connection error:" + "Name or service not known (" +
+                                          response.Request.RequestUri.Authority + ")");
+
+        if (response.ErrorMessage.Contains("The Access Key Id you provided does not exist in our records.",
+                StringComparison.OrdinalIgnoreCase))
+            throw new AccessDeniedException("Access denied error: " + response.ErrorMessage, response);
+
+        if (response.ErrorMessage.Contains(
+                "The request signature we calculated does not match the signature you provided. Check your key and signing method.",
+                StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(response.Content))
+            throw new AccessDeniedException("Access denied error: " + response.ErrorMessage, response);
+
         if (response.Exception.GetType() == typeof(TaskCanceledException))
             throw response.Exception;
-#pragma warning restore MA0099 // Use Explicit enum value instead of 0
+
+        if (response.StatusCode == HttpStatusCode.PartialContent)
+            throw response.Exception;
+
         throw new InternalClientException(
             "Unsuccessful response from server without XML:" + response.ErrorMessage, response);
     }
@@ -186,8 +197,15 @@ public partial class MinioClient : IMinioClient
         // zero, one or two segments
         var resourceSplits = pathAndQuery.Split(separator, 2, StringSplitOptions.RemoveEmptyEntries);
 
-        if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.Ordinal) ||
-            response.Exception.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.Ordinal))
+        if (response.StatusCode == HttpStatusCode.PartialContent)
+        {
+            errorResponse.Code = "PartialContent";
+            error = new PartialContentException();
+        }
+
+        if (response.StatusCode == HttpStatusCode.NotFound
+            || string.Equals(response.Response.ReasonPhrase.Replace(" ", "", StringComparison.OrdinalIgnoreCase),
+                nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase))
         {
             var pathLength = resourceSplits.Length;
             var isAWS = host.EndsWith("s3.amazonaws.com", StringComparison.OrdinalIgnoreCase);

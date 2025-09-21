@@ -39,13 +39,12 @@ public static class RequestExtensions
     /// </summary>
     /// <param name="minioClient"></param>
     /// <param name="requestMessageBuilder">The build of HttpRequestMessageBuilder </param>
-    /// <param name="ignoreExceptionType">any type of Exception; if an exception type is going to be ignored</param>
     /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns>ResponseResult</returns>
+    /// <exception cref="ArgumentNullException"></exception>
     internal static async Task<ResponseResult> ExecuteTaskAsync(this IMinioClient minioClient,
         HttpRequestMessageBuilder requestMessageBuilder,
-        Type ignoreExceptionType = null,
         bool isSts = false,
         CancellationToken cancellationToken = default)
     {
@@ -62,31 +61,30 @@ public static class RequestExtensions
                 requestMessageBuilder,
                 isSts, cancellationToken).ConfigureAwait(false)).ConfigureAwait(false);
 
-        if (responseResult is not null)
+        if (responseResult is null)
+            throw new Exception($"Http command failure to return response value.\n{responseResult.Request.RequestUri}");
+
+        if (responseResult.Exception is not null)
         {
             var handler = new DefaultErrorHandler();
+            handler.Handle(responseResult);
+        }
 
-            if (responseResult.StatusCode == HttpStatusCode.Forbidden)
+        if (responseResult.StatusCode is not HttpStatusCode.OK)
+        {
+            if (responseResult.StatusCode == HttpStatusCode.NoContent
+                && responseResult.Request.Method == HttpMethod.Delete)
+                return responseResult;
+
+            if (Equals(responseResult.StatusCode, HttpStatusCode.NotFound))
             {
-                if (responseResult.Headers is not null)
-                    if (responseResult.Headers.ContainsKey("X-Minio-Error-Desc"))
-                        if (responseResult.Headers["X-Minio-Error-Desc"] is null)
-                            if (responseResult.Content is not null)
-                                responseResult.Headers["X-Minio-Error-Desc"] = responseResult.Content;
-                handler.Handle(responseResult);
+                if (responseResult.Headers.TryGetValue("X-Minio-Error-Code", out var val) && val is not null)
+                    responseResult.Exception = new MinioException(val, responseResult);
+                return responseResult;
             }
 
-            if (responseResult.Exception is not null)
-            {
-                if (!Equals(responseResult.Exception?.GetType(), ignoreExceptionType))
-                {
-                    handler.Handle(responseResult);
-                }
-                else
-                {
-                    if (responseResult.StatusCode != HttpStatusCode.OK) handler.Handle(responseResult);
-                }
-            }
+            var reasonFrase = "Minio.Exceptions." + responseResult.StatusCode + "Exception";
+            responseResult.Exception = new MinioException(reasonFrase);
         }
 
         return responseResult;
@@ -103,12 +101,12 @@ public static class RequestExtensions
             minioClient.Config.AccessKey, minioClient.Config.SecretKey, minioClient.Config.Region,
             minioClient.Config.SessionToken);
 
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Authorization",
+        requestMessageBuilder?.AddOrUpdateHeaderParameter("Authorization",
             v4Authenticator.Authenticate(requestMessageBuilder, isSts));
 
-        var request = requestMessageBuilder.Request;
+        var request = requestMessageBuilder?.Request;
         var responseResult = new ResponseResult(request, new HttpResponseMessage());
-        try
+        if (requestMessageBuilder is not null)
         {
             var response = await minioClient.Config.HttpClient.SendAsync(request,
                 HttpCompletionOption.ResponseHeadersRead,
@@ -118,10 +116,11 @@ public static class RequestExtensions
             if (requestMessageBuilder.ResponseWriter is not null)
                 await requestMessageBuilder.ResponseWriter(responseResult.ContentStream, cancellationToken)
                     .ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            responseResult.Exception = ex;
+            if (!Equals(responseResult.StatusCode, HttpStatusCode.OK))
+            {
+                var handler = new DefaultErrorHandler();
+                handler.Handle(responseResult);
+            }
         }
 
         return responseResult;
@@ -342,11 +341,9 @@ public static class RequestExtensions
     /// <param name="response"></param>
     /// <param name="handlers"></param>
     /// <param name="startTime"></param>
-    /// <param name="ignoreExceptionType"></param>
     private static void HandleIfErrorResponse(this IMinioClient minioClient, ResponseResult response,
         IEnumerable<IApiResponseErrorHandler> handlers,
-        long startTime,
-        Type ignoreExceptionType = null)
+        long startTime)
     {
         // Logs Response if HTTP tracing is enabled
         if (minioClient.Config.TraceHttp)
@@ -357,19 +354,12 @@ public static class RequestExtensions
 
         if (response.Exception is not null)
         {
-            if (response.Exception?.GetType() == ignoreExceptionType)
-            {
-                response.Exception = null;
-            }
+            if (handlers.Any())
+                // Run through handlers passed to take up error handling
+                foreach (var handler in handlers)
+                    handler.Handle(response);
             else
-            {
-                if (handlers.Any())
-                    // Run through handlers passed to take up error handling
-                    foreach (var handler in handlers)
-                        handler.Handle(response);
-                else
-                    minioClient.DefaultErrorHandler.Handle(response);
-            }
+                minioClient.DefaultErrorHandler.Handle(response);
         }
     }
 

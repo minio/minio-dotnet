@@ -44,7 +44,8 @@ using Minio.Helper;
 
 namespace Minio.Functional.Tests;
 
-[SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Keep private const lowercase")]
+#pragma warning disable IDE1006 // Naming Styles
+
 public static class FunctionalTest
 {
     private const int KB = 1024;
@@ -196,6 +197,7 @@ public static class FunctionalTest
 
     private const string deleteBucketLifecycleSignature =
         "Task RemoveBucketLifecycleAsync(RemoveBucketLifecycleArgs args, CancellationToken cancellationToken = default(CancellationToken))";
+#pragma warning restore IDE1006 // Naming Styles
 
     private static readonly Random rnd = new();
 
@@ -690,7 +692,7 @@ public static class FunctionalTest
                     var removeObjectArgs = new RemoveObjectsArgs()
                         .WithBucket(bucketName)
                         .WithObjectsVersions(objectNamesVersions);
-                    Task t = minio.RemoveObjectsAsync(removeObjectArgs);
+                    Task t = minio.RemoveObjectsAsync(removeObjectArgs, source.Token);
                     tasks.Add(t);
                 }
 
@@ -700,7 +702,7 @@ public static class FunctionalTest
                         .WithBucket(bucketName)
                         .WithObjects(objectNames);
 
-                    Task t = minio.RemoveObjectsAsync(removeObjectArgs);
+                    Task t = minio.RemoveObjectsAsync(removeObjectArgs, source.Token);
                     tasks.Add(t);
                 }
             }
@@ -708,7 +710,7 @@ public static class FunctionalTest
             await Task.WhenAll(tasks).ConfigureAwait(false);
             var rbArgs = new RemoveBucketArgs()
                 .WithBucket(bucketName);
-            await minio.RemoveBucketAsync(rbArgs).ConfigureAwait(false);
+            await minio.RemoveBucketAsync(rbArgs, source.Token).ConfigureAwait(false);
         }
     }
 
@@ -749,8 +751,8 @@ public static class FunctionalTest
             aesEncryption.KeySize = 256;
             aesEncryption.GenerateKey();
             var ssec = new SSEC(aesEncryption.Key);
-
-            using (var filestream = rsg.GenerateStreamFromSeed(1 * KB))
+            var filestream = rsg.GenerateStreamFromSeed(1 * KB);
+            await using (filestream.ConfigureAwait(false))
             {
                 var file_write_size = filestream.Length;
 
@@ -4979,7 +4981,7 @@ public static class FunctionalTest
             (StringComparer.Ordinal)
             {
                 // list is {offset, length} values
-                { "GetObject_Test3", new List<int> { 14, 20 } },
+                { "GetOaject_Test3", new List<int> { 14, 20 } },
                 { "GetObject_Test4", new List<int> { 30, 0 } },
                 { "GetObject_Test5", new List<int> { 0, 25 } }
             };
@@ -4997,6 +4999,7 @@ public static class FunctionalTest
                     { "offset", offsetToStartFrom.ToString(CultureInfo.InvariantCulture) },
                     { "length", lengthToBeRead.ToString(CultureInfo.InvariantCulture) }
                 };
+            string actualContent;
             try
             {
                 await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -5050,46 +5053,47 @@ public static class FunctionalTest
                             var fileStream = File.Create(tempFileName);
 
                             await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                            await fileStream.DisposeAsync().ConfigureAwait(false);
 
                             var writtenInfo = new FileInfo(tempFileName);
                             actualFileSize = writtenInfo.Length;
 
                             Assert.AreEqual(expectedFileSize, actualFileSize);
-
-                            // Checking the content
-#if NETFRAMEWORK
-                            var actualContent = File.ReadAllText(tempFileName);
-#else
-                            var actualContent = await File.ReadAllTextAsync(tempFileName, cancellationToken)
-                                .ConfigureAwait(false);
-#endif
-
-                            actualContent = actualContent.Replace("\n", "", StringComparison.Ordinal)
-                                .Replace("\r", "", StringComparison.Ordinal);
-                            Assert.AreEqual(actualContent, expectedContent);
+                            await fileStream.DisposeAsync().ConfigureAwait(false);
                         });
-
                     await minio.GetObjectAsync(getObjectArgs).ConfigureAwait(false);
+                    // Checking the content
+                    CancellationToken cancellationToken = default;
+#if NETFRAMEWORK
+                        actualContent = File.ReadAllText(tempFileName);
+#else
+                    cancellationToken = new CancellationTokenSource().Token;
+                    actualContent = await File.ReadAllTextAsync(tempFileName, cancellationToken).ConfigureAwait(false);
+#endif
+                    actualContent = actualContent.Replace("\n", "", StringComparison.Ordinal)
+                        .Replace("\r", "", StringComparison.Ordinal);
+                    Assert.AreEqual(actualContent, expectedContent);
                 }
 
                 new MintLogger(testName, getObjectSignature, "Tests whether GetObject returns all the data",
+                        TestStatus.FAIL, DateTime.Now - startTime, "Failed to hit PatialContentException", "",
+                        args: args)
+                    .Log();
+            }
+            catch (Exception ex) when (ex.Message.Contains("PartialContent", StringComparison.OrdinalIgnoreCase))
+            {
+                // Expected exception
+                new MintLogger(testName, getObjectSignature, "Tests whether GetObject returns all the data",
                     TestStatus.PASS, DateTime.Now - startTime, args: args).Log();
-
-                if (File.Exists(tempFileName)) File.Delete(tempFileName);
-                if (File.Exists(tempSource)) File.Delete(tempSource);
             }
             catch (Exception ex)
             {
                 new MintLogger(testName, getObjectSignature, "Tests whether GetObject returns all the data",
                     TestStatus.FAIL, DateTime.Now - startTime, ex.Message, ex.ToString(), args: args).Log();
-
-                if (File.Exists(tempFileName)) File.Delete(tempFileName);
-                if (File.Exists(tempSource)) File.Delete(tempSource);
-                await TearDown(minio, bucketName).ConfigureAwait(false);
             }
             finally
             {
+                if (File.Exists(tempFileName)) File.Delete(tempFileName);
+                if (File.Exists(tempSource)) File.Delete(tempSource);
                 await TearDown(minio, bucketName).ConfigureAwait(false);
             }
         }
@@ -5856,8 +5860,8 @@ public static class FunctionalTest
                 .Contains(reqParams["response-content-disposition"], StringComparer.Ordinal));
             Assert.IsTrue(response.Content.Headers.GetValues("Content-Length")
                 .Contains(stats.Size.ToString(CultureInfo.InvariantCulture), StringComparer.Ordinal));
-
-            using (var fs = new FileStream(downloadFile, FileMode.CreateNew))
+            var fs = new FileStream(downloadFile, FileMode.CreateNew);
+            await using (fs.ConfigureAwait(false))
             {
                 await response.Content.CopyToAsync(fs).ConfigureAwait(false);
             }

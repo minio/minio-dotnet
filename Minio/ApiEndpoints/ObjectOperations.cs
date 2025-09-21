@@ -1084,14 +1084,22 @@ public partial class MinioClient : IObjectOperations
     private async Task<string> NewMultipartUploadAsync(NewMultipartUploadCopyArgs args,
         CancellationToken cancellationToken = default)
     {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response =
-            await this.ExecuteTaskAsync(requestMessageBuilder,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-        var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
-        return uploadResponse.UploadId;
+        try
+        {
+            args?.Validate();
+            var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
+            using var response =
+                await this.ExecuteTaskAsync(requestMessageBuilder,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+            var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
+            return uploadResponse.UploadId;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"\n\n MultipartrUploadResponse or time failed with exception ======== {ex.Message}\n\n");
+            throw;
+        }
     }
 
     /// <summary>
