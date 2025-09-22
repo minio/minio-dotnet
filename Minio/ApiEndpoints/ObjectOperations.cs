@@ -55,6 +55,25 @@ public partial class MinioClient : IObjectOperations
     {
         return GetObjectHelper(args, cancellationToken);
     }
+    
+    /// <summary>
+    ///     Получение файла как Stream объекта.
+    /// </summary>
+    /// <param name="args">
+    ///     GetObjectArgs Arguments Object encapsulates information like - bucket name, object name, server-side
+    ///     encryption object, action stream, length, offset
+    /// </param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+    /// <exception cref="DirectoryNotFoundException">If the directory to copy to is not found</exception>
+    public Task<Stream> GetObjectAsStreamAsync(GetObjectArgs args, CancellationToken cancellationToken = default)
+    {
+        return GetObjectAsStreamHelper(args, cancellationToken);
+    }
 
     /// <summary>
     ///     Select an object's content. The object will be streamed to the callback given by the user.

@@ -65,6 +65,11 @@ public sealed class ResponseResult : IDisposable
         }
     }
 
+    public void SetContentStreamAsNull()
+    {
+        stream = null;
+    }
+
     public ReadOnlyMemory<byte> ContentBytes
     {
         get
