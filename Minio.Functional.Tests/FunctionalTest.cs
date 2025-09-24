@@ -1533,7 +1533,9 @@ public static class FunctionalTest
                 CompressionType = SelectCompressionType.NONE,
                 CSV = new CSVInputOptions
                 {
-                    FileHeaderInfo = CSVFileHeaderInfo.None, RecordDelimiter = "\n", FieldDelimiter = ","
+                    FileHeaderInfo = CSVFileHeaderInfo.None,
+                    RecordDelimiter = "\n",
+                    FieldDelimiter = ","
                 }
             };
             var outputSerialization = new SelectObjectOutputSerialization
@@ -4966,10 +4968,10 @@ public static class FunctionalTest
     }
 
     internal static async Task GetObject_3_OffsetLength_Tests(IMinioClient minio)
-        // 3 tests will run to check different values of offset and length parameters
-        // when GetObject api returns part of the object as defined by the offset
-        // and length parameters. Tests will be reported as GetObject_Test3,
-        // GetObject_Test4 and GetObject_Test5.
+    // 3 tests will run to check different values of offset and length parameters
+    // when GetObject api returns part of the object as defined by the offset
+    // and length parameters. Tests will be reported as GetObject_Test3,
+    // GetObject_Test4 and GetObject_Test5.
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
@@ -5837,10 +5839,10 @@ public static class FunctionalTest
             var stats = await minio.StatObjectAsync(statObjectArgs).ConfigureAwait(false);
             var reqParams = new Dictionary<string, string>
                 (StringComparer.Ordinal)
-                {
-                    ["response-content-type"] = "application/json",
-                    ["response-content-disposition"] = "attachment;filename=  MyDoc u m  e   nt.json ;"
-                };
+            {
+                ["response-content-type"] = "application/json",
+                ["response-content-disposition"] = "attachment;filename=  MyDoc u m  e   nt.json ;"
+            };
             var preArgs = new PresignedGetObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)

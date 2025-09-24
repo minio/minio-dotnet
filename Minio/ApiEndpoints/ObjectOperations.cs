@@ -698,7 +698,8 @@ public partial class MinioClient : IObjectOperations
                 .byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{args.SourceObject
                 .CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)
             }) does not fit within source object (size={args.SourceObjectInfo.Size
-                .ToString(CultureInfo.InvariantCulture)})");
+                .ToString(CultureInfo.InvariantCulture)
+            })");
 
         if (copySize > Constants.MaxSingleCopyObjectSize ||
             (srcByteRangeSize > 0 &&
