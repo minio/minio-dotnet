@@ -47,7 +47,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
     public string UploadId { get; private set; }
     public int PartNumber { get; set; }
     public string FileName { get; set; }
-    public long ObjectSize { get; set; }
+    public long ObjectSize { get; set; } = -1;
     public Stream ObjectStreamData { get; set; }
     public IProgress<ProgressReport> Progress { get; set; }
 
@@ -67,6 +67,9 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                                                 " should be set.");
 
         if (!string.IsNullOrWhiteSpace(FileName)) Utils.ValidateFile(FileName);
+        // Check object size when using stream data
+        if (ObjectStreamData is not null && ObjectSize == -1)
+            throw new InvalidOperationException($"{nameof(ObjectSize)} must be set");
         Populate();
     }
 
