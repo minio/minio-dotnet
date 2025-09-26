@@ -4983,7 +4983,7 @@ public static class FunctionalTest
             (StringComparer.Ordinal)
             {
                 // list is {offset, length} values
-                { "GetOaject_Test3", new List<int> { 14, 20 } },
+                { "GetObject_Test3", new List<int> { 14, 20 } },
                 { "GetObject_Test4", new List<int> { 30, 0 } },
                 { "GetObject_Test5", new List<int> { 0, 25 } }
             };
