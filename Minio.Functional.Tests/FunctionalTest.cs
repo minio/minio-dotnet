@@ -5185,10 +5185,10 @@ public static class FunctionalTest
         var objectName = GetRandomObjectName(10);
         var outFileName = "outFileName-FGetObject_Test1";
         var args = new Dictionary<string, string>
-            (StringComparer.Ordinal)
-            {
-                { "bucketName", bucketName }, { "objectName", objectName }, { "fileName", outFileName }
-            };
+(StringComparer.Ordinal)
+        {
+            { "bucketName", bucketName }, { "objectName", objectName }, { "fileName", outFileName }
+        };
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
