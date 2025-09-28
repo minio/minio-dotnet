@@ -36,12 +36,12 @@ internal class GetMultipartUploadsListResponse : GenericResponse
         var itemCheck = root.Root.Descendants(ns + "Upload").FirstOrDefault();
         if (uploadsResult is null || itemCheck?.HasElements != true) return;
         var uploads = from c in root.Root.Descendants(ns + "Upload")
-            select new Upload
-            {
-                Key = c.Element(ns + "Key").Value,
-                UploadId = c.Element(ns + "UploadId").Value,
-                Initiated = c.Element(ns + "Initiated").Value
-            };
+                      select new Upload
+                      {
+                          Key = c.Element(ns + "Key").Value,
+                          UploadId = c.Element(ns + "UploadId").Value,
+                          Initiated = c.Element(ns + "Initiated").Value
+                      };
         UploadResult = new Tuple<ListMultipartUploadsResult, List<Upload>>(uploadsResult, uploads.ToList());
     }
 

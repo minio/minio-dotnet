@@ -58,7 +58,9 @@ internal static class SelectObjectContent
                 CompressionType = SelectCompressionType.NONE,
                 CSV = new CSVInputOptions
                 {
-                    FileHeaderInfo = CSVFileHeaderInfo.None, RecordDelimiter = "\n", FieldDelimiter = ","
+                    FileHeaderInfo = CSVFileHeaderInfo.None,
+                    RecordDelimiter = "\n",
+                    FieldDelimiter = ","
                 }
             };
             var outputSerialization = new SelectObjectOutputSerialization

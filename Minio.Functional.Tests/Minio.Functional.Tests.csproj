@@ -3,6 +3,7 @@
     <TargetFrameworks>net8.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <IsPackable>False</IsPackable>
+    <NoWarn>$(NoWarn),IDE1006</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

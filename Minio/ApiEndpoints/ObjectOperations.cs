@@ -696,10 +696,8 @@ public partial class MinioClient : IObjectOperations
             throw new InvalidDataException($"Specified byte range ({args.SourceObject
                 .CopyOperationConditions
                 .byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{args.SourceObject
-                .CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)
-            }) does not fit within source object (size={args.SourceObjectInfo.Size
-                .ToString(CultureInfo.InvariantCulture)
-            })");
+                .CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)}) does not fit within source object (size={args.SourceObjectInfo.Size
+                .ToString(CultureInfo.InvariantCulture)})");
 
         if (copySize > Constants.MaxSingleCopyObjectSize ||
             (srcByteRangeSize > 0 &&
@@ -933,7 +931,9 @@ public partial class MinioClient : IObjectOperations
             numPartsUploaded++;
             totalParts[partNumber - 1] = new Part
             {
-                PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize
+                PartNumber = partNumber,
+                ETag = etag,
+                Size = (long)expectedReadSize
             };
             etags[partNumber] = etag;
             if (!dataToCopy.IsEmpty) progressReport.TotalBytesTransferred += dataToCopy.Length;
@@ -1026,7 +1026,9 @@ public partial class MinioClient : IObjectOperations
 
             totalParts[partNumber - 1] = new Part
             {
-                PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize
+                PartNumber = partNumber,
+                ETag = cpPartResult.ETag,
+                Size = (long)expectedReadSize
             };
         }
 

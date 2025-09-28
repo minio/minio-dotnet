@@ -282,7 +282,7 @@ public partial class MinioClient : IBucketOperations
                 yield return item;
 
             var prefixes = from c in root.Root.Descendants(ns + "CommonPrefixes")
-                select new Item { Key = c.Element(ns + "Prefix")?.Value, IsDir = true };
+                           select new Item { Key = c.Element(ns + "Prefix")?.Value, IsDir = true };
             foreach (var item in prefixes)
                 yield return item;
 

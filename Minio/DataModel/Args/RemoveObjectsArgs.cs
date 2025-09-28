@@ -53,8 +53,8 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
             throw new ArgumentNullException(nameof(objectsVersionsList));
 
         foreach (var objVersions in objectsVersionsList)
-        foreach (var vid in objVersions.Item2)
-            ObjectNamesVersions.Add(new Tuple<string, string>(objVersions.Item1, vid));
+            foreach (var vid in objVersions.Item2)
+                ObjectNamesVersions.Add(new Tuple<string, string>(objVersions.Item1, vid));
 
         return this;
     }
