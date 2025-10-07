@@ -1,4 +1,4 @@
-﻿using Minio.DataModel.Result;
+using Minio.DataModel.Result;
 
 namespace Minio.Handlers;
 
