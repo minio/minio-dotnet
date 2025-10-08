@@ -1,4 +1,4 @@
-﻿using System.Reactive.Linq;
+using System.Reactive.Linq;
 using Minio.DataModel;
 using Minio.DataModel.Args;
 

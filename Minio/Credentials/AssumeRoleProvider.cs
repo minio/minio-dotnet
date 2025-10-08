@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2021 MinIO, Inc.
  *
