@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017-2021 MinIO, Inc.
  *
@@ -50,7 +50,6 @@ public static class FunctionalTest
 {
     private const int KB = 1024;
     private const int MB = 1024 * 1024;
-    private const int GB = 1024 * 1024 * 1024;
 
     private const string dataFile1B = "datafile-1-b";
 
@@ -116,15 +115,6 @@ public static class FunctionalTest
 
     private const string setBucketPolicySignature =
         "Task SetPolicyAsync(SetPolicyArgs args, CancellationToken cancellationToken = default(CancellationToken))";
-
-    private const string getBucketNotificationSignature =
-        "Task<BucketNotification> GetBucketNotificationAsync(GetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
-
-    private const string setBucketNotificationSignature =
-        "Task SetBucketNotificationAsync(SetBucketNotificationsArgs args, CancellationToken cancellationToken = default(CancellationToken))";
-
-    private const string removeAllBucketsNotificationSignature =
-        "Task RemoveAllBucketNotificationsAsync(RemoveAllBucketNotifications args, CancellationToken cancellationToken = default(CancellationToken))";
 
     private const string setBucketEncryptionSignature =
         "Task SetBucketEncryptionAsync(SetBucketEncryptionArgs args, CancellationToken cancellationToken = default(CancellationToken))";
@@ -267,7 +257,7 @@ public static class FunctionalTest
         // Server side does not allow the following characters in object names
         // '-', '_', '.', '/', '*'
 #if NET6_0_OR_GREATER
-        var characters = "abcd+%$#@&{}[]()";
+        const string characters = "abcd+%$#@&{}[]()";
 #else
         var characters = "abcdefgh+%$#@&";
 #endif
@@ -281,7 +271,7 @@ public static class FunctionalTest
     // Generate a random string
     public static string GetRandomName(int length = 5)
     {
-        var characters = "0123456789abcdefghijklmnopqrstuvwxyz";
+        const string characters = "0123456789abcdefghijklmnopqrstuvwxyz";
         if (length > 50)
             length = 50;
 
@@ -300,7 +290,7 @@ public static class FunctionalTest
             FileAccess.Write,
             FileShare.None,
             4096,
-            true
+            useAsync: true
         );
         var fileSize = 500L * 1024 * 1024;
         var segments = fileSize / 10000;

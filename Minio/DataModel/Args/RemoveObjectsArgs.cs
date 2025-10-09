@@ -47,7 +47,9 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
     }
 
     // Tuple<string, List<string>>. Tuple object name -> List of Version IDs.
-    public RemoveObjectsArgs WithObjectsVersions(IList<Tuple<string, List<string>>> objectsVersionsList)
+    public RemoveObjectsArgs WithObjectsVersions(
+        IList<Tuple<string, List<string>>> objectsVersionsList
+    )
     {
         if (objectsVersionsList is null)
             throw new ArgumentNullException(nameof(objectsVersionsList));
@@ -76,18 +78,30 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         // Skip object name validation.
         Utils.ValidateBucketName(BucketName);
         if (!string.IsNullOrEmpty(ObjectName))
-            throw new InvalidOperationException(nameof(ObjectName) + " is set. Please use " + nameof(WithObjects) +
-                                                "or " +
-                                                nameof(WithObjectsVersions) + " method to set objects to be deleted.");
-
-        if ((ObjectNames is null && ObjectNamesVersions is null) ||
-            (ObjectNames.Count == 0 && ObjectNamesVersions.Count == 0))
             throw new InvalidOperationException(
-                "Please assign list of object names or object names and version IDs to remove using method(s) " +
-                nameof(WithObjects) + " " + nameof(WithObjectsVersions));
+                nameof(ObjectName)
+                    + " is set. Please use "
+                    + nameof(WithObjects)
+                    + "or "
+                    + nameof(WithObjectsVersions)
+                    + " method to set objects to be deleted."
+            );
+
+        if (
+            (ObjectNames is null && ObjectNamesVersions is null)
+            || (ObjectNames.Count == 0 && ObjectNamesVersions.Count == 0)
+        )
+            throw new InvalidOperationException(
+                "Please assign list of object names or object names and version IDs to remove using method(s) "
+                    + nameof(WithObjects)
+                    + " "
+                    + nameof(WithObjectsVersions)
+            );
     }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    internal override HttpRequestMessageBuilder BuildRequest(
+        HttpRequestMessageBuilder requestMessageBuilder
+    )
     {
         var objects = new List<XElement>();
         requestMessageBuilder.AddQueryParameter("delete", "");
@@ -96,29 +110,39 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         {
             // Object(s) & multiple versions
             foreach (var objTuple in ObjectNamesVersions)
-                objects.Add(new XElement("Object",
-                    new XElement("Key", objTuple.Item1),
-                    new XElement("VersionId", objTuple.Item2)));
+                objects.Add(
+                    new XElement(
+                        "Object",
+                        new XElement("Key", objTuple.Item1),
+                        new XElement("VersionId", objTuple.Item2)
+                    )
+                );
 
-            deleteObjectsRequest = new XElement("Delete", objects,
-                new XElement("Quiet", true));
-            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture));
+            deleteObjectsRequest = new XElement("Delete", objects, new XElement("Quiet", true));
+            requestMessageBuilder.AddXmlBody(
+                Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture)
+            );
         }
         else
         {
             // Multiple Objects
             foreach (var obj in ObjectNames)
-                objects.Add(new XElement("Object",
-                    new XElement("Key", obj)));
+                objects.Add(new XElement("Object", new XElement("Key", obj)));
 
-            deleteObjectsRequest = new XElement("Delete", objects,
-                new XElement("Quiet", true));
-            requestMessageBuilder.AddXmlBody(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture));
+            deleteObjectsRequest = new XElement("Delete", objects, new XElement("Quiet", true));
+            requestMessageBuilder.AddXmlBody(
+                Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture)
+            );
         }
 
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Md5",
+        requestMessageBuilder.AddOrUpdateHeaderParameter(
+            "Content-Md5",
             Utils.GetMD5SumStr(
-                Encoding.UTF8.GetBytes(Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture))));
+                Encoding.UTF8.GetBytes(
+                    Convert.ToString(deleteObjectsRequest, CultureInfo.InvariantCulture)
+                )
+            )
+        );
 
         return requestMessageBuilder;
     }

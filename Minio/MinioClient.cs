@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017-2021 MinIO, Inc.
  *
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -35,9 +36,7 @@ public partial class MinioClient : IMinioClient
     ///     Creates and returns an MinIO Client
     /// </summary>
     /// <returns>Client with no arguments to be used with other builder methods</returns>
-    public MinioClient()
-    {
-    }
+    public MinioClient() { }
 
     public MinioConfig Config { get; } = new();
 
@@ -47,7 +46,8 @@ public partial class MinioClient : IMinioClient
     /// <summary>
     ///     Default error handling delegate
     /// </summary>
-    public IApiResponseErrorHandler DefaultErrorHandler { get; internal set; } = new DefaultErrorHandler();
+    public IApiResponseErrorHandler DefaultErrorHandler { get; internal set; } =
+        new DefaultErrorHandler();
 
     public IRequestLogger RequestLogger { get; internal set; }
 
@@ -64,7 +64,9 @@ public partial class MinioClient : IMinioClient
     /// </summary>
     public Task WrapperPutAsync(Uri uri, StreamContent strm)
     {
-        return Task.Run(async () => await Config.HttpClient.PutAsync(uri, strm).ConfigureAwait(false));
+        return Task.Run(async () =>
+            await Config.HttpClient.PutAsync(uri, strm).ConfigureAwait(false)
+        );
     }
 
     /// <summary>
@@ -100,13 +102,18 @@ public partial class MinioClient : IMinioClient
     {
         if (response is null)
             throw new ConnectionException(
-                "Response is nil. Please report this issue https://github.com/minio/minio-dotnet/issues", response);
+                "Response is nil. Please report this issue https://github.com/minio/minio-dotnet/issues",
+                response
+            );
 
-        if (HttpStatusCode.Redirect == response.StatusCode ||
-            HttpStatusCode.TemporaryRedirect == response.StatusCode ||
-            HttpStatusCode.MovedPermanently == response.StatusCode)
+        if (
+            HttpStatusCode.Redirect == response.StatusCode
+            || HttpStatusCode.TemporaryRedirect == response.StatusCode
+            || HttpStatusCode.MovedPermanently == response.StatusCode
+        )
             throw new RedirectionException(
-                "Redirection detected. Please report this issue https://github.com/minio/minio-dotnet/issues");
+                "Redirection detected. Please report this issue https://github.com/minio/minio-dotnet/issues"
+            );
 
         if (string.IsNullOrWhiteSpace(response.Content))
         {
@@ -123,13 +130,18 @@ public partial class MinioClient : IMinioClient
             throw new ArgumentNullException(nameof(response));
         var statusCodeStrs = new[]
         {
-            nameof(HttpStatusCode.Forbidden), nameof(HttpStatusCode.BadRequest), nameof(HttpStatusCode.NotFound),
-            nameof(HttpStatusCode.MethodNotAllowed), nameof(HttpStatusCode.NotImplemented)
+            nameof(HttpStatusCode.Forbidden),
+            nameof(HttpStatusCode.BadRequest),
+            nameof(HttpStatusCode.NotFound),
+            nameof(HttpStatusCode.MethodNotAllowed),
+            nameof(HttpStatusCode.NotImplemented),
         };
 
-        if (response.Exception != null ||
-            !string.IsNullOrEmpty(response.ErrorMessage) ||
-            response.Headers is not null)
+        if (
+            response.Exception != null
+            || !string.IsNullOrEmpty(response.ErrorMessage)
+            || response.Headers is not null
+        )
             foreach (var exception in statusCodeStrs)
             {
                 if (response.StatusCode is not HttpStatusCode.OK)
@@ -138,30 +150,56 @@ public partial class MinioClient : IMinioClient
                     break;
                 }
 
-                if (response.Headers.TryGetValue("X-Minio-Error-Code", out var value1) && value1 is not null &&
-                    response.Headers.TryGetValue("X-Minio-Error-Desc", out var value2) && value2 is not null)
+                if (
+                    response.Headers.TryGetValue("X-Minio-Error-Code", out var value1)
+                    && value1 is not null
+                    && response.Headers.TryGetValue("X-Minio-Error-Desc", out var value2)
+                    && value2 is not null
+                )
                     throw new Exception(value1 + ": " + value2);
             }
 
         if (statusCodeStrs.Contains(response.StatusCode.ToString(), StringComparer.Ordinal))
             ParseWellKnownErrorNoContent(response);
 #pragma warning disable MA0099 // Use Explicit enum value instead of 0
-        if (response.ErrorMessage.Contains("Name or service not known", StringComparison.OrdinalIgnoreCase)
-            || response.StatusCode == 0)
+        if (
+            response.ErrorMessage.Contains(
+                "Name or service not known",
+                StringComparison.OrdinalIgnoreCase
+            )
+            || response.StatusCode == 0
+        )
             throw new ConnectionException("Connection error: " + response.ErrorMessage);
 #pragma warning disable MA0099 // Use Explicit enum value instead of 0
         if (response.ErrorMessage.Contains("No route to host", StringComparison.OrdinalIgnoreCase))
-            throw new ConnectionException("Connection error:" + "Name or service not known (" +
-                                          response.Request.RequestUri.Authority + ")");
+            throw new ConnectionException(
+                "Connection error:"
+                    + "Name or service not known ("
+                    + response.Request.RequestUri.Authority
+                    + ")"
+            );
 
-        if (response.ErrorMessage.Contains("The Access Key Id you provided does not exist in our records.",
-                StringComparison.OrdinalIgnoreCase))
-            throw new AccessDeniedException("Access denied error: " + response.ErrorMessage, response);
+        if (
+            response.ErrorMessage.Contains(
+                "The Access Key Id you provided does not exist in our records.",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+            throw new AccessDeniedException(
+                "Access denied error: " + response.ErrorMessage,
+                response
+            );
 
-        if (response.ErrorMessage.Contains(
+        if (
+            response.ErrorMessage.Contains(
                 "The request signature we calculated does not match the signature you provided. Check your key and signing method.",
-                StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(response.Content))
-            throw new AccessDeniedException("Access denied error: " + response.ErrorMessage, response);
+                StringComparison.OrdinalIgnoreCase
+            ) || string.IsNullOrWhiteSpace(response.Content)
+        )
+            throw new AccessDeniedException(
+                "Access denied error: " + response.ErrorMessage,
+                response
+            );
 
         if (response.Exception.GetType() == typeof(TaskCanceledException))
             throw response.Exception;
@@ -170,7 +208,9 @@ public partial class MinioClient : IMinioClient
             throw response.Exception;
 
         throw new InternalClientException(
-            "Unsuccessful response from server without XML:" + response.ErrorMessage, response);
+            "Unsuccessful response from server without XML:" + response.ErrorMessage,
+            response
+        );
     }
 
     private static void ParseWellKnownErrorNoContent(ResponseResult response)
@@ -195,7 +235,11 @@ public partial class MinioClient : IMinioClient
         errorResponse.Resource = pathAndQuery;
 
         // zero, one or two segments
-        var resourceSplits = pathAndQuery.Split(separator, 2, StringSplitOptions.RemoveEmptyEntries);
+        var resourceSplits = pathAndQuery.Split(
+            separator,
+            2,
+            StringSplitOptions.RemoveEmptyEntries
+        );
 
         if (response.StatusCode == HttpStatusCode.PartialContent)
         {
@@ -203,13 +247,19 @@ public partial class MinioClient : IMinioClient
             error = new PartialContentException();
         }
 
-        if (response.StatusCode == HttpStatusCode.NotFound
-            || string.Equals(response.Response.ReasonPhrase.Replace(" ", "", StringComparison.OrdinalIgnoreCase),
-                nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase))
+        if (
+            response.StatusCode == HttpStatusCode.NotFound
+            || string.Equals(
+                response.Response.ReasonPhrase.Replace(" ", "", StringComparison.OrdinalIgnoreCase),
+                nameof(HttpStatusCode.NotFound),
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
         {
             var pathLength = resourceSplits.Length;
             var isAWS = host.EndsWith("s3.amazonaws.com", StringComparison.OrdinalIgnoreCase);
-            var isVirtual = isAWS && !host.StartsWith("s3.amazonaws.com", StringComparison.OrdinalIgnoreCase);
+            var isVirtual =
+                isAWS && !host.StartsWith("s3.amazonaws.com", StringComparison.OrdinalIgnoreCase);
 
             if (pathLength > 1)
             {
@@ -235,8 +285,10 @@ public partial class MinioClient : IMinioClient
             }
             else
             {
-                error = new InternalClientException("404 without body resulted in path with less than two components",
-                    response);
+                error = new InternalClientException(
+                    "404 without body resulted in path with less than two components",
+                    response
+                );
             }
         }
         else if (HttpStatusCode.BadRequest == response.StatusCode)
@@ -251,8 +303,10 @@ public partial class MinioClient : IMinioClient
             }
             else
             {
-                error = new InternalClientException("400 without body resulted in path with less than two components",
-                    response);
+                error = new InternalClientException(
+                    "400 without body resulted in path with less than two components",
+                    response
+                );
             }
         }
         else if (HttpStatusCode.Forbidden == response.StatusCode)
@@ -265,14 +319,22 @@ public partial class MinioClient : IMinioClient
         throw error;
     }
 
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "TODO")]
     private static void ParseErrorFromContent(ResponseResult response)
     {
         if (response is null)
             throw new ArgumentNullException(nameof(response));
 
-        if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
-            && response.Request.RequestUri.PathAndQuery.EndsWith("?location", StringComparison.OrdinalIgnoreCase)
-            && response.Request.Method.Equals(HttpMethod.Get))
+        if (
+            response
+                .StatusCode.ToString()
+                .Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
+            && response.Request.RequestUri.PathAndQuery.EndsWith(
+                "?location",
+                StringComparison.OrdinalIgnoreCase
+            )
+            && response.Request.Method.Equals(HttpMethod.Get)
+        )
         {
             var bucketName = response.Request.RequestUri.PathAndQuery.Split('?')[0];
             BucketRegionCache.Instance.Remove(bucketName);
@@ -281,67 +343,152 @@ public partial class MinioClient : IMinioClient
 
         var errResponse = Utils.DeserializeXml<ErrorResponse>(response.Content);
 
-        if (response.StatusCode == HttpStatusCode.Forbidden
-            && (errResponse.Code.Equals("SignatureDoesNotMatch", StringComparison.OrdinalIgnoreCase) ||
-                errResponse.Code.Equals("InvalidAccessKeyId", StringComparison.OrdinalIgnoreCase)))
-            throw new AuthorizationException(errResponse.Resource, errResponse.BucketName, errResponse.Message);
+        if (
+            response.StatusCode == HttpStatusCode.Forbidden
+            && (
+                errResponse.Code.Equals("SignatureDoesNotMatch", StringComparison.OrdinalIgnoreCase)
+                || errResponse.Code.Equals("InvalidAccessKeyId", StringComparison.OrdinalIgnoreCase)
+            )
+        )
+            throw new AuthorizationException(
+                errResponse.Resource,
+                errResponse.BucketName,
+                errResponse.Message
+            );
 
         // Handle XML response for Bucket Policy not found case
-        if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
-            && response.Request.RequestUri.PathAndQuery.EndsWith("?policy", StringComparison.OrdinalIgnoreCase)
+        if (
+            response
+                .StatusCode.ToString()
+                .Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
+            && response.Request.RequestUri.PathAndQuery.EndsWith(
+                "?policy",
+                StringComparison.OrdinalIgnoreCase
+            )
             && response.Request.Method.Equals(HttpMethod.Get)
-            && string.Equals(errResponse.Code, "NoSuchBucketPolicy", StringComparison.OrdinalIgnoreCase))
+            && string.Equals(
+                errResponse.Code,
+                "NoSuchBucketPolicy",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
             throw new ErrorResponseException(errResponse, response) { XmlError = response.Content };
 
-        if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
-            && string.Equals(errResponse.Code, "NoSuchBucket", StringComparison.OrdinalIgnoreCase))
+        if (
+            response
+                .StatusCode.ToString()
+                .Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
+            && string.Equals(errResponse.Code, "NoSuchBucket", StringComparison.OrdinalIgnoreCase)
+        )
             throw new BucketNotFoundException(errResponse.BucketName);
 
-        if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
-            && string.Equals(errResponse.Code, "NoSuchKey", StringComparison.OrdinalIgnoreCase))
+        if (
+            response
+                .StatusCode.ToString()
+                .Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
+            && string.Equals(errResponse.Code, "NoSuchKey", StringComparison.OrdinalIgnoreCase)
+        )
             throw new ObjectNotFoundException(errResponse.BucketName);
 
-        if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
-            && errResponse.Code.Equals("MalformedXML", StringComparison.OrdinalIgnoreCase))
-            throw new MalFormedXMLException(errResponse.Resource, errResponse.BucketName, errResponse.Message,
-                errResponse.Key);
+        if (
+            response
+                .StatusCode.ToString()
+                .Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
+            && errResponse.Code.Equals("MalformedXML", StringComparison.OrdinalIgnoreCase)
+        )
+            throw new MalFormedXMLException(
+                errResponse.Resource,
+                errResponse.BucketName,
+                errResponse.Message,
+                errResponse.Key
+            );
 
-        if (response.StatusCode.ToString()
+        if (
+            response
+                .StatusCode.ToString()
                 .Contains(nameof(HttpStatusCode.NotImplemented), StringComparison.OrdinalIgnoreCase)
-            && errResponse.Code.Equals("NotImplemented", StringComparison.OrdinalIgnoreCase))
+            && errResponse.Code.Equals("NotImplemented", StringComparison.OrdinalIgnoreCase)
+        )
         {
 #pragma warning disable MA0025 // Implement the functionality instead of throwing NotImplementedException
             throw new NotImplementedException(errResponse.Message);
         }
 #pragma warning restore MA0025 // Implement the functionality instead of throwing NotImplementedException
 
-        if (response.StatusCode == HttpStatusCode.BadRequest
-            && errResponse.Code.Equals("InvalidRequest", StringComparison.OrdinalIgnoreCase))
+        if (
+            response.StatusCode == HttpStatusCode.BadRequest
+            && errResponse.Code.Equals("InvalidRequest", StringComparison.OrdinalIgnoreCase)
+        )
         {
             _ = new Dictionary<string, string>(StringComparer.Ordinal) { { "legal-hold", "" } };
-            if (response.Request.RequestUri.Query.Contains("legalHold", StringComparison.OrdinalIgnoreCase))
-                throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
+            if (
+                response.Request.RequestUri.Query.Contains(
+                    "legalHold",
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+                throw new MissingObjectLockConfigurationException(
+                    errResponse.BucketName,
+                    errResponse.Message
+                );
         }
 
-        if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
-            && errResponse.Code.Equals("ObjectLockConfigurationNotFoundError", StringComparison.OrdinalIgnoreCase))
-            throw new MissingObjectLockConfigurationException(errResponse.BucketName, errResponse.Message);
+        if (
+            response
+                .StatusCode.ToString()
+                .Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
+            && errResponse.Code.Equals(
+                "ObjectLockConfigurationNotFoundError",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+            throw new MissingObjectLockConfigurationException(
+                errResponse.BucketName,
+                errResponse.Message
+            );
 
-        if (response.StatusCode.ToString().Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
-            && errResponse.Code.Equals("ReplicationConfigurationNotFoundError", StringComparison.OrdinalIgnoreCase))
-            throw new MissingBucketReplicationConfigurationException(errResponse.BucketName, errResponse.Message);
+        if (
+            response
+                .StatusCode.ToString()
+                .Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
+            && errResponse.Code.Equals(
+                "ReplicationConfigurationNotFoundError",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+            throw new MissingBucketReplicationConfigurationException(
+                errResponse.BucketName,
+                errResponse.Message
+            );
 
-        if (response.StatusCode == HttpStatusCode.Conflict
-            && errResponse.Code.Equals("BucketAlreadyOwnedByYou", StringComparison.OrdinalIgnoreCase))
-            throw new ArgumentException("Bucket already owned by you: " + errResponse.BucketName, nameof(response));
+        if (
+            response.StatusCode == HttpStatusCode.Conflict
+            && errResponse.Code.Equals(
+                "BucketAlreadyOwnedByYou",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+            throw new ArgumentException(
+                "Bucket already owned by you: " + errResponse.BucketName,
+                nameof(response)
+            );
 
-        if (response.StatusCode == HttpStatusCode.PreconditionFailed
-            && errResponse.Code.Equals("PreconditionFailed", StringComparison.OrdinalIgnoreCase))
-            throw new PreconditionFailedException("At least one of the pre-conditions you " +
-                                                  "specified did not hold for object: \"" + errResponse.Resource +
-                                                  "\"");
+        if (
+            response.StatusCode == HttpStatusCode.PreconditionFailed
+            && errResponse.Code.Equals("PreconditionFailed", StringComparison.OrdinalIgnoreCase)
+        )
+            throw new PreconditionFailedException(
+                "At least one of the pre-conditions you "
+                    + "specified did not hold for object: \""
+                    + errResponse.Resource
+                    + "\""
+            );
 
-        throw new UnexpectedMinioException(errResponse.Message) { Response = errResponse, XmlError = response.Content };
+        throw new UnexpectedMinioException(errResponse.Message)
+        {
+            Response = errResponse,
+            XmlError = response.Content,
+        };
     }
 
     protected virtual void Dispose(bool disposing)
