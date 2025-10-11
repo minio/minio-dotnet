@@ -28,7 +28,7 @@ public class NotificationConfiguration
     public NotificationConfiguration()
     {
         Arn = null;
-        Events = new List<EventType>();
+        Events = [];
     }
 
     public NotificationConfiguration(string arn)
@@ -53,7 +53,7 @@ public class NotificationConfiguration
 
     public void AddEvents(IList<EventType> evnt)
     {
-        Events ??= new List<EventType>();
+        Events ??= [];
 
         Events.AddRange(evnt);
     }

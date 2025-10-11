@@ -15,34 +15,30 @@
  * limitations under the License.
  */
 
+using Minio.DataModel.Result;
+
 namespace Minio.Exceptions;
 
 [Serializable]
-public class AuthorizationException : Exception
+public class PartialContentException : MinioException
 {
-    internal readonly string accessKey;
-    internal readonly string bucketName;
-    internal readonly string message;
-    internal readonly string resource;
-
-    public AuthorizationException()
+    public PartialContentException(string message) : base(message)
     {
     }
 
-    public AuthorizationException(string message) : base(message)
+    public PartialContentException(ResponseResult serverResponse) : base(serverResponse)
     {
     }
 
-    public AuthorizationException(string resource, string bucketName, string message, string accesskey = null) :
-        base(message)
+    public PartialContentException(string message, ResponseResult serverResponse) : base(message, serverResponse)
     {
-        this.message = message;
-        this.resource = resource;
-        this.bucketName = bucketName;
-        accessKey = accesskey;
     }
 
-    public AuthorizationException(string message, Exception innerException) : base(message, innerException)
+    public PartialContentException()
+    {
+    }
+
+    public PartialContentException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }

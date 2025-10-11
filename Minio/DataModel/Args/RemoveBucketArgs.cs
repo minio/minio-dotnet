@@ -23,7 +23,9 @@ public class RemoveBucketArgs : BucketArgs<RemoveBucketArgs>
         RequestMethod = HttpMethod.Delete;
     }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    internal override HttpRequestMessageBuilder BuildRequest(
+        HttpRequestMessageBuilder requestMessageBuilder
+    )
     {
         if (Headers.TryGetValue(BucketForceDeleteKey, out var value))
             requestMessageBuilder.AddHeaderParameter(BucketForceDeleteKey, value);

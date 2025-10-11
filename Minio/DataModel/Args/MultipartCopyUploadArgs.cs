@@ -27,11 +27,14 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         if (args is null || args.SourceObject is null)
         {
             var message = args is null
-                ? "The constructor of " + nameof(CopyObjectRequestArgs) +
-                  "initialized with arguments of CopyObjectArgs null."
-                : "The constructor of " + nameof(CopyObjectRequestArgs) +
-                  "initialized with arguments of CopyObjectArgs type but with " + nameof(args.SourceObject) +
-                  " not initialized.";
+                ? "The constructor of "
+                    + nameof(CopyObjectRequestArgs)
+                    + "initialized with arguments of CopyObjectArgs null."
+                : "The constructor of "
+                    + nameof(CopyObjectRequestArgs)
+                    + "initialized with arguments of CopyObjectArgs type but with "
+                    + nameof(args.SourceObject)
+                    + " not initialized.";
             throw new InvalidOperationException(message);
         }
 
@@ -46,7 +49,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
             MatchETag = args.SourceObject.MatchETag,
             ModifiedSince = args.SourceObject.ModifiedSince,
             NotMatchETag = args.SourceObject.NotMatchETag,
-            UnModifiedSince = args.SourceObject.UnModifiedSince
+            UnModifiedSince = args.SourceObject.UnModifiedSince,
         };
 
         // Destination part.
@@ -58,21 +61,33 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         SourceObjectInfo = args.SourceObjectInfo;
         // Header part
         if (!args.ReplaceMetadataDirective)
-            Headers = new Dictionary<string, string>(args.SourceObjectInfo.MetaData, StringComparer.Ordinal);
-        else if (args.ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
+            Headers = new Dictionary<string, string>(
+                args.SourceObjectInfo.MetaData,
+                StringComparer.Ordinal
+            );
+        else if (args.ReplaceMetadataDirective)
+            Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
         if (Headers is not null)
         {
             var newKVList = new List<Tuple<string, string>>();
             foreach (var item in Headers)
             {
                 var key = item.Key;
-                if (!OperationsUtil.IsSupportedHeader(item.Key) &&
-                    !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase) &&
-                    !OperationsUtil.IsSSEHeader(key))
-                    newKVList.Add(new Tuple<string, string>("x-amz-meta-" + key.ToLowerInvariant(), item.Value));
+                if (
+                    !OperationsUtil.IsSupportedHeader(item.Key)
+                    && !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase)
+                    && !OperationsUtil.IsSSEHeader(key)
+                )
+                    newKVList.Add(
+                        new Tuple<string, string>(
+                            "x-amz-meta-" + key.ToLowerInvariant(),
+                            item.Value
+                        )
+                    );
             }
 
-            foreach (var item in newKVList) Headers[item.Item1] = item.Item2;
+            foreach (var item in newKVList)
+                Headers[item.Item1] = item.Item2;
         }
 
         ReplaceTagsDirective = args.ReplaceTagsDirective;
@@ -107,13 +122,20 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         return this;
     }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    internal override HttpRequestMessageBuilder BuildRequest(
+        HttpRequestMessageBuilder requestMessageBuilder
+    )
     {
         if (ObjectTags?.TaggingSet?.Tag.Count > 0)
         {
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
-                ReplaceTagsDirective ? "REPLACE" : "COPY");
+            requestMessageBuilder.AddOrUpdateHeaderParameter(
+                "x-amz-tagging",
+                ObjectTags.GetTagString()
+            );
+            requestMessageBuilder.AddOrUpdateHeaderParameter(
+                "x-amz-tagging-directive",
+                ReplaceTagsDirective ? "REPLACE" : "COPY"
+            );
         }
 
         if (ReplaceMetadataDirective)
@@ -123,11 +145,17 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         if (ObjectLockSet)
         {
             if (!RetentionUntilDate.Equals(default))
-                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
-                    Utils.To8601String(RetentionUntilDate));
+                requestMessageBuilder.AddOrUpdateHeaderParameter(
+                    "x-amz-object-lock-retain-until-date",
+                    Utils.To8601String(RetentionUntilDate)
+                );
 
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
-                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
+            requestMessageBuilder.AddOrUpdateHeaderParameter(
+                "x-amz-object-lock-mode",
+                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE
+                    ? "GOVERNANCE"
+                    : "COMPLIANCE"
+            );
         }
 
         return requestMessageBuilder;
@@ -149,8 +177,15 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
     internal MultipartCopyUploadArgs WithObjectLockRetentionDate(DateTime untilDate)
     {
         ObjectLockSet = true;
-        RetentionUntilDate = new DateTime(untilDate.Year, untilDate.Month, untilDate.Day,
-            untilDate.Hour, untilDate.Minute, untilDate.Second, untilDate.Kind);
+        RetentionUntilDate = new DateTime(
+            untilDate.Year,
+            untilDate.Month,
+            untilDate.Day,
+            untilDate.Hour,
+            untilDate.Minute,
+            untilDate.Second,
+            untilDate.Kind
+        );
         return this;
     }
 }

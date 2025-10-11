@@ -68,7 +68,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
             ResponseResult responseResult = null;
             try
             {
-                responseResult = await Client.ExecuteTaskAsync(requestBuilder, isSts: true)
+                responseResult = await Client.ExecuteTaskAsync(requestBuilder, true)
                     .ConfigureAwait(false);
 
                 AssumeRoleResponse assumeRoleResp = null;

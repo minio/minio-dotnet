@@ -3,16 +3,14 @@
     <TargetFrameworks>net8.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <IsPackable>False</IsPackable>
+    <NoWarn>$(NoWarn),IDE1006</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="MSTest.TestFramework" Version="3.8.3" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <ProjectReference Include="..\Minio\Minio.csproj" />
   </ItemGroup>
-
   <ItemGroup Condition=" $(TargetFramework.StartsWith('net4')) ">
     <Reference Include="System.Web" />
   </ItemGroup>
-
 </Project>

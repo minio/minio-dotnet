@@ -21,13 +21,14 @@ namespace Minio.DataModel;
 
 public class PostPolicy
 {
-    public IList<IList<(string, string, string)>> Conditions { get; } = new List<IList<(string, string, string)>>();
+    public IList<IList<(string, string, string)>> Conditions { get; } = [];
 
     /// <summary>
     ///     Get the populated dictionary of policy data.
     /// </summary>
     /// <returns>Dictionary of policy data</returns>
-    public IDictionary<string, string> FormData { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
+    public IDictionary<string, string> FormData { get; } =
+        new Dictionary<string, string>(StringComparer.Ordinal);
 
     public DateTime Expiration { get; set; }
     public string Key { get; private set; }
@@ -49,7 +50,8 @@ public class PostPolicy
     /// <param name="key">Object name for the policy</param>
     public void SetKey(string key)
     {
-        if (string.IsNullOrEmpty(key)) throw new ArgumentException("Object key cannot be null or empty", nameof(key));
+        if (string.IsNullOrEmpty(key))
+            throw new ArgumentException("Object key cannot be null or empty", nameof(key));
 
         Conditions.Add(new List<(string, string, string)> { ("eq", "$key", key) });
         // this.formData.Add("key", key);
@@ -63,9 +65,14 @@ public class PostPolicy
     public void SetKeyStartsWith(string keyStartsWith)
     {
         if (string.IsNullOrEmpty(keyStartsWith))
-            throw new ArgumentException("Object key prefix cannot be null or empty", nameof(keyStartsWith));
+            throw new ArgumentException(
+                "Object key prefix cannot be null or empty",
+                nameof(keyStartsWith)
+            );
 
-        Conditions.Add(new List<(string, string, string)> { ("starts-with", "$key", keyStartsWith) });
+        Conditions.Add(
+            new List<(string, string, string)> { ("starts-with", "$key", keyStartsWith) }
+        );
         // this.formData.Add("key", keyStartsWith);
     }
 
@@ -90,9 +97,14 @@ public class PostPolicy
     public void SetCacheControl(string cacheControl)
     {
         if (string.IsNullOrEmpty(cacheControl))
-            throw new ArgumentException("Cache-Control argument cannot be null or empty", nameof(cacheControl));
+            throw new ArgumentException(
+                "Cache-Control argument cannot be null or empty",
+                nameof(cacheControl)
+            );
 
-        Conditions.Add(new List<(string, string, string)> { ("eq", "$Cache-Control", cacheControl) });
+        Conditions.Add(
+            new List<(string, string, string)> { ("eq", "$Cache-Control", cacheControl) }
+        );
         // this.formData.Add("Cache-Control", cacheControl);
     }
 
@@ -103,7 +115,10 @@ public class PostPolicy
     public void SetContentType(string contentType)
     {
         if (string.IsNullOrEmpty(contentType))
-            throw new ArgumentException("Content-Type argument cannot be null or empty", nameof(contentType));
+            throw new ArgumentException(
+                "Content-Type argument cannot be null or empty",
+                nameof(contentType)
+            );
 
         Conditions.Add(new List<(string, string, string)> { ("eq", "$Content-Type", contentType) });
         // this.formData.Add("Content-Type", contentType);
@@ -116,10 +131,14 @@ public class PostPolicy
     public void SetContentEncoding(string contentEncoding)
     {
         if (string.IsNullOrEmpty(contentEncoding))
-            throw new ArgumentException("Content-Encoding argument cannot be null or empty",
-                nameof(contentEncoding));
+            throw new ArgumentException(
+                "Content-Encoding argument cannot be null or empty",
+                nameof(contentEncoding)
+            );
 
-        Conditions.Add(new List<(string, string, string)> { ("eq", "$Content-Encoding", contentEncoding) });
+        Conditions.Add(
+            new List<(string, string, string)> { ("eq", "$Content-Encoding", contentEncoding) }
+        );
         // this.formData.Add("Content-Encoding", contentEncoding);
     }
 
@@ -129,13 +148,19 @@ public class PostPolicy
     /// <param name="contentLength">ContentLength for the policy</param>
     public void SetContentLength(long contentLength)
     {
-        if (contentLength <= 0) throw new ArgumentException("Negative Content length", nameof(contentLength));
+        if (contentLength <= 0)
+            throw new ArgumentException("Negative Content length", nameof(contentLength));
 
-        Conditions.Add(new List<(string, string, string)>
-        {
-            ("content-length-range", contentLength.ToString(CultureInfo.InvariantCulture),
-                contentLength.ToString(CultureInfo.InvariantCulture))
-        });
+        Conditions.Add(
+            new List<(string, string, string)>
+            {
+                (
+                    "content-length-range",
+                    contentLength.ToString(CultureInfo.InvariantCulture),
+                    contentLength.ToString(CultureInfo.InvariantCulture)
+                ),
+            }
+        );
     }
 
     /// <summary>
@@ -149,13 +174,21 @@ public class PostPolicy
             throw new ArgumentOutOfRangeException(nameof(endRange), "Negative start or end range");
 
         if (startRange > endRange)
-            throw new ArgumentException("Start range is greater than end range", nameof(startRange));
+            throw new ArgumentException(
+                "Start range is greater than end range",
+                nameof(startRange)
+            );
 
-        Conditions.Add(new List<(string, string, string)>
-        {
-            ("content-length-range", startRange.ToString(CultureInfo.InvariantCulture),
-                endRange.ToString(CultureInfo.InvariantCulture))
-        });
+        Conditions.Add(
+            new List<(string, string, string)>
+            {
+                (
+                    "content-length-range",
+                    startRange.ToString(CultureInfo.InvariantCulture),
+                    endRange.ToString(CultureInfo.InvariantCulture)
+                ),
+            }
+        );
     }
 
     /// <summary>
@@ -166,7 +199,8 @@ public class PostPolicy
     {
         if (!string.IsNullOrEmpty(sessionToken))
             Conditions.Add(
-                new List<(string, string, string)> { ("eq", "$x-amz-security-token", sessionToken) });
+                new List<(string, string, string)> { ("eq", "$x-amz-security-token", sessionToken) }
+            );
         // this.formData.Add("x-amz-security-token", sessionToken);
     }
 
@@ -176,9 +210,12 @@ public class PostPolicy
     /// <param name="status">Success action status</param>
     public void SetSuccessStatusAction(string status)
     {
-        if (string.IsNullOrEmpty(status)) throw new ArgumentException("Status is Empty", nameof(status));
+        if (string.IsNullOrEmpty(status))
+            throw new ArgumentException("Status is Empty", nameof(status));
 
-        Conditions.Add(new List<(string, string, string)> { ("eq", "$success_action_status", status) });
+        Conditions.Add(
+            new List<(string, string, string)> { ("eq", "$success_action_status", status) }
+        );
         // this.formData.Add("success_action_status", status);
     }
 
@@ -189,9 +226,11 @@ public class PostPolicy
     /// <param name="value"></param>
     public void SetUserMetadata(string key, string value)
     {
-        if (string.IsNullOrEmpty(key)) throw new ArgumentException("Key is Empty", nameof(key));
+        if (string.IsNullOrEmpty(key))
+            throw new ArgumentException("Key is Empty", nameof(key));
 
-        if (string.IsNullOrEmpty(value)) throw new ArgumentException("Value is Empty", nameof(value));
+        if (string.IsNullOrEmpty(value))
+            throw new ArgumentException("Value is Empty", nameof(value));
 
         var headerName = $"x-amz-meta-{key}";
         Conditions.Add(new List<(string, string, string)> { ("eq", $"${headerName}", value) });
@@ -205,9 +244,14 @@ public class PostPolicy
     public void SetAlgorithm(string algorithm)
     {
         if (string.IsNullOrEmpty(algorithm))
-            throw new ArgumentException("Algorithm argument cannot be null or empty", nameof(algorithm));
+            throw new ArgumentException(
+                "Algorithm argument cannot be null or empty",
+                nameof(algorithm)
+            );
 
-        Conditions.Add(new List<(string, string, string)> { ("eq", "$x-amz-algorithm", algorithm) });
+        Conditions.Add(
+            new List<(string, string, string)> { ("eq", "$x-amz-algorithm", algorithm) }
+        );
         // this.formData.Add("x-amz-algorithm", algorithm);
     }
 
@@ -218,9 +262,14 @@ public class PostPolicy
     public void SetCredential(string credential)
     {
         if (string.IsNullOrEmpty(credential))
-            throw new ArgumentException("credential argument cannot be null or empty", nameof(credential));
+            throw new ArgumentException(
+                "credential argument cannot be null or empty",
+                nameof(credential)
+            );
 
-        Conditions.Add(new List<(string, string, string)> { ("eq", "$x-amz-credential", credential) });
+        Conditions.Add(
+            new List<(string, string, string)> { ("eq", "$x-amz-credential", credential) }
+        );
         // this.formData.Add("x-amz-credential", credential);
     }
 
@@ -230,7 +279,8 @@ public class PostPolicy
     /// <param name="date">Set date for the policy</param>
     public void SetDate(DateTime date)
     {
-        var dateStr = date.ToUniversalTime().ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
+        var dateStr = date.ToUniversalTime()
+            .ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
         Conditions.Add(new List<(string, string, string)> { ("eq", "$x-amz-date", dateStr) });
         // this.formData.Add("x-amz-date", dateStr);
     }
@@ -243,14 +293,25 @@ public class PostPolicy
     {
         var policyList = new List<string>();
         foreach (var condition in Conditions)
-            policyList.Add("[\"" + condition[0].Item1 + "\",\"" + condition[0].Item2 + "\",\"" +
-                           condition[0].Item3 + "\"]");
+            policyList.Add(
+                "[\""
+                    + condition[0].Item1
+                    + "\",\""
+                    + condition[0].Item2
+                    + "\",\""
+                    + condition[0].Item3
+                    + "\"]"
+            );
 
         // expiration and policies will never be empty because of checks at PresignedPostPolicy()
         var sb = new StringBuilder();
         _ = sb.Append('{');
         _ = sb.Append("\"expiration\":\"")
-            .Append(Expiration.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture))
+            .Append(
+                Expiration
+                    .ToUniversalTime()
+                    .ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)
+            )
             .Append('"')
             .Append(',');
         _ = sb.Append("\"conditions\":[").AppendJoin(",", policyList).Append(']');

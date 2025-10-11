@@ -32,7 +32,7 @@ public class DeleteObjectsRequest
     public DeleteObjectsRequest()
     {
         Quiet = true;
-        Objects = new Collection<DeleteObject>();
+        Objects = [];
     }
 
     [XmlElement("Quiet")] public bool Quiet { get; set; }

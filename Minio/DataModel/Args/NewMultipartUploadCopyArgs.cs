@@ -31,8 +31,12 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
     {
         base.Validate();
         if (SourceObjectInfo is null || SourceObject is null)
-            throw new InvalidOperationException(nameof(SourceObjectInfo) + " and " + nameof(SourceObject) +
-                                                " need to be initialized for a NewMultipartUpload operation to work.");
+            throw new InvalidOperationException(
+                nameof(SourceObjectInfo)
+                    + " and "
+                    + nameof(SourceObject)
+                    + " need to be initialized for a NewMultipartUpload operation to work."
+            );
 
         Populate();
     }
@@ -41,22 +45,33 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
     {
         //Concat as Headers may have byte range info .etc.
         if (!ReplaceMetadataDirective && SourceObjectInfo.MetaData?.Count > 0)
-            Headers = SourceObjectInfo.MetaData.Concat(Headers).GroupBy(item => item.Key, StringComparer.Ordinal)
+            Headers = SourceObjectInfo
+                .MetaData.Concat(Headers)
+                .GroupBy(item => item.Key, StringComparer.Ordinal)
                 .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
-        else if (ReplaceMetadataDirective) Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
+        else if (ReplaceMetadataDirective)
+            Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
         if (Headers is not null)
         {
             var newKVList = new List<Tuple<string, string>>();
             foreach (var item in Headers)
             {
                 var key = item.Key;
-                if (!OperationsUtil.IsSupportedHeader(item.Key) &&
-                    !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase) &&
-                    !OperationsUtil.IsSSEHeader(key))
-                    newKVList.Add(new Tuple<string, string>("x-amz-meta-" + key.ToLowerInvariant(), item.Value));
+                if (
+                    !OperationsUtil.IsSupportedHeader(item.Key)
+                    && !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase)
+                    && !OperationsUtil.IsSSEHeader(key)
+                )
+                    newKVList.Add(
+                        new Tuple<string, string>(
+                            "x-amz-meta-" + key.ToLowerInvariant(),
+                            item.Value
+                        )
+                    );
             }
 
-            foreach (var item in newKVList) Headers[item.Item1] = item.Item2;
+            foreach (var item in newKVList)
+                Headers[item.Item1] = item.Item2;
         }
     }
 
@@ -105,7 +120,9 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
     public NewMultipartUploadCopyArgs WithCopyObjectSource(CopySourceObjectArgs cs)
     {
         if (cs is null)
-            throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
+            throw new InvalidOperationException(
+                "The copy source object needed for copy operation is not initialized."
+            );
 
         SourceObject ??= new CopySourceObjectArgs();
         SourceObject.RequestMethod = HttpMethod.Put;
@@ -123,14 +140,21 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
         return this;
     }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    internal override HttpRequestMessageBuilder BuildRequest(
+        HttpRequestMessageBuilder requestMessageBuilder
+    )
     {
         requestMessageBuilder.AddQueryParameter("uploads", "");
         if (ObjectTags?.TaggingSet?.Tag.Count > 0)
         {
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
-                ReplaceTagsDirective ? "REPLACE" : "COPY");
+            requestMessageBuilder.AddOrUpdateHeaderParameter(
+                "x-amz-tagging",
+                ObjectTags.GetTagString()
+            );
+            requestMessageBuilder.AddOrUpdateHeaderParameter(
+                "x-amz-tagging-directive",
+                ReplaceTagsDirective ? "REPLACE" : "COPY"
+            );
         }
 
         if (ReplaceMetadataDirective)
@@ -140,11 +164,17 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
         if (ObjectLockSet)
         {
             if (!RetentionUntilDate.Equals(default))
-                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
-                    Utils.To8601String(RetentionUntilDate));
+                requestMessageBuilder.AddOrUpdateHeaderParameter(
+                    "x-amz-object-lock-retain-until-date",
+                    Utils.To8601String(RetentionUntilDate)
+                );
 
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
-                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
+            requestMessageBuilder.AddOrUpdateHeaderParameter(
+                "x-amz-object-lock-mode",
+                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE
+                    ? "GOVERNANCE"
+                    : "COMPLIANCE"
+            );
         }
 
         return requestMessageBuilder;
