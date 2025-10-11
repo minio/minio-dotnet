@@ -135,7 +135,7 @@ public static class Program
             else
                 Console.WriteLine();
         });
-        var objectsList = [];
+        List<string> objectsList = [];
         for (var i = 0; i < 10; i++)
             objectsList.Add(objectName + i);
 
