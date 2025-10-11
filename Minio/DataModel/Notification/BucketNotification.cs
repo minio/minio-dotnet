@@ -29,9 +29,9 @@ public class BucketNotification
 {
     public BucketNotification()
     {
-        LambdaConfigs = new List<LambdaConfig>();
-        TopicConfigs = new List<TopicConfig>();
-        QueueConfigs = new List<QueueConfig>();
+        LambdaConfigs = [];
+        TopicConfigs = [];
+        QueueConfigs = [];
     }
 
     [XmlElement("CloudFunctionConfiguration")]

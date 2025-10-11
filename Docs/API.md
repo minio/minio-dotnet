@@ -1608,14 +1608,14 @@ try
     Arn topicArn = new Arn("aws", "sns", "us-west-1", "412334153608", "topicminio");
 
     TopicConfig topicConfiguration = new TopicConfig(topicArn);
-    List<EventType> events = new List<EventType>(){ EventType.ObjectCreatedPut , EventType.ObjectCreatedCopy };
+    List<EventType> events = []{ EventType.ObjectCreatedPut , EventType.ObjectCreatedCopy };
     topicConfiguration.AddEvents(events);
     topicConfiguration.AddFilterPrefix("images");
     topicConfiguration.AddFilterSuffix("jpg");
     notification.AddTopic(topicConfiguration);
 
     QueueConfig queueConfiguration = new QueueConfig("arn:aws:sqs:us-west-1:482314153608:testminioqueue1");
-    queueConfiguration.AddEvents(new List<EventType>() { EventType.ObjectCreatedCompleteMultipartUpload });
+    queueConfiguration.AddEvents([] { EventType.ObjectCreatedCompleteMultipartUpload });
     notification.AddQueue(queueConfiguration);
 
     SetBucketNotificationsArgs args = new SetBucketNotificationsArgs()
@@ -2126,11 +2126,11 @@ try
 {
     string bucketName = "mybucket";
     string objectName = "myobject1";
-    List<string> versionIDs = new List<string>();
+    List<string> versionIDs = [];
     versionIDs.Add("abcobject1version1dce");
     versionIDs.Add("abcobject1version2dce");
     versionIDs.Add("abcobject1version3dce");
-    List<Tuple<string, string>> objectsVersions = new List<Tuple<string, string>>();
+    List<Tuple<string, string>> objectsVersions = [];
     objectsVersions.Add(new Tuple<string, List<string>>(objectName, versionIDs));
     objectsVersions.Add(new Tuple<string, string>("myobject2" "abcobject2version1dce"));
     objectsVersions.Add(new Tuple<string, string>("myobject2", "abcobject2version2dce"));

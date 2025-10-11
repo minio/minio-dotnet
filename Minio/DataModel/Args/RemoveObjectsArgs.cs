@@ -26,8 +26,8 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
     public RemoveObjectsArgs()
     {
         ObjectName = null;
-        ObjectNames = new List<string>();
-        ObjectNamesVersions = new List<Tuple<string, string>>();
+        ObjectNames = [];
+        ObjectNamesVersions = [];
         RequestMethod = HttpMethod.Post;
     }
 

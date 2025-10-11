@@ -29,7 +29,7 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
     {
         RequestMethod = HttpMethod.Get;
         EnableTrace = false;
-        Events = new List<EventType>();
+        Events = [];
         Prefix = "";
         Suffix = "";
     }

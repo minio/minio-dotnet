@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017-2021 MinIO, Inc.
  *
@@ -350,11 +350,13 @@ public partial class MinioClient : IMinioClient
                 || errResponse.Code.Equals("InvalidAccessKeyId", StringComparison.OrdinalIgnoreCase)
             )
         )
+        {
             throw new AuthorizationException(
                 errResponse.Resource,
                 errResponse.BucketName,
                 errResponse.Message
             );
+        }
 
         // Handle XML response for Bucket Policy not found case
         if (
@@ -372,7 +374,9 @@ public partial class MinioClient : IMinioClient
                 StringComparison.OrdinalIgnoreCase
             )
         )
+        {
             throw new ErrorResponseException(errResponse, response) { XmlError = response.Content };
+        }
 
         if (
             response
@@ -380,7 +384,9 @@ public partial class MinioClient : IMinioClient
                 .Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
             && string.Equals(errResponse.Code, "NoSuchBucket", StringComparison.OrdinalIgnoreCase)
         )
+        {
             throw new BucketNotFoundException(errResponse.BucketName);
+        }
 
         if (
             response
@@ -388,7 +394,9 @@ public partial class MinioClient : IMinioClient
                 .Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
             && string.Equals(errResponse.Code, "NoSuchKey", StringComparison.OrdinalIgnoreCase)
         )
+        {
             throw new ObjectNotFoundException(errResponse.BucketName);
+        }
 
         if (
             response

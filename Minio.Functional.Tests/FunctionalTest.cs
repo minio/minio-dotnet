@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017-2021 MinIO, Inc.
  *
@@ -323,8 +323,8 @@ public static class FunctionalTest
 
     internal static Task RunCoreTests(IMinioClient minioClient)
     {
-        ConcurrentBag<Task> coreTestsTasks = new()
-        {
+        ConcurrentBag<Task> coreTestsTasks =
+        [
             // Check if bucket exists
             BucketExists_Test(minioClient),
             // Create a new bucket
@@ -345,7 +345,7 @@ public static class FunctionalTest
 
             // Test GetBucket policy
             GetBucketPolicy_Test1(minioClient),
-        };
+        ];
 
         return coreTestsTasks.ForEachAsync();
     }
@@ -553,10 +553,10 @@ public static class FunctionalTest
     internal static async Task ListBuckets_Test(IMinioClient minio)
     {
         var startTime = DateTime.Now;
-        IList<Bucket> bucketList = new List<Bucket>();
+        IList<Bucket> bucketList = [];
         var bucketNameSuffix = "listbucketstest";
         var noOfBuckets = 5;
-        IList<Bucket> bucketListStripped = new List<Bucket>();
+        IList<Bucket> bucketListStripped = [];
 
         var args = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -723,15 +723,16 @@ public static class FunctionalTest
                 // No throw. Move to the next step without versions.
             }
 
-            var tasks = new List<Task>();
+            List<Task> tasks = [];
+
             var listObjectsArgs = new ListObjectsArgs()
                 .WithBucket(bucketName)
                 .WithRecursive(true)
                 .WithVersions(getVersions);
 
-            var objectNamesVersions = new List<Tuple<string, string>>();
+            List<Tuple<string, string>> objectNamesVersions = [];
 
-            var objectNames = new List<string>();
+            List<string> objectNames = [];
             var listObjects = minio.ListObjectsEnumAsync(listObjectsArgs, source.Token);
             await foreach (
                 var item in listObjects.WithCancellation(source.Token).ConfigureAwait(false)
@@ -1464,7 +1465,7 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
         var objectName = GetRandomObjectName(6);
-        var objectsList = new List<string>();
+        List<string> objectsList = [];
         var args = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             { "bucketName", bucketName },
@@ -1534,9 +1535,9 @@ public static class FunctionalTest
         {
             var count = 50;
             var tasks = new Task[count * 2];
-            var objectsList = new List<string>();
+            List<string> objectsList = [];
             await Setup_WithLock_Test(minio, bucketName).ConfigureAwait(false);
-            for (var i = 0; i < count * 2;)
+            for (var i = 0; i < count * 2; )
             {
                 tasks[i++] = PutObject_Task(
                     minio,
@@ -1567,11 +1568,13 @@ public static class FunctionalTest
                 .WithRecursive(true)
                 .WithVersions(true);
 
-            var objVersions = new List<Tuple<string, string>>();
+            List<Tuple<string, string>> objVersions = [];
             await foreach (
                 var item in minio.ListObjectsEnumAsync(listObjectsArgs).ConfigureAwait(false)
             )
+            {
                 objVersions.Add(new Tuple<string, string>(item.Key, item.VersionId));
+            }
 
             var removeObjectsArgs = new RemoveObjectsArgs()
                 .WithBucket(bucketName)
@@ -2869,7 +2872,6 @@ public static class FunctionalTest
         try
         {
             await Setup_WithLock_Test(minio, bucketName).ConfigureAwait(false);
-            //TODO: Use it for testing and remove
             {
                 var objectRetention = new ObjectRetentionConfiguration(DateTime.Today.AddDays(3));
                 using (var filestream = rsg.GenerateStreamFromSeed(1 * KB))
@@ -3526,7 +3528,7 @@ public static class FunctionalTest
         };
         try
         {
-            var received = new List<MinioNotificationRaw>();
+            List<MinioNotificationRaw> received = [];
             var eventsList = new List<EventType> { EventType.BucketCreatedAll };
 
             // No need to define a new "ListenNotificationArgs"
@@ -3621,7 +3623,7 @@ public static class FunctionalTest
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
 
-            var received = new List<MinioNotificationRaw>();
+            List<MinioNotificationRaw> received = [];
 
             var eventsList = new List<EventType> { EventType.ObjectCreatedAll };
             var eventDetected = false;
@@ -3772,7 +3774,8 @@ public static class FunctionalTest
         var startTime = DateTime.Now;
         var events = new List<EventType> { EventType.ObjectCreatedAll };
         var rxEventData = new MinioNotificationRaw("");
-        var rxEventsList = new List<NotificationEvent>();
+        List<NotificationEvent> rxEventsList = [];
+        rxEventsList = [];
         var bucketName = GetRandomName(15);
         var contentType = "application/json";
         var args = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -7061,7 +7064,7 @@ public static class FunctionalTest
             { "objectName", objectNamePrefix },
             { "recursive", "false" },
         };
-        var objectNames = new List<string>();
+        List<string> objectNames = [];
         try
         {
             await Setup_Test(minio, bucketName).ConfigureAwait(false);
@@ -7346,7 +7349,7 @@ public static class FunctionalTest
             { "recursive", "false" },
             { "versions", "true" },
         };
-        var objectVersions = new List<Tuple<string, string>>();
+        List<Tuple<string, string>> objectVersions = [];
         try
         {
             await Setup_WithLock_Test(minio, bucketName).ConfigureAwait(false);
@@ -8275,7 +8278,7 @@ public static class FunctionalTest
             throw;
         }
 
-        var rules = new List<LifecycleRule>();
+        List<LifecycleRule> rules = [];
         var baseDate = DateTime.Now;
         var expDate = baseDate.AddYears(1);
         var exp = new Expiration(expDate);
@@ -8482,7 +8485,7 @@ public static class FunctionalTest
             throw;
         }
 
-        var rules = new List<LifecycleRule>();
+        List<LifecycleRule> rules = [];
         var exp = new Expiration { Days = 30 };
 
         var rule1 = new LifecycleRule(

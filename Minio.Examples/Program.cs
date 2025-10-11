@@ -50,11 +50,16 @@ public static class Program
     {
         var characters = "0123456789abcdefghijklmnopqrstuvwxyz";
         var result = new StringBuilder(5);
-        for (var i = 0; i < 5; i++) _ = result.Append(characters[rnd.Next(characters.Length)]);
+        for (var i = 0; i < 5; i++)
+            _ = result.Append(characters[rnd.Next(characters.Length)]);
         return "minio-dotnet-example-" + result;
     }
 
-    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to run all tests")]
+    [SuppressMessage(
+        "Design",
+        "MA0051:Method is too long",
+        Justification = "Needs to run all tests"
+    )]
     public static async Task Main()
     {
         string endPoint = null;
@@ -69,8 +74,11 @@ public static class Program
             var posColon = endPoint.LastIndexOf(':');
             if (posColon != -1)
             {
-                port = int.Parse(endPoint.Substring(posColon + 1, endPoint.Length - posColon - 1), NumberStyles.Integer,
-                    CultureInfo.InvariantCulture);
+                port = int.Parse(
+                    endPoint.Substring(posColon + 1, endPoint.Length - posColon - 1),
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture
+                );
                 endPoint = endPoint[..posColon];
             }
 
@@ -78,9 +86,11 @@ public static class Program
             secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
             if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") is not null)
             {
-                isSecure = Environment.GetEnvironmentVariable("ENABLE_HTTPS")
+                isSecure = Environment
+                    .GetEnvironmentVariable("ENABLE_HTTPS")
                     .Equals("1", StringComparison.OrdinalIgnoreCase);
-                if (isSecure && port == 80) port = 443;
+                if (isSecure && port == 80)
+                    port = 443;
             }
         }
         else
@@ -93,8 +103,12 @@ public static class Program
         }
 
 #pragma warning disable MA0039 // Do not write your own certificate validation method
-        ServicePointManager.ServerCertificateValidationCallback +=
-            (sender, certificate, chain, sslPolicyErrors) => true;
+        ServicePointManager.ServerCertificateValidationCallback += (
+            sender,
+            certificate,
+            chain,
+            sslPolicyErrors
+        ) => true;
 #pragma warning restore MA0039 // Do not write your own certificate validation method
 
         using var minioClient = new MinioClient()
@@ -103,7 +117,7 @@ public static class Program
             .WithSSL(isSecure)
             .Build();
 
-        // Assign parameters before starting the test 
+        // Assign parameters before starting the test
         var bucketName = GetRandomName();
         var smallFileName = CreateFile(1 * UNIT_MB);
         var bigFileName = CreateFile(6 * UNIT_MB);
@@ -114,15 +128,18 @@ public static class Program
         var progress = new SyncProgress<ProgressReport>(progressReport =>
         {
             Console.WriteLine(
-                $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes");
+                $"Percentage: {progressReport.Percentage}% TotalBytesTransferred: {progressReport.TotalBytesTransferred} bytes"
+            );
             if (progressReport.Percentage != 100)
                 Console.SetCursorPosition(0, Console.CursorTop - 1);
-            else Console.WriteLine();
+            else
+                Console.WriteLine();
         });
-        var objectsList = new List<string>();
-        for (var i = 0; i < 10; i++) objectsList.Add(objectName + i);
+        var objectsList = [];
+        for (var i = 0; i < 10; i++)
+            objectsList.Add(objectName + i);
 
-        // Set app Info 
+        // Set app Info
         _ = minioClient.SetAppInfo("app-name", "app-version");
 
         // Set HTTP Tracing On
@@ -150,13 +167,19 @@ public static class Program
         await ListBuckets.Run(minioClient).ConfigureAwait(false);
 
         // Start listening for bucket notifications
-        ListenBucketNotifications.Run(minioClient, bucketName, new List<EventType> { EventType.ObjectCreatedAll });
+        ListenBucketNotifications.Run(
+            minioClient,
+            bucketName,
+            new List<EventType> { EventType.ObjectCreatedAll }
+        );
 
         // Start listening for global notifications
         ListenNotifications.Run(minioClient, new List<EventType> { EventType.BucketCreatedAll });
 
         // Put an object to the new bucket
-        await PutObject.Run(minioClient, bucketName, objectName, smallFileName, progress).ConfigureAwait(false);
+        await PutObject
+            .Run(minioClient, bucketName, objectName, smallFileName, progress)
+            .ConfigureAwait(false);
 
         // Get object metadata
         await StatObject.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
@@ -165,27 +188,40 @@ public static class Program
         await ListObjects.Run(minioClient, bucketName).ConfigureAwait(false);
 
         // Get the file and Download the object as file
-        await GetObject.Run(minioClient, bucketName, objectName, smallFileName).ConfigureAwait(false);
+        await GetObject
+            .Run(minioClient, bucketName, objectName, smallFileName)
+            .ConfigureAwait(false);
         // Select content from object
         await SelectObjectContent.Run(minioClient, bucketName, objectName).ConfigureAwait(false);
         // Delete the file and Download partial object as file
-        await GetPartialObject.Run(minioClient, bucketName, objectName, smallFileName).ConfigureAwait(false);
+        await GetPartialObject
+            .Run(minioClient, bucketName, objectName, smallFileName)
+            .ConfigureAwait(false);
 
         // Server side copyObject
-        await CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName).ConfigureAwait(false);
+        await CopyObject
+            .Run(minioClient, bucketName, objectName, destBucketName, objectName)
+            .ConfigureAwait(false);
 
         // Server side copyObject with metadata replacement
-        await CopyObjectMetadata.Run(minioClient, bucketName, objectName, destBucketName, objectName)
+        await CopyObjectMetadata
+            .Run(minioClient, bucketName, objectName, destBucketName, objectName)
             .ConfigureAwait(false);
 
         // Upload a File with PutObject
-        await FPutObject.Run(minioClient, bucketName, objectName, smallFileName).ConfigureAwait(false);
+        await FPutObject
+            .Run(minioClient, bucketName, objectName, smallFileName)
+            .ConfigureAwait(false);
 
         // Delete the file and Download the object as file
-        await FGetObject.Run(minioClient, bucketName, objectName, smallFileName).ConfigureAwait(false);
+        await FGetObject
+            .Run(minioClient, bucketName, objectName, smallFileName)
+            .ConfigureAwait(false);
 
         // Automatic Multipart Upload with object more than 5Mb
-        await PutObject.Run(minioClient, bucketName, objectName, bigFileName, progress).ConfigureAwait(false);
+        await PutObject
+            .Run(minioClient, bucketName, objectName, bigFileName, progress)
+            .ConfigureAwait(false);
 
         // Specify SSE-C encryption options
         using var aesEncryption = Aes.Create();
@@ -200,17 +236,27 @@ public static class Program
         var sses3 = new SSES3();
 
         // Uncomment to specify SSE-KMS encryption option
-        var sseKms = new SSEKMS("kms-key",
-            new Dictionary<string, string>(StringComparer.Ordinal) { { "kms-context", "somevalue" } });
+        var sseKms = new SSEKMS(
+            "kms-key",
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                { "kms-context", "somevalue" },
+            }
+        );
 
         // Upload encrypted object
         var putFileName1 = CreateFile(1 * UNIT_MB);
-        await PutObject.Run(minioClient, bucketName, objectName, putFileName1, progress, ssec).ConfigureAwait(false);
+        await PutObject
+            .Run(minioClient, bucketName, objectName, putFileName1, progress, ssec)
+            .ConfigureAwait(false);
         // Copy SSE-C encrypted object to unencrypted object
-        await CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName, sseCpy, ssec)
+        await CopyObject
+            .Run(minioClient, bucketName, objectName, destBucketName, objectName, sseCpy, ssec)
             .ConfigureAwait(false);
         // Download SSE-C encrypted object
-        await FGetObject.Run(minioClient, destBucketName, objectName, bigFileName, ssec).ConfigureAwait(false);
+        await FGetObject
+            .Run(minioClient, destBucketName, objectName, bigFileName, ssec)
+            .ConfigureAwait(false);
 
         // List the incomplete uploads
         await ListIncompleteUploads.Run(minioClient, bucketName).ConfigureAwait(false);
@@ -236,16 +282,21 @@ public static class Program
         lockBucketName = GetRandomName();
         await MakeBucketWithLock.Run(minioClient, lockBucketName).ConfigureAwait(false);
         var configuration = new ObjectLockConfiguration(ObjectRetentionMode.GOVERNANCE, 35);
-        await SetObjectLockConfiguration.Run(minioClient, lockBucketName, configuration).ConfigureAwait(false);
+        await SetObjectLockConfiguration
+            .Run(minioClient, lockBucketName, configuration)
+            .ConfigureAwait(false);
         await GetObjectLockConfiguration.Run(minioClient, lockBucketName).ConfigureAwait(false);
         await RemoveObjectLockConfiguration.Run(minioClient, lockBucketName).ConfigureAwait(false);
         await RemoveBucket.Run(minioClient, lockBucketName).ConfigureAwait(false);
 
         // Bucket Replication operations
         var replicationRuleID = "myreplicationID-3333";
-        await SetBucketReplication.Run(minioClient, bucketName, destBucketName, replicationRuleID)
+        await SetBucketReplication
+            .Run(minioClient, bucketName, destBucketName, replicationRuleID)
             .ConfigureAwait(false);
-        await GetBucketReplication.Run(minioClient, bucketName, replicationRuleID).ConfigureAwait(false);
+        await GetBucketReplication
+            .Run(minioClient, bucketName, replicationRuleID)
+            .ConfigureAwait(false);
         // TODO: we can verify that the replication happens by checking
         // the content in the destination matches the source content.
         //     We also cannot remove the replication config immediately
@@ -285,6 +336,7 @@ public static class Program
         File.Delete(smallFileName);
         File.Delete(bigFileName);
 
-        if (OperatingSystem.IsWindows()) _ = Console.ReadLine();
+        if (OperatingSystem.IsWindows())
+            _ = Console.ReadLine();
     }
 }

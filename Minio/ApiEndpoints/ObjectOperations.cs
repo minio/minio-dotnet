@@ -486,7 +486,7 @@ public partial class MinioClient : IObjectOperations
     )
     {
         args?.Validate();
-        IList<DeleteError> errs = new List<DeleteError>();
+        IList<DeleteError> errs = [];
         errs =
             args.ObjectNamesVersions.Count > 0
                 ? await RemoveObjectVersionsHelper(args, errs.ToList(), cancellationToken)

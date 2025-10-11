@@ -27,14 +27,18 @@ public class RemoveObjectArgs : ObjectArgs<RemoveObjectArgs>
     internal string VersionId { get; private set; }
     internal bool? BypassGovernanceMode { get; private set; }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    internal override HttpRequestMessageBuilder BuildRequest(
+        HttpRequestMessageBuilder requestMessageBuilder
+    )
     {
         if (!string.IsNullOrEmpty(VersionId))
         {
             requestMessageBuilder.AddQueryParameter("versionId", $"{VersionId}");
             if (BypassGovernanceMode == true)
-                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-bypass-governance-retention",
-                    BypassGovernanceMode.Value.ToString());
+                requestMessageBuilder.AddOrUpdateHeaderParameter(
+                    "x-amz-bypass-governance-retention",
+                    BypassGovernanceMode.Value.ToString()
+                );
         }
 
         return requestMessageBuilder;

@@ -40,20 +40,20 @@ internal static class SetBucketNotification
             /*
             Arn topicArn = new Arn("aws", "sns", "us-west-1", "730234153608", "topicminio");
             TopicConfig topicConfiguration = new TopicConfig(topicArn);
-            List<EventType> events = new List<EventType>(){ EventType.ObjectCreatedPut , EventType.ObjectCreatedCopy };
+            List<EventType> events = []{ EventType.ObjectCreatedPut , EventType.ObjectCreatedCopy };
             topicConfiguration.AddEvents(events);
             topicConfiguration.AddFilterPrefix("images");
             topicConfiguration.AddFilterSuffix("pg");
             notification.AddTopic(topicConfiguration);
 
             LambdaConfig lambdaConfiguration = new LambdaConfig("arn:aws:lambda:us-west-1:123434153608:function:lambdak1");
-            lambdaConfiguration.AddEvents(new List<EventType>() { EventType.ObjectRemovedDelete });
+            lambdaConfiguration.AddEvents([] { EventType.ObjectRemovedDelete });
             lambdaConfiguration.AddFilterPrefix("java");
             lambdaConfiguration.AddFilterSuffix("java");
             notification.AddLambda(lambdaConfiguration);
 
             QueueConfig queueConfiguration = new QueueConfig("arn:aws:sqs:us-west-1:123434153608:testminioqueue1");
-            queueConfiguration.AddEvents(new List<EventType>() { EventType.ObjectCreatedCompleteMultipartUpload });
+            queueConfiguration.AddEvents([] { EventType.ObjectCreatedCompleteMultipartUpload });
             notification.AddQueue(queueConfiguration);
             */
             await minio.SetBucketNotificationsAsync(args).ConfigureAwait(false);
