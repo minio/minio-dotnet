@@ -130,11 +130,8 @@ public partial class MinioClient : IMinioClient
             throw new ArgumentNullException(nameof(response));
         var statusCodeStrs = new[]
         {
-            nameof(HttpStatusCode.Forbidden),
-            nameof(HttpStatusCode.BadRequest),
-            nameof(HttpStatusCode.NotFound),
-            nameof(HttpStatusCode.MethodNotAllowed),
-            nameof(HttpStatusCode.NotImplemented),
+            nameof(HttpStatusCode.Forbidden), nameof(HttpStatusCode.BadRequest), nameof(HttpStatusCode.NotFound),
+            nameof(HttpStatusCode.MethodNotAllowed), nameof(HttpStatusCode.NotImplemented)
         };
 
         if (
@@ -174,9 +171,9 @@ public partial class MinioClient : IMinioClient
         if (response.ErrorMessage.Contains("No route to host", StringComparison.OrdinalIgnoreCase))
             throw new ConnectionException(
                 "Connection error:"
-                    + "Name or service not known ("
-                    + response.Request.RequestUri.Authority
-                    + ")"
+                + "Name or service not known ("
+                + response.Request.RequestUri.Authority
+                + ")"
             );
 
         if (
@@ -350,13 +347,11 @@ public partial class MinioClient : IMinioClient
                 || errResponse.Code.Equals("InvalidAccessKeyId", StringComparison.OrdinalIgnoreCase)
             )
         )
-        {
             throw new AuthorizationException(
                 errResponse.Resource,
                 errResponse.BucketName,
                 errResponse.Message
             );
-        }
 
         // Handle XML response for Bucket Policy not found case
         if (
@@ -374,9 +369,7 @@ public partial class MinioClient : IMinioClient
                 StringComparison.OrdinalIgnoreCase
             )
         )
-        {
             throw new ErrorResponseException(errResponse, response) { XmlError = response.Content };
-        }
 
         if (
             response
@@ -384,9 +377,7 @@ public partial class MinioClient : IMinioClient
                 .Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
             && string.Equals(errResponse.Code, "NoSuchBucket", StringComparison.OrdinalIgnoreCase)
         )
-        {
             throw new BucketNotFoundException(errResponse.BucketName);
-        }
 
         if (
             response
@@ -394,9 +385,7 @@ public partial class MinioClient : IMinioClient
                 .Contains(nameof(HttpStatusCode.NotFound), StringComparison.OrdinalIgnoreCase)
             && string.Equals(errResponse.Code, "NoSuchKey", StringComparison.OrdinalIgnoreCase)
         )
-        {
             throw new ObjectNotFoundException(errResponse.BucketName);
-        }
 
         if (
             response
@@ -487,16 +476,12 @@ public partial class MinioClient : IMinioClient
         )
             throw new PreconditionFailedException(
                 "At least one of the pre-conditions you "
-                    + "specified did not hold for object: \""
-                    + errResponse.Resource
-                    + "\""
+                + "specified did not hold for object: \""
+                + errResponse.Resource
+                + "\""
             );
 
-        throw new UnexpectedMinioException(errResponse.Message)
-        {
-            Response = errResponse,
-            XmlError = response.Content,
-        };
+        throw new UnexpectedMinioException(errResponse.Message) { Response = errResponse, XmlError = response.Content };
     }
 
     protected virtual void Dispose(bool disposing)

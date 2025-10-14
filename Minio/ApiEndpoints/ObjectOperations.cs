@@ -368,9 +368,9 @@ public partial class MinioClient : IObjectOperations
             .ConfigureAwait(false);
         var legalHoldConfig = new GetLegalHoldResponse(response.StatusCode, response.Content);
         return legalHoldConfig.CurrentLegalHoldConfiguration?.Status.Equals(
-                "on",
-                StringComparison.OrdinalIgnoreCase
-            ) == true;
+            "on",
+            StringComparison.OrdinalIgnoreCase
+        ) == true;
     }
 
     /// <summary>
@@ -816,15 +816,15 @@ public partial class MinioClient : IObjectOperations
             || (
                 srcByteRangeSize > 0
                 && args.SourceObject.CopyOperationConditions.byteRangeEnd
-                    >= args.SourceObjectInfo.Size
+                >= args.SourceObjectInfo.Size
             )
         )
             throw new InvalidDataException(
                 $"Specified byte range ({args.SourceObject
-                .CopyOperationConditions
-                .byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{args.SourceObject
-                .CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)}) does not fit within source object (size={args.SourceObjectInfo.Size
-                .ToString(CultureInfo.InvariantCulture)})"
+                    .CopyOperationConditions
+                    .byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{args.SourceObject
+                    .CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)}) does not fit within source object (size={args.SourceObjectInfo.Size
+                    .ToString(CultureInfo.InvariantCulture)})"
             );
 
         if (
@@ -941,34 +941,6 @@ public partial class MinioClient : IObjectOperations
     }
 
     /// <summary>
-    ///     Get list of multi-part uploads matching particular uploadIdMarker
-    /// </summary>
-    /// <param name="args">GetMultipartUploadsListArgs Arguments Object which encapsulates bucket name, prefix, recursive</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns></returns>
-    private async Task<
-        Tuple<ListMultipartUploadsResult, List<Upload>>
-    > GetMultipartUploadsListAsync(
-        GetMultipartUploadsListArgs args,
-        CancellationToken cancellationToken
-    )
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response = await this.ExecuteTaskAsync(
-                requestMessageBuilder,
-                cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
-        var getUploadResponse = new GetMultipartUploadsListResponse(
-            response.StatusCode,
-            response.Content
-        );
-
-        return getUploadResponse.UploadResult;
-    }
-
-    /// <summary>
     ///     Remove object with matching uploadId from bucket
     /// </summary>
     /// <param name="args">RemoveUploadArgs Arguments Object which encapsulates bucket, object names, upload Id</param>
@@ -1058,6 +1030,92 @@ public partial class MinioClient : IObjectOperations
     }
 
     /// <summary>
+    ///     Start a new multi-part upload request
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+    /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
+    public async Task<string> NewMultipartUploadAsync(
+        NewMultipartUploadPutArgs args,
+        CancellationToken cancellationToken = default)
+    {
+        args?.Validate();
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
+        using var response = await this.ExecuteTaskAsync(
+                requestMessageBuilder,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+        var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
+        return uploadResponse.UploadId;
+    }
+
+    /// <summary>
+    ///     Internal method to complete multi part upload of object to server.
+    /// </summary>
+    /// <param name="args">CompleteMultipartUploadArgs Arguments object with bucket name, object name, upload id, Etags</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns></returns>
+    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
+    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
+    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
+    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
+    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
+    /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
+    public async Task<PutObjectResponse> CompleteMultipartUploadAsync(
+        CompleteMultipartUploadArgs args,
+        CancellationToken cancellationToken
+    )
+    {
+        args?.Validate();
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
+        using var response = await this.ExecuteTaskAsync(
+                requestMessageBuilder,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+        return new PutObjectResponse(
+            response.StatusCode,
+            response.Content,
+            response.Headers,
+            -1,
+            args.ObjectName
+        );
+    }
+
+    /// <summary>
+    ///     Get list of multi-part uploads matching particular uploadIdMarker
+    /// </summary>
+    /// <param name="args">GetMultipartUploadsListArgs Arguments Object which encapsulates bucket name, prefix, recursive</param>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns></returns>
+    private async Task<
+        Tuple<ListMultipartUploadsResult, List<Upload>>
+    > GetMultipartUploadsListAsync(
+        GetMultipartUploadsListArgs args,
+        CancellationToken cancellationToken
+    )
+    {
+        args?.Validate();
+        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
+        using var response = await this.ExecuteTaskAsync(
+                requestMessageBuilder,
+                cancellationToken: cancellationToken
+            )
+            .ConfigureAwait(false);
+        var getUploadResponse = new GetMultipartUploadsListResponse(
+            response.StatusCode,
+            response.Content
+        );
+
+        return getUploadResponse.UploadResult;
+    }
+
+    /// <summary>
     ///     Upload object in multiple parts. Private Helper function
     /// </summary>
     /// <param name="args">PutObjectPartArgs encapsulates bucket name, object name, upload id, part number, object data(body)</param>
@@ -1108,9 +1166,7 @@ public partial class MinioClient : IObjectOperations
             numPartsUploaded++;
             totalParts[partNumber - 1] = new Part
             {
-                PartNumber = partNumber,
-                ETag = etag,
-                Size = (long)expectedReadSize,
+                PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize
             };
             if (!dataToCopy.IsEmpty)
                 progressReport.TotalBytesTransferred += dataToCopy.Length;
@@ -1210,9 +1266,7 @@ public partial class MinioClient : IObjectOperations
 
             totalParts[partNumber - 1] = new Part
             {
-                PartNumber = partNumber,
-                ETag = cpPartResult.ETag,
-                Size = (long)expectedReadSize,
+                PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize
             };
         }
 
@@ -1225,37 +1279,17 @@ public partial class MinioClient : IObjectOperations
         // Complete multi part upload
         _ = await CompleteMultipartUploadAsync(completeMultipartUploadArgs, cancellationToken)
             .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    ///     Start a new multi-part upload request
-    /// </summary>
+/* 项目“Minio(netstandard2.0)”的未合并的更改
+在此之前:
     /// <param name="args">
     ///     NewMultipartUploadPutArgs arguments object encapsulating bucket name, object name, Headers, SSE
     ///     Headers
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns></returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
-    public async Task<string> NewMultipartUploadAsync((
-        NewMultipartUploadPutArgs args,
-        CancellationToken cancellationToken = default
-    )
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response = await this.ExecuteTaskAsync(
-                requestMessageBuilder,
-                cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
-        var uploadResponse = new NewMultipartUploadResponse(response.StatusCode, response.Content);
-        return uploadResponse.UploadId;
+在此之后:
+    /// <returns></returns>
+*/
     }
 
     /// <summary>
@@ -1325,39 +1359,6 @@ public partial class MinioClient : IObjectOperations
             args.CopyOperationObjectType
         );
         return copyObjectResponse.CopyPartRequestResult;
-    }
-
-    /// <summary>
-    ///     Internal method to complete multi part upload of object to server.
-    /// </summary>
-    /// <param name="args">CompleteMultipartUploadArgs Arguments object with bucket name, object name, upload id, Etags</param>
-    /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
-    /// <returns></returns>
-    /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
-    /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
-    /// <exception cref="InvalidObjectNameException">When object name is invalid</exception>
-    /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
-    /// <exception cref="ObjectNotFoundException">When object is not found</exception>
-    /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
-    public async Task<PutObjectResponse> CompleteMultipartUploadAsync(
-        CompleteMultipartUploadArgs args,
-        CancellationToken cancellationToken
-    )
-    {
-        args?.Validate();
-        var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);
-        using var response = await this.ExecuteTaskAsync(
-                requestMessageBuilder,
-                cancellationToken: cancellationToken
-            )
-            .ConfigureAwait(false);
-        return new PutObjectResponse(
-            response.StatusCode,
-            response.Content,
-            response.Headers,
-            -1,
-            args.ObjectName
-        );
     }
 
     /// <summary>

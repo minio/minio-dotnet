@@ -28,13 +28,13 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
         {
             var message = args is null
                 ? "The constructor of "
-                    + nameof(CopyObjectRequestArgs)
-                    + "initialized with arguments of CopyObjectArgs null."
+                  + nameof(CopyObjectRequestArgs)
+                  + "initialized with arguments of CopyObjectArgs null."
                 : "The constructor of "
-                    + nameof(CopyObjectRequestArgs)
-                    + "initialized with arguments of CopyObjectArgs type but with "
-                    + nameof(args.SourceObject)
-                    + " not initialized.";
+                  + nameof(CopyObjectRequestArgs)
+                  + "initialized with arguments of CopyObjectArgs type but with "
+                  + nameof(args.SourceObject)
+                  + " not initialized.";
             throw new InvalidOperationException(message);
         }
 
@@ -49,7 +49,7 @@ internal class MultipartCopyUploadArgs : ObjectWriteArgs<MultipartCopyUploadArgs
             MatchETag = args.SourceObject.MatchETag,
             ModifiedSince = args.SourceObject.ModifiedSince,
             NotMatchETag = args.SourceObject.NotMatchETag,
-            UnModifiedSince = args.SourceObject.UnModifiedSince,
+            UnModifiedSince = args.SourceObject.UnModifiedSince
         };
 
         // Destination part.

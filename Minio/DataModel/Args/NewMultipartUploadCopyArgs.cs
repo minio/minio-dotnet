@@ -33,9 +33,9 @@ public class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartUpl
         if (SourceObjectInfo is null || SourceObject is null)
             throw new InvalidOperationException(
                 nameof(SourceObjectInfo)
-                    + " and "
-                    + nameof(SourceObject)
-                    + " need to be initialized for a NewMultipartUpload operation to work."
+                + " and "
+                + nameof(SourceObject)
+                + " need to be initialized for a NewMultipartUpload operation to work."
             );
 
         Populate();

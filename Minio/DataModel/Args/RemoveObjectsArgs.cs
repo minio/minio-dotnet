@@ -55,8 +55,8 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
             throw new ArgumentNullException(nameof(objectsVersionsList));
 
         foreach (var objVersions in objectsVersionsList)
-            foreach (var vid in objVersions.Item2)
-                ObjectNamesVersions.Add(new Tuple<string, string>(objVersions.Item1, vid));
+        foreach (var vid in objVersions.Item2)
+            ObjectNamesVersions.Add(new Tuple<string, string>(objVersions.Item1, vid));
 
         return this;
     }
@@ -80,11 +80,11 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         if (!string.IsNullOrEmpty(ObjectName))
             throw new InvalidOperationException(
                 nameof(ObjectName)
-                    + " is set. Please use "
-                    + nameof(WithObjects)
-                    + "or "
-                    + nameof(WithObjectsVersions)
-                    + " method to set objects to be deleted."
+                + " is set. Please use "
+                + nameof(WithObjects)
+                + "or "
+                + nameof(WithObjectsVersions)
+                + " method to set objects to be deleted."
             );
 
         if (
@@ -93,9 +93,9 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         )
             throw new InvalidOperationException(
                 "Please assign list of object names or object names and version IDs to remove using method(s) "
-                    + nameof(WithObjects)
-                    + " "
-                    + nameof(WithObjectsVersions)
+                + nameof(WithObjects)
+                + " "
+                + nameof(WithObjectsVersions)
             );
     }
 

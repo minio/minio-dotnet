@@ -380,7 +380,8 @@ public interface IObjectOperations
     /// <exception cref="NotSupportedException">The file stream cannot be read from</exception>
     /// <exception cref="InvalidOperationException">The file stream is currently in a read operation</exception>
     /// <exception cref="AccessDeniedException">For encrypted PUT operation, Access is denied if the key is wrong</exception>
-    Task<PutObjectResponse> PutObjectSinglePartAsync(PutObjectArgs args, CancellationToken cancellationToken = default, bool singleFile = false);
+    Task<PutObjectResponse> PutObjectSinglePartAsync(PutObjectArgs args, CancellationToken cancellationToken = default,
+        bool singleFile = false);
 
 
     /// <summary>
@@ -420,5 +421,6 @@ public interface IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
-    Task<PutObjectResponse> CompleteMultipartUploadAsync(CompleteMultipartUploadArgs args, CancellationToken cancellationToken);
+    Task<PutObjectResponse> CompleteMultipartUploadAsync(CompleteMultipartUploadArgs args,
+        CancellationToken cancellationToken);
 }

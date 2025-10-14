@@ -158,7 +158,7 @@ public class PostPolicy
                     "content-length-range",
                     contentLength.ToString(CultureInfo.InvariantCulture),
                     contentLength.ToString(CultureInfo.InvariantCulture)
-                ),
+                )
             }
         );
     }
@@ -186,7 +186,7 @@ public class PostPolicy
                     "content-length-range",
                     startRange.ToString(CultureInfo.InvariantCulture),
                     endRange.ToString(CultureInfo.InvariantCulture)
-                ),
+                )
             }
         );
     }
@@ -295,12 +295,12 @@ public class PostPolicy
         foreach (var condition in Conditions)
             policyList.Add(
                 "[\""
-                    + condition[0].Item1
-                    + "\",\""
-                    + condition[0].Item2
-                    + "\",\""
-                    + condition[0].Item3
-                    + "\"]"
+                + condition[0].Item1
+                + "\",\""
+                + condition[0].Item2
+                + "\",\""
+                + condition[0].Item3
+                + "\"]"
             );
 
         // expiration and policies will never be empty because of checks at PresignedPostPolicy()

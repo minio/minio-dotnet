@@ -31,10 +31,14 @@ internal class HttpRequestMessageBuilder
     }
 
     public HttpRequestMessageBuilder(HttpMethod method, Uri host, string path)
-        : this(method, new UriBuilder(host) { Path = host.AbsolutePath + path }.Uri) { }
+        : this(method, new UriBuilder(host) { Path = host.AbsolutePath + path }.Uri)
+    {
+    }
 
     public HttpRequestMessageBuilder(HttpMethod method, string requestUrl)
-        : this(method, new Uri(requestUrl)) { }
+        : this(method, new Uri(requestUrl))
+    {
+    }
 
     public HttpRequestMessageBuilder(HttpMethod method, Uri requestUri)
     {
