@@ -1225,16 +1225,23 @@ public partial class MinioClient : IObjectOperations
         // Complete multi part upload
         _ = await CompleteMultipartUploadAsync(completeMultipartUploadArgs, cancellationToken)
             .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    ///     Start a new multi-part upload request
-    /// </summary>
+/* 项目“Minio(netstandard2.0)”的未合并的更改
+在此之前:
     /// <param name="args">
     ///     NewMultipartUploadPutArgs arguments object encapsulating bucket name, object name, Headers, SSE
     ///     Headers
     /// </param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+    /// <returns></returns>
+在此之后:
+    /// <returns></returns>
+*/
+
+    }
+
+    /// <summary>
+    ///     Start a new multi-part upload request
+    /// </summary>
     /// <returns></returns>
     /// <exception cref="AuthorizationException">When access or secret key is invalid</exception>
     /// <exception cref="InvalidBucketNameException">When bucket name is invalid</exception>
@@ -1242,10 +1249,9 @@ public partial class MinioClient : IObjectOperations
     /// <exception cref="BucketNotFoundException">When bucket is not found</exception>
     /// <exception cref="ObjectNotFoundException">When object is not found</exception>
     /// <exception cref="AccessDeniedException">For encrypted copy operation, Access is denied if the key is wrong</exception>
-    public async Task<string> NewMultipartUploadAsync((
+    public async Task<string> NewMultipartUploadAsync(
         NewMultipartUploadPutArgs args,
-        CancellationToken cancellationToken = default
-    )
+        CancellationToken cancellationToken = default)
     {
         args?.Validate();
         var requestMessageBuilder = await this.CreateRequest(args).ConfigureAwait(false);

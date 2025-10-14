@@ -1537,7 +1537,7 @@ public static class FunctionalTest
             var tasks = new Task[count * 2];
             List<string> objectsList = [];
             await Setup_WithLock_Test(minio, bucketName).ConfigureAwait(false);
-            for (var i = 0; i < count * 2; )
+            for (var i = 0; i < count * 2;)
             {
                 tasks[i++] = PutObject_Task(
                     minio,
