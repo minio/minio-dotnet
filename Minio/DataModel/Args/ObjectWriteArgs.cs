@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,10 +22,10 @@ namespace Minio.DataModel.Args;
 public abstract class ObjectWriteArgs<T> : ObjectConditionalQueryArgs<T>
     where T : ObjectWriteArgs<T>
 {
-    internal Tagging ObjectTags { get; set; }
-    internal ObjectRetentionConfiguration Retention { get; set; }
-    internal bool? LegalHoldEnabled { get; set; }
-    internal string ContentType { get; set; }
+    public Tagging ObjectTags { get; set; }
+    public ObjectRetentionConfiguration Retention { get; set; }
+    public bool? LegalHoldEnabled { get; set; }
+    public string ContentType { get; set; }
 
     public T WithTagging(Tagging tagging)
     {

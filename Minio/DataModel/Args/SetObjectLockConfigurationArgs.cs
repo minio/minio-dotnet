@@ -35,7 +35,7 @@ public class SetObjectLockConfigurationArgs : BucketArgs<SetObjectLockConfigurat
         return this;
     }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (LockConfiguration is null)

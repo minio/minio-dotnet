@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,8 +23,8 @@ public abstract class ObjectArgs<T> : BucketArgs<T>
 {
     protected const string S3ZipExtractKey = "X-Minio-Extract";
 
-    internal string ObjectName { get; set; }
-    internal ReadOnlyMemory<byte> RequestBody { get; set; }
+    public string ObjectName { get; set; }
+    public ReadOnlyMemory<byte> RequestBody { get; set; }
 
     public T WithObject(string obj)
     {
@@ -38,7 +38,7 @@ public abstract class ObjectArgs<T> : BucketArgs<T>
         return (T)this;
     }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         Utils.ValidateObjectName(ObjectName);

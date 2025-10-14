@@ -73,7 +73,7 @@ public class RemoveObjectsArgs : ObjectArgs<RemoveObjectsArgs>
         return this;
     }
 
-    internal override void Validate()
+    public override void Validate()
     {
         // Skip object name validation.
         Utils.ValidateBucketName(BucketName);

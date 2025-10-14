@@ -1,4 +1,4 @@
-/*
+﻿/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@ namespace Minio.DataModel.Args;
 public abstract class EncryptionArgs<T> : ObjectArgs<T>
     where T : EncryptionArgs<T>
 {
-    internal IServerSideEncryption SSE { get; set; }
+    public IServerSideEncryption SSE { get; set; }
 
     public T WithServerSideEncryption(IServerSideEncryption sse)
     {

@@ -30,7 +30,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         ContentType = "application/octet-stream";
     }
 
-    internal PutObjectArgs(PutObjectPartArgs args)
+    public PutObjectArgs(PutObjectPartArgs args)
     {
         RequestMethod = HttpMethod.Put;
         BucketName = args.BucketName;
@@ -44,14 +44,14 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         UploadId = args.UploadId;
     }
 
-    internal string UploadId { get; private set; }
-    internal int PartNumber { get; set; }
-    internal string FileName { get; set; }
-    internal long ObjectSize { get; set; }
-    internal Stream ObjectStreamData { get; set; }
-    internal IProgress<ProgressReport> Progress { get; set; }
+    public string UploadId { get; private set; }
+    public int PartNumber { get; set; }
+    public string FileName { get; set; }
+    public long ObjectSize { get; set; }
+    public Stream ObjectStreamData { get; set; }
+    public IProgress<ProgressReport> Progress { get; set; }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         // Check atleast one of filename or stream are initialized
@@ -152,13 +152,13 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         return this;
     }
 
-    internal PutObjectArgs WithUploadId(string id = null)
+    public PutObjectArgs WithUploadId(string id = null)
     {
         UploadId = id;
         return this;
     }
 
-    internal PutObjectArgs WithPartNumber(int num)
+    public PutObjectArgs WithPartNumber(int num)
     {
         PartNumber = num;
         return this;
