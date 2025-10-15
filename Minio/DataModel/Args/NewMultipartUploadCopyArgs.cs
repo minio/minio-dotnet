@@ -19,7 +19,7 @@ using Minio.Helper;
 
 namespace Minio.DataModel.Args;
 
-internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartUploadCopyArgs>
+public class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartUploadCopyArgs>
 {
     internal bool ReplaceMetadataDirective { get; set; }
     internal bool ReplaceTagsDirective { get; set; }
@@ -27,15 +27,15 @@ internal class NewMultipartUploadCopyArgs : NewMultipartUploadArgs<NewMultipartU
     internal ObjectStat SourceObjectInfo { get; set; }
     internal CopySourceObjectArgs SourceObject { get; set; }
 
-    internal override void Validate()
+    public override void Validate()
     {
         base.Validate();
         if (SourceObjectInfo is null || SourceObject is null)
             throw new InvalidOperationException(
                 nameof(SourceObjectInfo)
-                    + " and "
-                    + nameof(SourceObject)
-                    + " need to be initialized for a NewMultipartUpload operation to work."
+                + " and "
+                + nameof(SourceObject)
+                + " need to be initialized for a NewMultipartUpload operation to work."
             );
 
         Populate();

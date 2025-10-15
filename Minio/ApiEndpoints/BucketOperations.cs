@@ -337,7 +337,7 @@ public partial class MinioClient : IBucketOperations
                         ContentType = contentType,
                         Expires = expires,
                         UserMetadata = userMetaData,
-                        IsDir = false,
+                        IsDir = false
                     };
                 });
             foreach (var item in items)

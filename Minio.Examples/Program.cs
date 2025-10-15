@@ -238,10 +238,7 @@ public static class Program
         // Uncomment to specify SSE-KMS encryption option
         var sseKms = new SSEKMS(
             "kms-key",
-            new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                { "kms-context", "somevalue" },
-            }
+            new Dictionary<string, string>(StringComparer.Ordinal) { { "kms-context", "somevalue" } }
         );
 
         // Upload encrypted object
