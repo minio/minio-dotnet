@@ -43,7 +43,6 @@ public class PutObjectResponse : GenericResponse
             {
                 var result = Utils.DeserializeXml<CompleteMultipartUploadResult>(responseContent);
                 if (result?.ETag is not null)
-                    Console.WriteLine("etag in reponse is: " + result.ETag);
                     // Remove quotes if present (S3 returns quoted ETags)
                     Etag = result.ETag.Trim('"');
             }
