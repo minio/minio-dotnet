@@ -15,6 +15,8 @@
  */
 
 using System.Net;
+using Minio.DataModel.Result;
+using Minio.Helper;
 
 namespace Minio.DataModel.Response;
 
@@ -26,11 +28,28 @@ public class PutObjectResponse : GenericResponse
     {
         if (responseHeaders is null) throw new ArgumentNullException(nameof(responseHeaders));
 
+        // First, try to get ETag from headers (works for simple PutObject)
         foreach (var parameter in responseHeaders)
             if (parameter.Key.Equals("ETag", StringComparison.OrdinalIgnoreCase))
             {
                 Etag = parameter.Value;
                 break;
+            }
+
+        // If ETag not found in headers, try parsing from XML response body
+        // (needed for CompleteMultipartUpload responses)
+        if (string.IsNullOrEmpty(Etag) && !string.IsNullOrEmpty(responseContent))
+            try
+            {
+                var result = Utils.DeserializeXml<CompleteMultipartUploadResult>(responseContent);
+                if (result?.ETag is not null)
+                    Console.WriteLine("etag in reponse is: " + result.ETag);
+                    // Remove quotes if present (S3 returns quoted ETags)
+                    Etag = result.ETag.Trim('"');
+            }
+            catch
+            {
+                // Ignore XML parsing errors if any
             }
 
         Size = size;
