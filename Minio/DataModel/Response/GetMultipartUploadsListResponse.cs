@@ -42,7 +42,7 @@ internal class GetMultipartUploadsListResponse : GenericResponse
             {
                 Key = c.Element(ns + "Key").Value,
                 UploadId = c.Element(ns + "UploadId").Value,
-                Initiated = c.Element(ns + "Initiated").Value,
+                Initiated = c.Element(ns + "Initiated").Value
             };
         UploadResult = new Tuple<ListMultipartUploadsResult, List<Upload>>(
             uploadsResult,

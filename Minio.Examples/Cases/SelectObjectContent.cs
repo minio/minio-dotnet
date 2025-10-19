@@ -61,14 +61,12 @@ internal static class SelectObjectContent
                 CompressionType = SelectCompressionType.NONE,
                 CSV = new CSVInputOptions
                 {
-                    FileHeaderInfo = CSVFileHeaderInfo.None,
-                    RecordDelimiter = "\n",
-                    FieldDelimiter = ",",
-                },
+                    FileHeaderInfo = CSVFileHeaderInfo.None, RecordDelimiter = "\n", FieldDelimiter = ","
+                }
             };
             var outputSerialization = new SelectObjectOutputSerialization
             {
-                CSV = new CSVOutputOptions { RecordDelimiter = "\n", FieldDelimiter = "," },
+                CSV = new CSVOutputOptions { RecordDelimiter = "\n", FieldDelimiter = "," }
             };
             var args = new SelectObjectContentArgs()
                 .WithBucket(bucketName)

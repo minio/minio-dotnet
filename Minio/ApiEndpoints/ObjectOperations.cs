@@ -368,9 +368,9 @@ public partial class MinioClient : IObjectOperations
             .ConfigureAwait(false);
         var legalHoldConfig = new GetLegalHoldResponse(response.StatusCode, response.Content);
         return legalHoldConfig.CurrentLegalHoldConfiguration?.Status.Equals(
-                "on",
-                StringComparison.OrdinalIgnoreCase
-            ) == true;
+            "on",
+            StringComparison.OrdinalIgnoreCase
+        ) == true;
     }
 
     /// <summary>
@@ -816,15 +816,15 @@ public partial class MinioClient : IObjectOperations
             || (
                 srcByteRangeSize > 0
                 && args.SourceObject.CopyOperationConditions.byteRangeEnd
-                    >= args.SourceObjectInfo.Size
+                >= args.SourceObjectInfo.Size
             )
         )
             throw new InvalidDataException(
                 $"Specified byte range ({args.SourceObject
-                .CopyOperationConditions
-                .byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{args.SourceObject
-                .CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)}) does not fit within source object (size={args.SourceObjectInfo.Size
-                .ToString(CultureInfo.InvariantCulture)})"
+                    .CopyOperationConditions
+                    .byteRangeStart.ToString(CultureInfo.InvariantCulture)}-{args.SourceObject
+                    .CopyOperationConditions.byteRangeEnd.ToString(CultureInfo.InvariantCulture)}) does not fit within source object (size={args.SourceObjectInfo.Size
+                    .ToString(CultureInfo.InvariantCulture)})"
             );
 
         if (
@@ -1108,9 +1108,7 @@ public partial class MinioClient : IObjectOperations
             numPartsUploaded++;
             totalParts[partNumber - 1] = new Part
             {
-                PartNumber = partNumber,
-                ETag = etag,
-                Size = (long)expectedReadSize,
+                PartNumber = partNumber, ETag = etag, Size = (long)expectedReadSize
             };
             etags[partNumber] = etag;
             if (!dataToCopy.IsEmpty)
@@ -1210,9 +1208,7 @@ public partial class MinioClient : IObjectOperations
 
             totalParts[partNumber - 1] = new Part
             {
-                PartNumber = partNumber,
-                ETag = cpPartResult.ETag,
-                Size = (long)expectedReadSize,
+                PartNumber = partNumber, ETag = cpPartResult.ETag, Size = (long)expectedReadSize
             };
         }
 
