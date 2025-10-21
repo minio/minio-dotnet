@@ -1858,9 +1858,7 @@ public static class FunctionalTest
                 CompressionType = SelectCompressionType.NONE,
                 CSV = new CSVInputOptions
                 {
-                    FileHeaderInfo = CSVFileHeaderInfo.None,
-                    RecordDelimiter = "\n",
-                    FieldDelimiter = ","
+                    FileHeaderInfo = CSVFileHeaderInfo.None, RecordDelimiter = "\n", FieldDelimiter = ","
                 }
             };
             var outputSerialization = new SelectObjectOutputSerialization
@@ -1939,261 +1937,6 @@ public static class FunctionalTest
         {
             await TearDown(minio, bucketName).ConfigureAwait(false);
             File.Delete(outFileName);
-        }
-    }
-
-    #endregion
-
-    #region Bucket Encryption
-
-    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "TODO")]
-    internal static async Task BucketEncryptionsAsync_Test1(IMinioClient minio)
-    {
-        var startTime = DateTime.Now;
-        var bucketName = GetRandomName(15);
-        var args = new Dictionary<string, string>(StringComparer.Ordinal) { { "bucketName", bucketName } };
-        try
-        {
-            await Setup_Test(minio, bucketName).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            await TearDown(minio, bucketName).ConfigureAwait(false);
-            new MintLogger(
-                nameof(BucketEncryptionsAsync_Test1),
-                setBucketEncryptionSignature,
-                "Tests whether SetBucketEncryptionAsync passes",
-                TestStatus.FAIL,
-                DateTime.Now - startTime,
-                ex.Message,
-                ex.ToString(),
-                args: args
-            ).Log();
-            throw;
-        }
-
-        try
-        {
-            var encryptionArgs = new SetBucketEncryptionArgs().WithBucket(bucketName);
-            await minio.SetBucketEncryptionAsync(encryptionArgs).ConfigureAwait(false);
-            new MintLogger(
-                nameof(BucketEncryptionsAsync_Test1),
-                setBucketEncryptionSignature,
-                "Tests whether SetBucketEncryptionAsync passes",
-                TestStatus.PASS,
-                DateTime.Now - startTime,
-                args: args
-            ).Log();
-        }
-        catch (NotImplementedException ex)
-        {
-            new MintLogger(
-                nameof(BucketEncryptionsAsync_Test1),
-                setBucketEncryptionSignature,
-                "Tests whether SetBucketEncryptionAsync passes",
-                TestStatus.NA,
-                DateTime.Now - startTime,
-                ex.Message,
-                ex.ToString(),
-                args: args
-            ).Log();
-        }
-        catch (Exception ex)
-        {
-            await TearDown(minio, bucketName).ConfigureAwait(false);
-            new MintLogger(
-                nameof(BucketEncryptionsAsync_Test1),
-                setBucketEncryptionSignature,
-                "Tests whether SetBucketEncryptionAsync passes",
-                TestStatus.FAIL,
-                DateTime.Now - startTime,
-                ex.Message,
-                ex.ToString(),
-                args: args
-            ).Log();
-            throw;
-        }
-
-        try
-        {
-            var encryptionArgs = new GetBucketEncryptionArgs().WithBucket(bucketName);
-            var config = await minio.GetBucketEncryptionAsync(encryptionArgs).ConfigureAwait(false);
-            Assert.IsNotNull(config);
-            Assert.IsNotNull(config.Rule);
-            Assert.IsNotNull(config.Rule.Apply);
-            Assert.IsTrue(
-                config.Rule.Apply.SSEAlgorithm.Contains(
-                    "AES256",
-                    StringComparison.OrdinalIgnoreCase
-                )
-            );
-            new MintLogger(
-                nameof(BucketEncryptionsAsync_Test1),
-                getBucketEncryptionSignature,
-                "Tests whether GetBucketEncryptionAsync passes",
-                TestStatus.PASS,
-                DateTime.Now - startTime,
-                args: args
-            ).Log();
-        }
-        catch (NotImplementedException ex)
-        {
-            new MintLogger(
-                nameof(BucketEncryptionsAsync_Test1),
-                getBucketEncryptionSignature,
-                "Tests whether GetBucketEncryptionAsync passes",
-                TestStatus.NA,
-                DateTime.Now - startTime,
-                ex.Message,
-                ex.ToString(),
-                args: args
-            ).Log();
-        }
-        catch (Exception ex)
-        {
-            await TearDown(minio, bucketName).ConfigureAwait(false);
-            new MintLogger(
-                nameof(BucketEncryptionsAsync_Test1),
-                getBucketEncryptionSignature,
-                "Tests whether GetBucketEncryptionAsync passes",
-                TestStatus.FAIL,
-                DateTime.Now - startTime,
-                ex.Message,
-                ex.ToString(),
-                args: args
-            ).Log();
-            throw;
-        }
-
-        try
-        {
-            var rmEncryptionArgs = new RemoveBucketEncryptionArgs().WithBucket(bucketName);
-            await minio.RemoveBucketEncryptionAsync(rmEncryptionArgs).ConfigureAwait(false);
-            var encryptionArgs = new GetBucketEncryptionArgs().WithBucket(bucketName);
-            var config = await minio.GetBucketEncryptionAsync(encryptionArgs).ConfigureAwait(false);
-        }
-        catch (NotImplementedException ex)
-        {
-            new MintLogger(
-                nameof(BucketEncryptionsAsync_Test1),
-                removeBucketEncryptionSignature,
-                "Tests whether RemoveBucketEncryptionAsync passes",
-                TestStatus.NA,
-                DateTime.Now - startTime,
-                ex.Message,
-                ex.ToString(),
-                args: args
-            ).Log();
-        }
-        catch (Exception ex)
-        {
-            if (
-                ex.Message.Contains(
-                    "The server side encryption configuration was not found",
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
-            {
-                new MintLogger(
-                    nameof(BucketEncryptionsAsync_Test1),
-                    removeBucketEncryptionSignature,
-                    "Tests whether RemoveBucketEncryptionAsync passes",
-                    TestStatus.PASS,
-                    DateTime.Now - startTime,
-                    args: args
-                ).Log();
-            }
-            else
-            {
-                new MintLogger(
-                    nameof(BucketEncryptionsAsync_Test1),
-                    removeBucketEncryptionSignature,
-                    "Tests whether RemoveBucketEncryptionAsync passes",
-                    TestStatus.FAIL,
-                    DateTime.Now - startTime,
-                    ex.Message,
-                    ex.ToString(),
-                    args: args
-                ).Log();
-                throw;
-            }
-        }
-        finally
-        {
-            await TearDown(minio, bucketName).ConfigureAwait(false);
-        }
-    }
-
-    internal static async Task PutObject_Test11(IMinioClient minio)
-    {
-        var startTime = DateTime.Now;
-        var bucketName = GetRandomName(15);
-        var objectName = GetRandomObjectName(10);
-        var contentType = "binary/octet-stream";
-        var size = 10 * MB;
-        var args = new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            { "bucketName", bucketName },
-            { "objectName", objectName },
-            { "contentType", contentType },
-            { "size", "10MB" }
-        };
-        try
-        {
-            await Setup_Test(minio, bucketName).ConfigureAwait(false);
-
-            // Create a stream for the object
-            using (var filestream = rsg.GenerateStreamFromSeed(size))
-            {
-
-                // Upload the object using multipart upload
-                var putObjectArgs = new PutObjectArgs()
-                    .WithBucket(bucketName)
-                    .WithObject(objectName)
-                    .WithStreamData(filestream)
-                    .WithObjectSize(size)
-                    .WithContentType(contentType);
-
-                var putObjectResponse = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
-
-                // Verify that ETag is present in the response
-                Assert.IsNotNull(putObjectResponse, "PutObjectResponse should not be null");
-                Assert.IsNotNull(putObjectResponse.Etag, "ETag should not be null in multipart upload response");
-                Assert.IsTrue(
-                    !string.IsNullOrWhiteSpace(putObjectResponse.Etag),
-                    "ETag should not be empty in multipart upload response"
-                );
-                Assert.AreEqual(size, putObjectResponse.Size, "Response size should match uploaded size");
-                Assert.AreEqual(objectName, putObjectResponse.ObjectName, "Response object name should match");
-            }
-
-            new MintLogger(
-                    nameof(PutObject_Test11),
-                    putObjectSignature,
-                    "Tests whether multipart PutObject returns ETag in response",
-                    TestStatus.PASS,
-                    DateTime.Now - startTime,
-                    args: args
-                ).Log();
-        }
-        catch (Exception ex)
-        {
-            new MintLogger(
-                nameof(PutObject_Test11),
-                putObjectSignature,
-                "Tests whether multipart PutObject returns ETag in response",
-                TestStatus.FAIL,
-                DateTime.Now - startTime,
-                "",
-                ex.Message,
-                ex.ToString(),
-                args
-            ).Log();
-            throw;
-        }
-        finally
-        {
-            await TearDown(minio, bucketName).ConfigureAwait(false);
         }
     }
 
@@ -3627,6 +3370,260 @@ public static class FunctionalTest
                 ex.Message,
                 ex.ToString(),
                 args: args
+            ).Log();
+            throw;
+        }
+        finally
+        {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+        }
+    }
+
+    #endregion
+
+    #region Bucket Encryption
+
+    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "TODO")]
+    internal static async Task BucketEncryptionsAsync_Test1(IMinioClient minio)
+    {
+        var startTime = DateTime.Now;
+        var bucketName = GetRandomName(15);
+        var args = new Dictionary<string, string>(StringComparer.Ordinal) { { "bucketName", bucketName } };
+        try
+        {
+            await Setup_Test(minio, bucketName).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+            new MintLogger(
+                nameof(BucketEncryptionsAsync_Test1),
+                setBucketEncryptionSignature,
+                "Tests whether SetBucketEncryptionAsync passes",
+                TestStatus.FAIL,
+                DateTime.Now - startTime,
+                ex.Message,
+                ex.ToString(),
+                args: args
+            ).Log();
+            throw;
+        }
+
+        try
+        {
+            var encryptionArgs = new SetBucketEncryptionArgs().WithBucket(bucketName);
+            await minio.SetBucketEncryptionAsync(encryptionArgs).ConfigureAwait(false);
+            new MintLogger(
+                nameof(BucketEncryptionsAsync_Test1),
+                setBucketEncryptionSignature,
+                "Tests whether SetBucketEncryptionAsync passes",
+                TestStatus.PASS,
+                DateTime.Now - startTime,
+                args: args
+            ).Log();
+        }
+        catch (NotImplementedException ex)
+        {
+            new MintLogger(
+                nameof(BucketEncryptionsAsync_Test1),
+                setBucketEncryptionSignature,
+                "Tests whether SetBucketEncryptionAsync passes",
+                TestStatus.NA,
+                DateTime.Now - startTime,
+                ex.Message,
+                ex.ToString(),
+                args: args
+            ).Log();
+        }
+        catch (Exception ex)
+        {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+            new MintLogger(
+                nameof(BucketEncryptionsAsync_Test1),
+                setBucketEncryptionSignature,
+                "Tests whether SetBucketEncryptionAsync passes",
+                TestStatus.FAIL,
+                DateTime.Now - startTime,
+                ex.Message,
+                ex.ToString(),
+                args: args
+            ).Log();
+            throw;
+        }
+
+        try
+        {
+            var encryptionArgs = new GetBucketEncryptionArgs().WithBucket(bucketName);
+            var config = await minio.GetBucketEncryptionAsync(encryptionArgs).ConfigureAwait(false);
+            Assert.IsNotNull(config);
+            Assert.IsNotNull(config.Rule);
+            Assert.IsNotNull(config.Rule.Apply);
+            Assert.IsTrue(
+                config.Rule.Apply.SSEAlgorithm.Contains(
+                    "AES256",
+                    StringComparison.OrdinalIgnoreCase
+                )
+            );
+            new MintLogger(
+                nameof(BucketEncryptionsAsync_Test1),
+                getBucketEncryptionSignature,
+                "Tests whether GetBucketEncryptionAsync passes",
+                TestStatus.PASS,
+                DateTime.Now - startTime,
+                args: args
+            ).Log();
+        }
+        catch (NotImplementedException ex)
+        {
+            new MintLogger(
+                nameof(BucketEncryptionsAsync_Test1),
+                getBucketEncryptionSignature,
+                "Tests whether GetBucketEncryptionAsync passes",
+                TestStatus.NA,
+                DateTime.Now - startTime,
+                ex.Message,
+                ex.ToString(),
+                args: args
+            ).Log();
+        }
+        catch (Exception ex)
+        {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+            new MintLogger(
+                nameof(BucketEncryptionsAsync_Test1),
+                getBucketEncryptionSignature,
+                "Tests whether GetBucketEncryptionAsync passes",
+                TestStatus.FAIL,
+                DateTime.Now - startTime,
+                ex.Message,
+                ex.ToString(),
+                args: args
+            ).Log();
+            throw;
+        }
+
+        try
+        {
+            var rmEncryptionArgs = new RemoveBucketEncryptionArgs().WithBucket(bucketName);
+            await minio.RemoveBucketEncryptionAsync(rmEncryptionArgs).ConfigureAwait(false);
+            var encryptionArgs = new GetBucketEncryptionArgs().WithBucket(bucketName);
+            var config = await minio.GetBucketEncryptionAsync(encryptionArgs).ConfigureAwait(false);
+        }
+        catch (NotImplementedException ex)
+        {
+            new MintLogger(
+                nameof(BucketEncryptionsAsync_Test1),
+                removeBucketEncryptionSignature,
+                "Tests whether RemoveBucketEncryptionAsync passes",
+                TestStatus.NA,
+                DateTime.Now - startTime,
+                ex.Message,
+                ex.ToString(),
+                args: args
+            ).Log();
+        }
+        catch (Exception ex)
+        {
+            if (
+                ex.Message.Contains(
+                    "The server side encryption configuration was not found",
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            {
+                new MintLogger(
+                    nameof(BucketEncryptionsAsync_Test1),
+                    removeBucketEncryptionSignature,
+                    "Tests whether RemoveBucketEncryptionAsync passes",
+                    TestStatus.PASS,
+                    DateTime.Now - startTime,
+                    args: args
+                ).Log();
+            }
+            else
+            {
+                new MintLogger(
+                    nameof(BucketEncryptionsAsync_Test1),
+                    removeBucketEncryptionSignature,
+                    "Tests whether RemoveBucketEncryptionAsync passes",
+                    TestStatus.FAIL,
+                    DateTime.Now - startTime,
+                    ex.Message,
+                    ex.ToString(),
+                    args: args
+                ).Log();
+                throw;
+            }
+        }
+        finally
+        {
+            await TearDown(minio, bucketName).ConfigureAwait(false);
+        }
+    }
+
+    internal static async Task PutObject_Test11(IMinioClient minio)
+    {
+        var startTime = DateTime.Now;
+        var bucketName = GetRandomName(15);
+        var objectName = GetRandomObjectName(10);
+        var contentType = "binary/octet-stream";
+        var size = 10 * MB;
+        var args = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            { "bucketName", bucketName },
+            { "objectName", objectName },
+            { "contentType", contentType },
+            { "size", "10MB" }
+        };
+        try
+        {
+            await Setup_Test(minio, bucketName).ConfigureAwait(false);
+
+            // Create a stream for the object
+            using (var filestream = rsg.GenerateStreamFromSeed(size))
+            {
+                // Upload the object using multipart upload
+                var putObjectArgs = new PutObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(objectName)
+                    .WithStreamData(filestream)
+                    .WithObjectSize(size)
+                    .WithContentType(contentType);
+
+                var putObjectResponse = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+
+                // Verify that ETag is present in the response
+                Assert.IsNotNull(putObjectResponse, "PutObjectResponse should not be null");
+                Assert.IsNotNull(putObjectResponse.Etag, "ETag should not be null in multipart upload response");
+                Assert.IsTrue(
+                    !string.IsNullOrWhiteSpace(putObjectResponse.Etag),
+                    "ETag should not be empty in multipart upload response"
+                );
+                Assert.AreEqual(size, putObjectResponse.Size, "Response size should match uploaded size");
+                Assert.AreEqual(objectName, putObjectResponse.ObjectName, "Response object name should match");
+            }
+
+            new MintLogger(
+                nameof(PutObject_Test11),
+                putObjectSignature,
+                "Tests whether multipart PutObject returns ETag in response",
+                TestStatus.PASS,
+                DateTime.Now - startTime,
+                args: args
+            ).Log();
+        }
+        catch (Exception ex)
+        {
+            new MintLogger(
+                nameof(PutObject_Test11),
+                putObjectSignature,
+                "Tests whether multipart PutObject returns ETag in response",
+                TestStatus.FAIL,
+                DateTime.Now - startTime,
+                "",
+                ex.Message,
+                ex.ToString(),
+                args
             ).Log();
             throw;
         }
@@ -6499,9 +6496,9 @@ public static class FunctionalTest
 
     [SuppressMessage("Design", "MA0051:Method is too long", Justification = "TODO")]
     internal static async Task GetObject_3_OffsetLength_Tests(IMinioClient minio)
-    // 3 tests will run to check different values of offset and length parame
-    // when GetObject api returns part of the object as defined by the of
-    // and length parameters. Tests will be reported as GetObject_Te
+        // 3 tests will run to check different values of offset and length parame
+        // when GetObject api returns part of the object as defined by the of
+        // and length parameters. Tests will be reported as GetObject_Te
 // GetObject_Test4 and GetObject_Test5.
     {
         var startTime = DateTime.Now;
