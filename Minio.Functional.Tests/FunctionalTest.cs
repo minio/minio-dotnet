@@ -3593,7 +3593,6 @@ public static class FunctionalTest
                 var putObjectResponse = await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
                 // Verify that ETag is present in the response
-                Assert.IsNotNull(putObjectResponse, "PutObjectResponse should not be null");
                 Assert.IsNotNull(putObjectResponse.Etag, "ETag should not be null in multipart upload response");
                 Assert.IsTrue(
                     !string.IsNullOrWhiteSpace(putObjectResponse.Etag),
@@ -6499,7 +6498,7 @@ public static class FunctionalTest
         // 3 tests will run to check different values of offset and length parame
         // when GetObject api returns part of the object as defined by the of
         // and length parameters. Tests will be reported as GetObject_Te
-// GetObject_Test4 and GetObject_Test5.
+        // GetObject_Test4 and GetObject_Test5.
     {
         var startTime = DateTime.Now;
         var bucketName = GetRandomName(15);
