@@ -47,31 +47,31 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         if (SourceObject is null)
             throw new InvalidOperationException(
                 nameof(SourceObject)
-                    + " has not been assigned. Please use "
-                    + nameof(WithCopyObjectSource)
+                + " has not been assigned. Please use "
+                + nameof(WithCopyObjectSource)
             );
 
         if (SourceObjectInfo is null)
             throw new InvalidOperationException(
                 "StatObject result for the copy source object needed to continue copy operation. Use "
-                    + nameof(WithCopyObjectSourceStats)
-                    + " to initialize StatObject result."
+                + nameof(WithCopyObjectSourceStats)
+                + " to initialize StatObject result."
             );
 
         if (!string.IsNullOrEmpty(NotMatchETag) && !string.IsNullOrEmpty(MatchETag))
             throw new InvalidOperationException(
                 "Invalid to set both Etag match conditions "
-                    + nameof(NotMatchETag)
-                    + " and "
-                    + nameof(MatchETag)
+                + nameof(NotMatchETag)
+                + " and "
+                + nameof(MatchETag)
             );
 
         if (!ModifiedSince.Equals(default) && !UnModifiedSince.Equals(default))
             throw new InvalidOperationException(
                 "Invalid to set both modified date match conditions "
-                    + nameof(ModifiedSince)
-                    + " and "
-                    + nameof(UnModifiedSince)
+                + nameof(ModifiedSince)
+                + " and "
+                + nameof(UnModifiedSince)
             );
 
         Populate();
