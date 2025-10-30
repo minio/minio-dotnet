@@ -1,4 +1,4 @@
-﻿namespace Minio.Helper;
+namespace Minio.Helper;
 
 /// <summary>
 ///     SyncProgress is a thread-free alternative to <see cref="System.Progress&lt;T&gt;" />

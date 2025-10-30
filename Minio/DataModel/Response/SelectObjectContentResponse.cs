@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using CommunityToolkit.HighPerformance;
 using Minio.DataModel.Select;
 

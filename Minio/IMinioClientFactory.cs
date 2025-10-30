@@ -1,4 +1,4 @@
-﻿namespace Minio;
+namespace Minio;
 
 public interface IMinioClientFactory
 {

@@ -23,7 +23,7 @@ public class ChainedProvider : IClientProvider
 {
     public ChainedProvider()
     {
-        Providers = new List<IClientProvider>();
+        Providers = [];
     }
 
     internal List<IClientProvider> Providers { get; set; }
@@ -32,7 +32,8 @@ public class ChainedProvider : IClientProvider
 
     public AccessCredentials GetCredentials()
     {
-        if (Credentials?.AreExpired() == false) return Credentials;
+        if (Credentials?.AreExpired() == false)
+            return Credentials;
         if (CurrentProvider is not null && !Credentials.AreExpired())
         {
             Credentials = CurrentProvider.GetCredentials();
@@ -50,7 +51,9 @@ public class ChainedProvider : IClientProvider
             }
         }
 
-        throw new InvalidOperationException("None of the assigned providers were able to provide valid credentials.");
+        throw new InvalidOperationException(
+            "None of the assigned providers were able to provide valid credentials."
+        );
     }
 
     public ValueTask<AccessCredentials> GetCredentialsAsync()

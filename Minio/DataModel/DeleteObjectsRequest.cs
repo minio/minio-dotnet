@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 
 namespace Minio.DataModel;
@@ -32,7 +31,7 @@ public class DeleteObjectsRequest
     public DeleteObjectsRequest()
     {
         Quiet = true;
-        Objects = new Collection<DeleteObject>();
+        Objects = [];
     }
 
     [XmlElement("Quiet")] public bool Quiet { get; set; }

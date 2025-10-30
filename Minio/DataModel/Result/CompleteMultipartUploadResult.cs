@@ -1,5 +1,5 @@
 /*
- * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
+ * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2025 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,18 @@ using System.Xml.Serialization;
 namespace Minio.DataModel.Result;
 
 [Serializable]
-[XmlRoot(ElementName = "ListMultipartUploadsResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
-public class ListMultipartUploadsResult
+[XmlRoot(ElementName = "CompleteMultipartUploadResult", Namespace = "http://s3.amazonaws.com/doc/2006-03-01/")]
+public class CompleteMultipartUploadResult
 {
+    public string Location { get; set; }
     public string Bucket { get; set; }
-    public string KeyMarker { get; set; }
-    public string UploadIdMarker { get; set; }
-    public string NextKeyMarker { get; set; }
-    public string NextUploadIdMarker { get; set; }
-    public int MaxUploads { get; set; }
-    public bool IsTruncated { get; set; }
+    public string Key { get; set; }
+    public string ETag { get; set; }
+
+    public string ChecksumCRC32 { get; set; }
+    public string ChecksumCRC32C { get; set; }
+    public string ChecksumSHA1 { get; set; }
+    public string ChecksumSHA256 { get; set; }
+    public string ChecksumCRC64NVME { get; set; }
+    public string ChecksumType { get; set; }
 }

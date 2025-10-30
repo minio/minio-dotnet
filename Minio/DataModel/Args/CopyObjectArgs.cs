@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,29 +45,42 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
     {
         Utils.ValidateBucketName(BucketName);
         if (SourceObject is null)
-            throw new InvalidOperationException(nameof(SourceObject) + " has not been assigned. Please use " +
-                                                nameof(WithCopyObjectSource));
+            throw new InvalidOperationException(
+                nameof(SourceObject)
+                + " has not been assigned. Please use "
+                + nameof(WithCopyObjectSource)
+            );
 
         if (SourceObjectInfo is null)
             throw new InvalidOperationException(
-                "StatObject result for the copy source object needed to continue copy operation. Use " +
-                nameof(WithCopyObjectSourceStats) + " to initialize StatObject result.");
+                "StatObject result for the copy source object needed to continue copy operation. Use "
+                + nameof(WithCopyObjectSourceStats)
+                + " to initialize StatObject result."
+            );
 
         if (!string.IsNullOrEmpty(NotMatchETag) && !string.IsNullOrEmpty(MatchETag))
-            throw new InvalidOperationException("Invalid to set both Etag match conditions " + nameof(NotMatchETag) +
-                                                " and " + nameof(MatchETag));
+            throw new InvalidOperationException(
+                "Invalid to set both Etag match conditions "
+                + nameof(NotMatchETag)
+                + " and "
+                + nameof(MatchETag)
+            );
 
-        if (!ModifiedSince.Equals(default) &&
-            !UnModifiedSince.Equals(default))
-            throw new InvalidOperationException("Invalid to set both modified date match conditions " +
-                                                nameof(ModifiedSince) + " and " + nameof(UnModifiedSince));
+        if (!ModifiedSince.Equals(default) && !UnModifiedSince.Equals(default))
+            throw new InvalidOperationException(
+                "Invalid to set both modified date match conditions "
+                + nameof(ModifiedSince)
+                + " and "
+                + nameof(UnModifiedSince)
+            );
 
         Populate();
     }
 
     private void Populate()
     {
-        if (string.IsNullOrEmpty(ObjectName)) ObjectName = SourceObject.ObjectName;
+        if (string.IsNullOrEmpty(ObjectName))
+            ObjectName = SourceObject.ObjectName;
         if (SSE?.GetEncryptionType().Equals(EncryptionType.SSE_C) == true)
         {
             Headers = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -77,7 +90,8 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         if (!ReplaceMetadataDirective)
         {
             // Check in copy conditions if replace metadata has been set
-            var copyReplaceMeta = SourceObject.CopyOperationConditions?.HasReplaceMetadataDirective() == true;
+            var copyReplaceMeta =
+                SourceObject.CopyOperationConditions?.HasReplaceMetadataDirective() == true;
             WithReplaceMetadataDirective(copyReplaceMeta);
         }
 
@@ -100,8 +114,7 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
             Headers = Headers
                 .Concat(SourceObjectInfo.MetaData)
                 .GroupBy(item => item.Key, StringComparer.Ordinal)
-                .ToDictionary(item => item.Key, item =>
-                    item.Last().Value, StringComparer.Ordinal);
+                .ToDictionary(item => item.Key, item => item.Last().Value, StringComparer.Ordinal);
         }
 
         if (Headers is not null)
@@ -114,27 +127,35 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
 #endif
             {
                 var key = item.Key;
-                if (!OperationsUtil.IsSupportedHeader(item.Key) &&
-                    !item.Key.StartsWith("x-amz-meta",
-                        StringComparison.OrdinalIgnoreCase) &&
-                    !OperationsUtil.IsSSEHeader(key))
+                if (
+                    !OperationsUtil.IsSupportedHeader(item.Key)
+                    && !item.Key.StartsWith("x-amz-meta", StringComparison.OrdinalIgnoreCase)
+                    && !OperationsUtil.IsSSEHeader(key)
+                )
                 {
-                    newKVList.Add(new Tuple<string, string>("x-amz-meta-" +
-                                                            key.ToLowerInvariant(), item.Value));
+                    newKVList.Add(
+                        new Tuple<string, string>(
+                            "x-amz-meta-" + key.ToLowerInvariant(),
+                            item.Value
+                        )
+                    );
                     Headers.Remove(item.Key);
                 }
 
                 newKVList.Add(new Tuple<string, string>(key, item.Value));
             }
 
-            foreach (var item in newKVList) Headers[item.Item1] = item.Item2;
+            foreach (var item in newKVList)
+                Headers[item.Item1] = item.Item2;
         }
     }
 
     public CopyObjectArgs WithCopyObjectSource(CopySourceObjectArgs cs)
     {
         if (cs is null)
-            throw new InvalidOperationException("The copy source object needed for copy operation is not initialized.");
+            throw new InvalidOperationException(
+                "The copy source object needed for copy operation is not initialized."
+            );
 
         SourceObject.RequestMethod = HttpMethod.Put;
         SourceObject ??= new CopySourceObjectArgs();
@@ -174,8 +195,15 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
     public CopyObjectArgs WithObjectLockRetentionDate(DateTime untilDate)
     {
         ObjectLockSet = true;
-        RetentionUntilDate = new DateTime(untilDate.Year, untilDate.Month, untilDate.Day,
-            untilDate.Hour, untilDate.Minute, untilDate.Second, untilDate.Kind);
+        RetentionUntilDate = new DateTime(
+            untilDate.Year,
+            untilDate.Month,
+            untilDate.Day,
+            untilDate.Hour,
+            untilDate.Minute,
+            untilDate.Second,
+            untilDate.Kind
+        );
         return this;
     }
 
@@ -185,7 +213,8 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         if (info.MetaData is not null && !ReplaceMetadataDirective)
         {
             SourceObject.Headers ??= new Dictionary<string, string>(StringComparer.Ordinal);
-            SourceObject.Headers = SourceObject.Headers.Concat(info.MetaData)
+            SourceObject.Headers = SourceObject
+                .Headers.Concat(info.MetaData)
                 .GroupBy(item => item.Key, StringComparer.Ordinal)
                 .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
         }
@@ -206,29 +235,47 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         return this;
     }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    internal override HttpRequestMessageBuilder BuildRequest(
+        HttpRequestMessageBuilder requestMessageBuilder
+    )
     {
         if (!string.IsNullOrEmpty(MatchETag))
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-match", MatchETag);
+            requestMessageBuilder.AddOrUpdateHeaderParameter(
+                "x-amz-copy-source-if-match",
+                MatchETag
+            );
         if (!string.IsNullOrEmpty(NotMatchETag))
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-none-match", NotMatchETag);
+            requestMessageBuilder.AddOrUpdateHeaderParameter(
+                "x-amz-copy-source-if-none-match",
+                NotMatchETag
+            );
         if (ModifiedSince != default)
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-copy-source-if-unmodified-since",
-                Utils.To8601String(ModifiedSince));
+            requestMessageBuilder.AddOrUpdateHeaderParameter(
+                "x-amz-copy-source-if-unmodified-since",
+                Utils.To8601String(ModifiedSince)
+            );
 
         if (UnModifiedSince != default)
         {
             using var request = requestMessageBuilder.Request;
-            request.Headers.Add("x-amz-copy-source-if-modified-since",
-                Utils.To8601String(UnModifiedSince));
+            request.Headers.Add(
+                "x-amz-copy-source-if-modified-since",
+                Utils.To8601String(UnModifiedSince)
+            );
         }
 
-        if (!string.IsNullOrEmpty(VersionId)) requestMessageBuilder.AddQueryParameter("versionId", VersionId);
+        if (!string.IsNullOrEmpty(VersionId))
+            requestMessageBuilder.AddQueryParameter("versionId", VersionId);
         if (ObjectTags?.TaggingSet?.Tag.Count > 0)
         {
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging", ObjectTags.GetTagString());
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-tagging-directive",
-                ReplaceTagsDirective ? "COPY" : "REPLACE");
+            requestMessageBuilder.AddOrUpdateHeaderParameter(
+                "x-amz-tagging",
+                ObjectTags.GetTagString()
+            );
+            requestMessageBuilder.AddOrUpdateHeaderParameter(
+                "x-amz-tagging-directive",
+                ReplaceTagsDirective ? "COPY" : "REPLACE"
+            );
         }
 
         if (ReplaceMetadataDirective)
@@ -240,11 +287,17 @@ public class CopyObjectArgs : ObjectWriteArgs<CopyObjectArgs>
         if (ObjectLockSet)
         {
             if (!RetentionUntilDate.Equals(default))
-                requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-retain-until-date",
-                    Utils.To8601String(RetentionUntilDate));
+                requestMessageBuilder.AddOrUpdateHeaderParameter(
+                    "x-amz-object-lock-retain-until-date",
+                    Utils.To8601String(RetentionUntilDate)
+                );
 
-            requestMessageBuilder.AddOrUpdateHeaderParameter("x-amz-object-lock-mode",
-                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE ? "GOVERNANCE" : "COMPLIANCE");
+            requestMessageBuilder.AddOrUpdateHeaderParameter(
+                "x-amz-object-lock-mode",
+                ObjectLockRetentionMode == ObjectRetentionMode.GOVERNANCE
+                    ? "GOVERNANCE"
+                    : "COMPLIANCE"
+            );
         }
 
         return requestMessageBuilder;

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2017, 2018, 2019, 2020 MinIO, Inc.
  *
@@ -46,7 +46,9 @@ internal class HttpRequestMessageBuilder
         RequestUri = requestUri;
 
         QueryParameters = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
-        HeaderParameters = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+        HeaderParameters = new Dictionary<string, string>(
+            StringComparer.InvariantCultureIgnoreCase
+        );
         BodyParameters = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
     }
 
@@ -62,7 +64,8 @@ internal class HttpRequestMessageBuilder
             var requestUri = requestUriBuilder.Uri;
             var request = new HttpRequestMessage(Method, requestUri);
 
-            if (!Content.IsEmpty) request.Content = new ReadOnlyMemoryContent(Content);
+            if (!Content.IsEmpty)
+                request.Content = new ReadOnlyMemoryContent(Content);
 
             foreach (var parameter in HeaderParameters)
             {
@@ -84,14 +87,20 @@ internal class HttpRequestMessageBuilder
                             }
                             catch
                             {
-                                var success = request.Content.Headers.TryAddWithoutValidation(ContentTypeKey, val);
+                                var success = request.Content.Headers.TryAddWithoutValidation(
+                                    ContentTypeKey,
+                                    val
+                                );
                             }
 
                             break;
                         }
 
                         case "content-length":
-                            request.Content.Headers.ContentLength = Convert.ToInt32(val, CultureInfo.InvariantCulture);
+                            request.Content.Headers.ContentLength = Convert.ToInt32(
+                                val,
+                                CultureInfo.InvariantCulture
+                            );
                             break;
 
                         case "content-md5":
@@ -108,11 +117,19 @@ internal class HttpRequestMessageBuilder
             if (request.Content is not null)
             {
                 var isMultiDeleteRequest = false;
-                if (Method == HttpMethod.Post) isMultiDeleteRequest = QueryParameters.ContainsKey("delete");
-                var isSecure = RequestUri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
+                if (Method == HttpMethod.Post)
+                    isMultiDeleteRequest = QueryParameters.ContainsKey("delete");
+                var isSecure = RequestUri.Scheme.Equals(
+                    "https",
+                    StringComparison.OrdinalIgnoreCase
+                );
 
-                if (!isSecure && !isMultiDeleteRequest &&
-                    BodyParameters.TryGetValue("Content-Md5", out var value) && value is not null)
+                if (
+                    !isSecure
+                    && !isMultiDeleteRequest
+                    && BodyParameters.TryGetValue("Content-Md5", out var value)
+                    && value is not null
+                )
                 {
                     _ = BodyParameters.TryGetValue("Content-Md5", out var returnValue);
                     request.Content.Headers.ContentMD5 = Convert.FromBase64String(returnValue);
@@ -135,9 +152,11 @@ internal class HttpRequestMessageBuilder
 
     public void AddHeaderParameter(string key, string value)
     {
-        if (key.StartsWith("content-", StringComparison.InvariantCultureIgnoreCase) &&
-            !string.IsNullOrEmpty(value) &&
-            !BodyParameters.ContainsKey(key))
+        if (
+            key.StartsWith("content-", StringComparison.InvariantCultureIgnoreCase)
+            && !string.IsNullOrEmpty(value)
+            && !BodyParameters.ContainsKey(key)
+        )
             BodyParameters.Add(key, value);
 
         HeaderParameters[key] = value;

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,9 +29,9 @@ public class BucketNotification
 {
     public BucketNotification()
     {
-        LambdaConfigs = new List<LambdaConfig>();
-        TopicConfigs = new List<TopicConfig>();
-        QueueConfigs = new List<QueueConfig>();
+        LambdaConfigs = [];
+        TopicConfigs = [];
+        QueueConfigs = [];
     }
 
     [XmlElement("CloudFunctionConfiguration")]
