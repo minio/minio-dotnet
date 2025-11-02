@@ -240,7 +240,8 @@ public class UtilsTest
     [TestMethod]
     public void TestXmlResultWithoutNamespace()
     {
-        var xml = """
+        var xml =
+            """
             <?xml version="1.0" encoding="UTF-8"?>
             <CopyObjectResult>
                 <LastModified>
