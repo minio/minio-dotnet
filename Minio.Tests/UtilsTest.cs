@@ -18,6 +18,7 @@
 using System.Xml.Serialization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
+using Minio.DataModel.Result;
 using Minio.Exceptions;
 using Minio.Helper;
 
@@ -234,5 +235,24 @@ public class UtilsTest
         Assert.IsTrue(RequestUtil.IsValidEndpoint("0some.domain.com"));
         Assert.IsTrue(RequestUtil.IsValidEndpoint("A.domain.com"));
         Assert.IsTrue(RequestUtil.IsValidEndpoint("A.domain1.com"));
+    }
+
+    [TestMethod]
+    public void TestXmlResultWithoutNamespace()
+    {
+        var xml =
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <CopyObjectResult>
+                <LastModified>
+                    2022-10-29T15:34:41.626Z
+                </LastModified>
+                <ETag>
+                    &#34;ead3fcd881dee32547f1b6ca1fc29463&#34;
+                </ETag>
+            </CopyObjectResult>
+            """;
+        var result = Utils.DeserializeXml<CopyObjectResult>(xml);
+        Assert.IsNotNull(result);
     }
 }

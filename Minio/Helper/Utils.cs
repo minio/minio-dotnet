@@ -1050,10 +1050,26 @@ public static class Utils
         using var reader = new StreamReader(stream);
         var xmlContent = reader.ReadToEnd();
 
-        return DeserializeXml<T>(xmlContent); // Call the string overload
+        return DeserializeNonS3Xml<T>(xmlContent); // Fallback to generic XML deserialization
     }
 
     public static T DeserializeXml<T>(string xml) where T : class, new()
+    {
+        if (string.IsNullOrEmpty(xml)) return default;
+
+        var ns = GetNamespace<T>();
+        if (!string.IsNullOrWhiteSpace(ns) && string.Equals(ns, "http://s3.amazonaws.com/doc/2006-03-01/",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            using var stringReader = new StringReader(xml);
+            using var amazonAwsS3XmlReader = new AmazonAwsS3XmlReader(stringReader);
+            return (T)new XmlSerializer(typeof(T)).Deserialize(amazonAwsS3XmlReader);
+        }
+
+        return DeserializeNonS3Xml<T>(xml); // Fallback to generic XML deserialization
+    }
+
+    private static T DeserializeNonS3Xml<T>(string xml) where T : class, new()
     {
         if (string.IsNullOrEmpty(xml)) return default;
 
