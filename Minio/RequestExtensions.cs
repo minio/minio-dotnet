@@ -70,7 +70,7 @@ public static class RequestExtensions
             handler.Handle(responseResult);
         }
 
-        if (responseResult.StatusCode is not HttpStatusCode.OK)
+        if (!(responseResult.Response?.IsSuccessStatusCode ?? false))
         {
             if (responseResult.StatusCode == HttpStatusCode.NoContent
                 && responseResult.Request.Method == HttpMethod.Delete)

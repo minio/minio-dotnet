@@ -141,7 +141,7 @@ public partial class MinioClient : IMinioClient
         )
             foreach (var exception in statusCodeStrs)
             {
-                if (response.StatusCode is not HttpStatusCode.OK)
+                if (!(response.Response?.IsSuccessStatusCode ?? false))
                 {
                     ParseWellKnownErrorNoContent(response);
                     break;
