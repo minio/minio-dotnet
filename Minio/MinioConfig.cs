@@ -1,5 +1,4 @@
 using System.Net;
-using Microsoft.Extensions.DependencyInjection;
 using Minio.Credentials;
 using Minio.Handlers;
 
@@ -7,7 +6,7 @@ namespace Minio;
 
 public class MinioConfig
 {
-    internal ServiceProvider ServiceProvider { get; set; }
+    internal IServiceProvider ServiceProvider { get; set; }
 
     // Cache holding bucket to region mapping for buckets seen so far.
     public BucketRegionCache RegionCache { get; internal set; }
