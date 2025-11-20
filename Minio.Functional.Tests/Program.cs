@@ -77,15 +77,6 @@ internal static class Program
             kmsEnabled = "1";
         }
 
-#pragma warning disable MA0039 // Do not write your own certificate validation method
-        ServicePointManager.ServerCertificateValidationCallback += (
-            sender,
-            certificate,
-            chain,
-            sslPolicyErrors
-        ) => true;
-#pragma warning restore MA0039 // Do not write your own certificate validation method
-
         using var minioClient = new MinioClient()
             .WithEndpoint(endPoint, port)
             .WithCredentials(accessKey, secretKey)
@@ -258,15 +249,6 @@ internal static class Program
         // Test encryption
         if (isSecure)
         {
-#pragma warning disable MA0039 // Do not write your own certificate validation method
-            ServicePointManager.ServerCertificateValidationCallback += (
-                sender,
-                certificate,
-                chain,
-                sslPolicyErrors
-            ) => true;
-#pragma warning restore MA0039 // Do not write your own certificate validation method
-
             functionalTestTasks.Add(FunctionalTest.PutGetStatEncryptedObject_Test1(minioClient));
             functionalTestTasks.Add(FunctionalTest.PutGetStatEncryptedObject_Test2(minioClient));
 

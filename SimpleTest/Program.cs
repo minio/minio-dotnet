@@ -24,10 +24,6 @@ public static class Program
 {
     private static async Task Main()
     {
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
-                                               | SecurityProtocolType.Tls11
-                                               | SecurityProtocolType.Tls12;
-
         // Note: s3 AccessKey and SecretKey needs to be added in App.config file
         // See instructions in README.md on running examples for more information.
         using var minio = new MinioClient()

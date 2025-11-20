@@ -28,9 +28,6 @@ public class UnitTest2
 {
     public UnitTest2()
     {
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
-                                               | SecurityProtocolType.Tls11
-                                               | SecurityProtocolType.Tls12;
         using var minio = new MinioClient()
             .WithEndpoint(TestHelper.Endpoint)
             .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)
