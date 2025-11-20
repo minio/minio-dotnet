@@ -28,9 +28,6 @@ public class UrlTests
 {
     public UrlTests()
     {
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
-                                               | SecurityProtocolType.Tls11
-                                               | SecurityProtocolType.Tls12;
         using var minio = new MinioClient()
             .WithEndpoint(TestHelper.Endpoint)
             .WithCredentials(TestHelper.AccessKey, TestHelper.SecretKey)

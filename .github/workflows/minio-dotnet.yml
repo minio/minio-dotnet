@@ -25,7 +25,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         configuration: [Release]
-        dotnet-version: ["8.0.x"]
+        dotnet-version: ["10.0.x"]
 
     steps:
       - name: Checkout
@@ -95,7 +95,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: "10.0.x"
 
       # Install regitlint
       - name: Install tool dependencies
@@ -114,7 +114,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         configuration: [Release]
-        dotnet-version: ["8.0.x"]
+        dotnet-version: ["10.0.x"]
 
     steps:
       # Install .NET
@@ -141,7 +141,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         configuration: [Release]
-        dotnet-version: ["8.0.x"]
+        dotnet-version: ["10.0.x"]
 
     steps:
       # Install .NET
@@ -183,7 +183,7 @@ jobs:
             chmod +x /tmp/mc
             MC_HOST_test=https://minio:minio123@localhost:9000 /tmp/mc --insecure ready test
             
-            dotnet Minio.Functional.Tests/bin/Release/net8.0/Minio.Functional.Tests.dll
+            dotnet Minio.Functional.Tests/bin/Release/net10.0/Minio.Functional.Tests.dll
 
   push_to_nuget:
     needs: [build, unit_tests, functional_tests, format-check]
@@ -202,7 +202,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: "10.0.x"
 
       # Push to NuGet
       - name: Push to NuGet

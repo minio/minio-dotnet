@@ -31,7 +31,7 @@ public static class CertificateIdentityProviderExample
 
         // Generatng pfx cert for this call.
         // openssl pkcs12 -export -out client.pfx -inkey client.key -in client.crt -certfile server.crt
-        using var cert = new X509Certificate2("C:\\dev\\client.pfx", "optional-password");
+        using var cert = X509CertificateLoader.LoadPkcs12FromFile("C:\\dev\\client.pfx", "optional-password");
         try
         {
             var provider = new CertificateIdentityProvider()

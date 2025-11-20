@@ -36,9 +36,6 @@ public static class FileUpload
 
     private static async Task Main()
     {
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
-                                               | SecurityProtocolType.Tls11
-                                               | SecurityProtocolType.Tls12;
         var endpoint = "play.min.io";
         var accessKey = "Q3AM3UQ867SPQQA43P2F";
         var secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
