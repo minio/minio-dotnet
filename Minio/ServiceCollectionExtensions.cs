@@ -39,26 +39,33 @@ public static class ServiceCollectionExtensions
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
         if (services is null) throw new ArgumentNullException(nameof(services));
-        if (configureClient == null) throw new ArgumentNullException(nameof(configureClient));
+        if (configureClient is null) throw new ArgumentNullException(nameof(configureClient));
 
-        var minioClientFactory = new MinioClientFactory(configureClient);
-        services.TryAddSingleton<IMinioClientFactory>(minioClientFactory);
+        services.TryAddSingleton<IMinioClientFactory>(_ => new MinioClientFactory(configureClient));
 
-        var client = minioClientFactory.CreateClient();
-        client.Config.ServiceProvider = services.BuildServiceProvider();
         switch (lifetime)
         {
             case ServiceLifetime.Singleton:
-                services.TryAddSingleton(_ => client);
+                services.TryAddSingleton(BuildMinioClient);
                 break;
             case ServiceLifetime.Scoped:
-                services.TryAddScoped(_ => client);
+                services.TryAddScoped(BuildMinioClient);
                 break;
             case ServiceLifetime.Transient:
-                services.TryAddTransient(_ => client);
+                services.TryAddTransient(BuildMinioClient);
                 break;
         }
 
         return services;
+    }
+
+    private static IMinioClient BuildMinioClient(this IServiceProvider serviceProvider)
+    {
+        if (serviceProvider is null) throw new ArgumentNullException(nameof(serviceProvider));
+
+        var factory = serviceProvider.GetRequiredService<IMinioClientFactory>();
+        var client = factory.CreateClient();
+        client.Config.ServiceProvider = serviceProvider;
+        return client;
     }
 }
