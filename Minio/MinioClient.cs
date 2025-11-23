@@ -74,8 +74,10 @@ public partial class MinioClient : IMinioClient
     /// </summary>
     public void SetTraceOn(IRequestLogger requestLogger = null)
     {
-        var logger = Config?.ServiceProvider?.GetRequiredService<ILogger<DefaultRequestLogger>>();
-        RequestLogger = requestLogger ?? new DefaultRequestLogger(logger);
+        RequestLogger = requestLogger ??
+                        new DefaultRequestLogger(Config.ServiceProvider
+                            .GetRequiredService<ILogger<DefaultRequestLogger>>());
+
         Config.TraceHttp = true;
     }
 
