@@ -25,8 +25,7 @@ using Minio.Handlers;
 using Minio.Helper;
 
 namespace Minio;
-
-public partial class MinioClient : IMinioClient
+public partial class MinioClient
 {
     private static readonly char[] separator = { '/' };
 
