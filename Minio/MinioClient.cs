@@ -18,7 +18,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Minio.DataModel.Result;
 using Minio.Exceptions;
 using Minio.Handlers;
@@ -73,10 +72,7 @@ public partial class MinioClient
     /// </summary>
     public void SetTraceOn(IRequestLogger requestLogger = null)
     {
-        RequestLogger = requestLogger ??
-                        new DefaultRequestLogger(Config.ServiceProvider
-                            .GetRequiredService<ILogger<DefaultRequestLogger>>());
-
+        RequestLogger = requestLogger ?? ActivatorUtilities.GetServiceOrCreateInstance<DefaultRequestLogger>(Config.ServiceProvider);
         Config.TraceHttp = true;
     }
 
