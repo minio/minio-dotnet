@@ -22,13 +22,9 @@ namespace Minio.Handlers;
 
 public sealed class DefaultRequestLogger : IRequestLogger
 {
-    private readonly ILogger logger;
+    private readonly ILogger<DefaultRequestLogger> logger;
 
-    public DefaultRequestLogger()
-    {
-    }
-
-    public DefaultRequestLogger(ILogger logger)
+    public DefaultRequestLogger(ILogger<DefaultRequestLogger> logger)
     {
         this.logger = logger;
     }
@@ -94,10 +90,6 @@ public sealed class DefaultRequestLogger : IRequestLogger
 
         _ = sb.AppendLine("- - - - - - - - - - END RESPONSE - - - - - - - - - -");
 
-
-        if (logger is not null)
-            logger.LogInformation(sb.ToString());
-        else
-            Console.WriteLine(sb.ToString());
+        logger.LogInformation(sb.ToString());
     }
 }
