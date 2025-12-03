@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,7 +36,9 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
         SSE = args.SSE;
         SSE?.Marshal(args.Headers);
         if (args.Headers?.Count > 0)
-            Headers = Headers.Concat(args.Headers).GroupBy(item => item.Key, StringComparer.Ordinal)
+            Headers = Headers
+                .Concat(args.Headers)
+                .GroupBy(item => item.Key, StringComparer.Ordinal)
                 .ToDictionary(item => item.Key, item => item.First().Value, StringComparer.Ordinal);
     }
 
@@ -60,19 +62,22 @@ internal class CompleteMultipartUploadArgs : ObjectWriteArgs<CompleteMultipartUp
 
     internal CompleteMultipartUploadArgs WithETags(IDictionary<int, string> etags)
     {
-        if (etags?.Count > 0) ETags = new Dictionary<int, string>(etags);
+        if (etags?.Count > 0)
+            ETags = new Dictionary<int, string>(etags);
         return this;
     }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    internal override HttpRequestMessageBuilder BuildRequest(
+        HttpRequestMessageBuilder requestMessageBuilder
+    )
     {
         requestMessageBuilder.AddQueryParameter("uploadId", $"{UploadId}");
         var parts = new List<XElement>();
 
         for (var i = 1; i <= ETags.Count; i++)
-            parts.Add(new XElement("Part",
-                new XElement("PartNumber", i),
-                new XElement("ETag", ETags[i])));
+            parts.Add(
+                new XElement("Part", new XElement("PartNumber", i), new XElement("ETag", ETags[i]))
+            );
 
         var completeMultipartUploadXml = new XElement("CompleteMultipartUpload", parts);
         var bodyString = completeMultipartUploadXml.ToString();

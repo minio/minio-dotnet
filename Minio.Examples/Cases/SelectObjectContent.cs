@@ -24,11 +24,14 @@ namespace Minio.Examples.Cases;
 internal static class SelectObjectContent
 {
     // Get object in a bucket
-    public static async Task Run(IMinioClient minio,
+    public static async Task Run(
+        IMinioClient minio,
         string bucketName = "my-bucket-name",
-        string objectName = "my-object-name")
+        string objectName = "my-object-name"
+    )
     {
-        if (minio is null) throw new ArgumentNullException(nameof(minio));
+        if (minio is null)
+            throw new ArgumentNullException(nameof(minio));
 
         var newObjectName = "new" + objectName;
         try
@@ -78,7 +81,8 @@ internal static class SelectObjectContent
             Console.WriteLine("Bytes scanned:" + resp.Stats.BytesScanned);
             Console.WriteLine("Bytes returned:" + resp.Stats.BytesReturned);
             Console.WriteLine("Bytes processed:" + resp.Stats.BytesProcessed);
-            if (resp.Progress is not null) Console.WriteLine("Progress :" + resp.Progress.BytesProcessed);
+            if (resp.Progress is not null)
+                Console.WriteLine("Progress :" + resp.Progress.BytesProcessed);
         }
         catch (Exception e)
         {

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2021 MinIO, Inc.
  *
@@ -68,7 +68,7 @@ public class AssumeRoleProvider : AssumeRoleBaseProvider<AssumeRoleProvider>
             ResponseResult responseResult = null;
             try
             {
-                responseResult = await Client.ExecuteTaskAsync(requestBuilder, isSts: true)
+                responseResult = await Client.ExecuteTaskAsync(requestBuilder, true)
                     .ConfigureAwait(false);
 
                 AssumeRoleResponse assumeRoleResp = null;

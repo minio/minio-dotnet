@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using Minio.Credentials;
 using Minio.Handlers;
@@ -19,7 +19,6 @@ public class MinioConfig
     // Handler for task retry policy
     public IRetryPolicyHandler RetryPolicyHandler { get; internal set; }
 
-    //TODO: Should be removed?
     // Corresponding URI for above endpoint
     public Uri Uri { get; internal set; }
 

@@ -33,7 +33,7 @@ public class S3Key
     {
         get
         {
-            filterRules ??= new Collection<FilterRule>();
+            filterRules ??= [];
 
             return filterRules;
         }
