@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel;
-using System.Globalization;
 
 namespace Minio.Tests;
 
@@ -60,3 +60,4 @@ public class AccessCredentialsTests
         Assert.AreEqual(expected, credentials.AreExpired());
     }
 }
+
