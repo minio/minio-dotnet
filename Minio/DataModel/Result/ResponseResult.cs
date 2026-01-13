@@ -23,6 +23,8 @@ namespace Minio.DataModel.Result;
 public sealed class ResponseResult : IDisposable
 {
     private readonly Dictionary<string, string> headers = new(StringComparer.Ordinal);
+    private string content;
+    private ReadOnlyMemory<byte> contentBytes;
     private bool disposed;
     private Stream stream;
 
@@ -70,17 +72,15 @@ public sealed class ResponseResult : IDisposable
             if (ContentStream is null)
                 return ReadOnlyMemory<byte>.Empty;
 
-            if (field.IsEmpty)
+            if (contentBytes.IsEmpty)
             {
                 using var memoryStream = new MemoryStream();
                 ContentStream.CopyTo(memoryStream);
-                field = new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
+                contentBytes = new ReadOnlyMemory<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
             }
 
-            return field;
+            return contentBytes;
         }
-
-        private set;
     }
 
     public string Content
@@ -88,11 +88,9 @@ public sealed class ResponseResult : IDisposable
         get
         {
             if (ContentBytes.Length == 0) return "";
-            field ??= Encoding.UTF8.GetString(ContentBytes.Span);
-            return field;
+            content ??= Encoding.UTF8.GetString(ContentBytes.Span);
+            return content;
         }
-
-        private set;
     }
 
     public IDictionary<string, string> Headers
@@ -124,8 +122,8 @@ public sealed class ResponseResult : IDisposable
         Request?.Dispose();
         Response?.Dispose();
 
-        Content = null;
-        ContentBytes = null;
+        content = null;
+        contentBytes = null;
         stream = null;
 
         disposed = true;
