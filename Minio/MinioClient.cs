@@ -24,6 +24,7 @@ using Minio.Handlers;
 using Minio.Helper;
 
 namespace Minio;
+
 public partial class MinioClient
 {
     private static readonly char[] separator = { '/' };
@@ -72,7 +73,8 @@ public partial class MinioClient
     /// </summary>
     public void SetTraceOn(IRequestLogger requestLogger = null)
     {
-        RequestLogger = requestLogger ?? ActivatorUtilities.GetServiceOrCreateInstance<DefaultRequestLogger>(Config.ServiceProvider);
+        RequestLogger = requestLogger ??
+                        ActivatorUtilities.GetServiceOrCreateInstance<DefaultRequestLogger>(Config.ServiceProvider);
         Config.TraceHttp = true;
     }
 
