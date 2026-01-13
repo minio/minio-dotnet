@@ -55,9 +55,12 @@ public class AccessCredentialsTests
     [DataRow("__OFFSET__", 60, false, DisplayName = "Future (+60 min) → false")]
     public void AreExpired_Scenarios_WithCtor(string expirationParam, int offsetMinutes, bool expected)
     {
-        var dt = string.IsNullOrWhiteSpace(expirationParam) ? default : DateTime.UtcNow.AddMinutes(offsetMinutes);
+        DateTime dt = default;
+        if (!string.IsNullOrWhiteSpace(expirationParam))
+            dt = DateTime.UtcNow.AddMinutes(offsetMinutes);
+
         var credentials = new AccessCredentials("ak", "sk", "st", dt);
+
         Assert.AreEqual(expected, credentials.AreExpired());
     }
 }
-
