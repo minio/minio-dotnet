@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,7 @@ public class NotificationConfiguration
     public NotificationConfiguration()
     {
         Arn = null;
-        Events = new List<EventType>();
+        Events = [];
     }
 
     public NotificationConfiguration(string arn)
@@ -53,7 +53,7 @@ public class NotificationConfiguration
 
     public void AddEvents(IList<EventType> evnt)
     {
-        Events ??= new List<EventType>();
+        Events ??= [];
 
         Events.AddRange(evnt);
     }

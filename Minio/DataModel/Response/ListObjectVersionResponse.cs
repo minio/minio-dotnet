@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@ internal class ListObjectVersionResponse
     internal Item BucketObjectsLastItem;
     internal IObserver<Item> ItemObservable;
 
-    internal ListObjectVersionResponse(ListObjectsArgs args, Tuple<ListVersionsResult, List<Item>> objectList,
+    internal ListObjectVersionResponse(ListObjectsArgs _, Tuple<ListVersionsResult, List<Item>> objectList,
         IObserver<Item> obs)
     {
         ItemObservable = obs;

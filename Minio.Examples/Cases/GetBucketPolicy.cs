@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,8 +22,7 @@ internal static class GetBucketPolicy
 {
     // Get bucket policy 
     public static async Task Run(IMinioClient minio,
-        string bucketName = "my-bucket-name",
-        string prefix = "")
+        string bucketName = "my-bucket-name")
     {
         try
         {

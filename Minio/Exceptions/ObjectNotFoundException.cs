@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@ public class ObjectNotFoundException : MinioException
 {
     private readonly string objectName;
 
-    public ObjectNotFoundException(string objectName, string message) : base(message)
+    public ObjectNotFoundException(string objectName, string message = "Object NotFound") : base(message)
     {
         this.objectName = objectName;
     }
@@ -32,11 +32,12 @@ public class ObjectNotFoundException : MinioException
     {
     }
 
-    public ObjectNotFoundException(string message) : base(message)
+    public ObjectNotFoundException(string message = "Object NotFound") : base(message)
     {
     }
 
-    public ObjectNotFoundException(string message, ResponseResult serverResponse) : base(message, serverResponse)
+    public ObjectNotFoundException(ResponseResult serverResponse, string message = "Object NotFound") : base(message,
+        serverResponse)
     {
     }
 
@@ -44,7 +45,16 @@ public class ObjectNotFoundException : MinioException
     {
     }
 
+    public ObjectNotFoundException(Exception innerException, string message = "Object NotFound") : base(message,
+        innerException)
+    {
+    }
+
     public ObjectNotFoundException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
+    public ObjectNotFoundException(string message, ResponseResult serverResponse) : base(message, serverResponse)
     {
     }
 

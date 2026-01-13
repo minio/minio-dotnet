@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,9 @@ public class RemoveBucketArgs : BucketArgs<RemoveBucketArgs>
         RequestMethod = HttpMethod.Delete;
     }
 
-    internal override HttpRequestMessageBuilder BuildRequest(HttpRequestMessageBuilder requestMessageBuilder)
+    internal override HttpRequestMessageBuilder BuildRequest(
+        HttpRequestMessageBuilder requestMessageBuilder
+    )
     {
         if (Headers.TryGetValue(BucketForceDeleteKey, out var value))
             requestMessageBuilder.AddHeaderParameter(BucketForceDeleteKey, value);

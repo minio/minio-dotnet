@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,9 +67,6 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
                                                 " should be set.");
 
         if (!string.IsNullOrWhiteSpace(FileName)) Utils.ValidateFile(FileName);
-        // Check object size when using stream data
-        if (ObjectStreamData is not null && ObjectSize == 0)
-            throw new InvalidOperationException($"{nameof(ObjectSize)} must be set");
         Populate();
     }
 
@@ -89,7 +86,7 @@ public class PutObjectArgs : ObjectWriteArgs<PutObjectArgs>
         if (string.IsNullOrWhiteSpace(ContentType)) ContentType = "application/octet-stream";
         if (!Headers.ContainsKey("Content-Type")) Headers["Content-Type"] = ContentType;
 
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type", Headers["Content-Type"]);
+        requestMessageBuilder.AddOrUpdateHeaderParameter("Content-Type", ContentType);
         if (!string.IsNullOrWhiteSpace(UploadId) && PartNumber > 0)
         {
             requestMessageBuilder.AddQueryParameter("uploadId", $"{UploadId}");

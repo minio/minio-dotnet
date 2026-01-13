@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2019, 2020 MinIO, Inc.
  *
@@ -25,8 +25,12 @@ namespace Minio.Functional.Tests;
 
 internal static class Program
 {
-    [SuppressMessage("Design", "MA0051:Method is too long", Justification = "Needs to run all tests")]
-    public static async Task Main(string[] args)
+    [SuppressMessage(
+        "Design",
+        "MA0051:Method is too long",
+        Justification = "Needs to run all tests"
+    )]
+    public static async Task Main()
     {
         string endPoint = null;
         string accessKey = null;
@@ -42,8 +46,11 @@ internal static class Program
             var posColon = endPoint.LastIndexOf(':');
             if (posColon != -1)
             {
-                port = int.Parse(endPoint.AsSpan(posColon + 1, endPoint.Length - posColon - 1), NumberStyles.Integer,
-                    CultureInfo.InvariantCulture);
+                port = int.Parse(
+                    endPoint.AsSpan(posColon + 1, endPoint.Length - posColon - 1),
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture
+                );
                 endPoint = endPoint[..posColon];
             }
 
@@ -51,9 +58,11 @@ internal static class Program
             secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
             if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") is not null)
             {
-                isSecure = Environment.GetEnvironmentVariable("ENABLE_HTTPS")
+                isSecure = Environment
+                    .GetEnvironmentVariable("ENABLE_HTTPS")
                     .Equals("1", StringComparison.OrdinalIgnoreCase);
-                if (isSecure && port == 80) port = 443;
+                if (isSecure && port == 80)
+                    port = 443;
             }
 
             kmsEnabled = Environment.GetEnvironmentVariable("ENABLE_KMS");
@@ -69,8 +78,12 @@ internal static class Program
         }
 
 #pragma warning disable MA0039 // Do not write your own certificate validation method
-        ServicePointManager.ServerCertificateValidationCallback +=
-            (sender, certificate, chain, sslPolicyErrors) => true;
+        ServicePointManager.ServerCertificateValidationCallback += (
+            sender,
+            certificate,
+            chain,
+            sslPolicyErrors
+        ) => true;
 #pragma warning restore MA0039 // Do not write your own certificate validation method
 
         using var minioClient = new MinioClient()
@@ -99,13 +112,22 @@ internal static class Program
 
         var runMode = Environment.GetEnvironmentVariable("MINT_MODE");
 
-        if (!string.IsNullOrEmpty(runMode) && string.Equals(runMode, "core", StringComparison.OrdinalIgnoreCase))
+        if (
+            !string.IsNullOrEmpty(runMode)
+            && string.Equals(runMode, "core", StringComparison.OrdinalIgnoreCase)
+        )
         {
             await FunctionalTest.RunCoreTests(minioClient).ConfigureAwait(false);
             Environment.Exit(0);
         }
 
-        ConcurrentBag<Task> functionalTestTasks = new();
+        ConcurrentBag<Task> functionalTestTasks = [];
+
+        // Test incomplete uploads
+        await FunctionalTest.ListIncompleteUpload_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListIncompleteUpload_Test2(minioClient).ConfigureAwait(false);
+        await FunctionalTest.ListIncompleteUpload_Test3(minioClient).ConfigureAwait(false);
+        await FunctionalTest.RemoveIncompleteUpload_Test(minioClient).ConfigureAwait(false);
 
         // Global Notification
         await FunctionalTest.ListenNotifications_Test1(minioClient).ConfigureAwait(false);
@@ -115,9 +137,13 @@ internal static class Program
         // If the following test is run against AWS, then the SDK throws
         // "Listening for bucket notification is specific only to `minio`
         // server endpoints".
-        await FunctionalTest.ListenBucketNotificationsAsync_Test1(minioClient).ConfigureAwait(false);
+        await FunctionalTest
+            .ListenBucketNotificationsAsync_Test1(minioClient)
+            .ConfigureAwait(false);
+        await FunctionalTest
+            .ListenBucketNotificationsAsync_Test3(minioClient)
+            .ConfigureAwait(false);
         functionalTestTasks.Add(FunctionalTest.ListenBucketNotificationsAsync_Test2(minioClient));
-        functionalTestTasks.Add(FunctionalTest.ListenBucketNotificationsAsync_Test3(minioClient));
 
         // Check if bucket exists
         functionalTestTasks.Add(FunctionalTest.BucketExists_Test(minioClient));
@@ -139,14 +165,13 @@ internal static class Program
 
         // Test Putobject function
         functionalTestTasks.Add(FunctionalTest.PutObject_Test1(minioClient));
-        functionalTestTasks.Add(FunctionalTest.PutObject_Test2(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test3(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test4(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test5(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test7(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test8(minioClient));
         functionalTestTasks.Add(FunctionalTest.PutObject_Test9(minioClient));
-        functionalTestTasks.Add(FunctionalTest.PutObject_Test10(minioClient));
+        functionalTestTasks.Add(FunctionalTest.PutObject_Test11(minioClient));
 
         // Test StatObject function
         functionalTestTasks.Add(FunctionalTest.StatObject_Test1(minioClient));
@@ -154,8 +179,8 @@ internal static class Program
         // Test GetObjectAsync function
         functionalTestTasks.Add(FunctionalTest.GetObject_Test1(minioClient));
         functionalTestTasks.Add(FunctionalTest.GetObject_Test2(minioClient));
-        functionalTestTasks.Add(FunctionalTest.GetObjectNegObjNotFound_Test3(minioClient));
-        functionalTestTasks.Add(FunctionalTest.GetObjectNegBcktNotFound_Test4(minioClient));
+        functionalTestTasks.Add(FunctionalTest.GetObjectNegObjNotFound_Test1andTest2(minioClient));
+        functionalTestTasks.Add(FunctionalTest.GetObjectNegBcktNotFound_Test3(minioClient));
         // 3 tests will run to check different values of offset and length parameters
         // when GetObject api returns part of the object as defined by the offset
         // and length parameters. Tests will be reported as GetObject_Test3,
@@ -213,12 +238,6 @@ internal static class Program
         functionalTestTasks.Add(FunctionalTest.PresignedPutObject_Test2(minioClient));
         // FunctionalTest.PresignedPostPolicy_Test1(minioClient).Wait();
 
-        // Test incomplete uploads
-        functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test1(minioClient));
-        functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test2(minioClient));
-        functionalTestTasks.Add(FunctionalTest.ListIncompleteUpload_Test3(minioClient));
-        functionalTestTasks.Add(FunctionalTest.RemoveIncompleteUpload_Test(minioClient));
-
         // Test GetBucket policy
         functionalTestTasks.Add(FunctionalTest.GetBucketPolicy_Test1(minioClient));
 
@@ -240,8 +259,12 @@ internal static class Program
         if (isSecure)
         {
 #pragma warning disable MA0039 // Do not write your own certificate validation method
-            ServicePointManager.ServerCertificateValidationCallback +=
-                (sender, certificate, chain, sslPolicyErrors) => true;
+            ServicePointManager.ServerCertificateValidationCallback += (
+                sender,
+                certificate,
+                chain,
+                sslPolicyErrors
+            ) => true;
 #pragma warning restore MA0039 // Do not write your own certificate validation method
 
             functionalTestTasks.Add(FunctionalTest.PutGetStatEncryptedObject_Test1(minioClient));
@@ -251,7 +274,10 @@ internal static class Program
             functionalTestTasks.Add(FunctionalTest.EncryptedCopyObject_Test2(minioClient));
         }
 
-        if (kmsEnabled is not null && string.Equals(kmsEnabled, "1", StringComparison.OrdinalIgnoreCase))
+        if (
+            kmsEnabled is not null
+            && string.Equals(kmsEnabled, "1", StringComparison.OrdinalIgnoreCase)
+        )
         {
             functionalTestTasks.Add(FunctionalTest.PutGetStatEncryptedObject_Test3(minioClient));
             functionalTestTasks.Add(FunctionalTest.EncryptedCopyObject_Test3(minioClient));
@@ -259,5 +285,7 @@ internal static class Program
         }
 
         await functionalTestTasks.ForEachAsync().ConfigureAwait(false);
+        await FunctionalTest.PutObject_Test2(minioClient).ConfigureAwait(false);
+        await FunctionalTest.PutObject_Test10(minioClient).ConfigureAwait(false);
     }
 }

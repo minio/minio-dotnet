@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage,
  * (C) 2022 MinIO, Inc.
  *
@@ -16,6 +16,11 @@
  */
 
 
+#if (NET472_OR_GREATER || NET6_0_OR_GREATER)
+using System.Security.Authentication;
+#else
+using System.Net;
+#endif
 using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -24,11 +29,6 @@ using CommunityToolkit.HighPerformance;
 using Minio.DataModel;
 using Minio.Exceptions;
 using Minio.Helper;
-#if (NET472_OR_GREATER || NET6_0_OR_GREATER)
-using System.Security.Authentication;
-#else
-using System.Net;
-#endif
 
 /*
  * Certificate Identity Credential provider.

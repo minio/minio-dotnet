@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
     {
         RequestMethod = HttpMethod.Get;
         EnableTrace = false;
-        Events = new List<EventType>();
+        Events = [];
         Prefix = "";
         Suffix = "";
     }

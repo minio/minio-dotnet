@@ -1,4 +1,4 @@
-﻿namespace Minio.DataModel;
+namespace Minio.DataModel;
 
 public class MultiPartInfo
 {

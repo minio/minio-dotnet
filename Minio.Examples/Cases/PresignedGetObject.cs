@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,6 +35,6 @@ public static class PresignedGetObject
             .WithObject(objectName)
             .WithExpiry(1000)
             .WithHeaders(reqParams);
-        var presignedUrl = await client.PresignedGetObjectAsync(args).ConfigureAwait(false);
+        _ = await client.PresignedGetObjectAsync(args).ConfigureAwait(false);
     }
 }

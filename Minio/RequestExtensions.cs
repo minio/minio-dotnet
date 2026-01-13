@@ -1,6 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Web;
 using Minio.Credentials;
 using Minio.DataModel;
 using Minio.DataModel.Args;
@@ -38,126 +38,100 @@ public static class RequestExtensions
     ///     Actual doer that executes the request on the server
     /// </summary>
     /// <param name="minioClient"></param>
-    /// <param name="errorHandlers">List of handlers to override default handling</param>
     /// <param name="requestMessageBuilder">The build of HttpRequestMessageBuilder </param>
     /// <param name="isSts">boolean; if true role credentials, otherwise IAM user</param>
     /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
     /// <returns>ResponseResult</returns>
-    internal static Task<ResponseResult> ExecuteTaskAsync(this IMinioClient minioClient,
-        IEnumerable<IApiResponseErrorHandler> errorHandlers,
+    /// <exception cref="ArgumentNullException"></exception>
+    internal static async Task<ResponseResult> ExecuteTaskAsync(this IMinioClient minioClient,
         HttpRequestMessageBuilder requestMessageBuilder,
         bool isSts = false,
         CancellationToken cancellationToken = default)
     {
-        Task<ResponseResult> responseResult;
-        try
+        var startTime = DateTime.Now;
+        var responseResult = new ResponseResult(requestMessageBuilder.Request, response: null);
+        using var internalTokenSource =
+            new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, minioClient.Config.RequestTimeout));
+        using var timeoutTokenSource =
+            CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
+        if (minioClient.Config.RequestTimeout > 0) cancellationToken = timeoutTokenSource.Token;
+
+        responseResult = await minioClient.ExecuteWithRetry(
+            async Task<ResponseResult> () => await minioClient.ExecuteTaskCoreAsync(
+                requestMessageBuilder,
+                isSts, cancellationToken).ConfigureAwait(false)).ConfigureAwait(false);
+
+        if (responseResult is null)
+            throw new Exception($"Http command failure to return response value.\n{responseResult.Request.RequestUri}");
+
+        if (responseResult.Exception is not null)
         {
-            if (minioClient.Config.RequestTimeout > 0)
+            var handler = new DefaultErrorHandler();
+            handler.Handle(responseResult);
+        }
+
+        if (!(responseResult.Response?.IsSuccessStatusCode ?? false))
+        {
+            if (responseResult.StatusCode == HttpStatusCode.NoContent
+                && responseResult.Request.Method == HttpMethod.Delete)
+                return responseResult;
+
+            if (Equals(responseResult.StatusCode, HttpStatusCode.NotFound))
             {
-                using var internalTokenSource =
-                    new CancellationTokenSource(new TimeSpan(0, 0, 0, 0, minioClient.Config.RequestTimeout));
-                using var timeoutTokenSource =
-                    CancellationTokenSource.CreateLinkedTokenSource(internalTokenSource.Token, cancellationToken);
-                cancellationToken = timeoutTokenSource.Token;
+                if (responseResult.Headers.TryGetValue("X-Minio-Error-Code", out var val) && val is not null)
+                    responseResult.Exception = new MinioException(val, responseResult);
+                return responseResult;
             }
 
-            responseResult = minioClient.ExecuteWithRetry(
-                async () => await minioClient.ExecuteTaskCoreAsync(errorHandlers, requestMessageBuilder,
-                    isSts, cancellationToken).ConfigureAwait(false));
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"\n\n   *** ExecuteTaskAsync::Threw an exception => {ex.Message}");
-            throw;
+            var reasonFrase = "Minio.Exceptions." + responseResult.StatusCode + "Exception";
+            responseResult.Exception = new MinioException(reasonFrase);
         }
 
         return responseResult;
     }
 
     private static async Task<ResponseResult> ExecuteTaskCoreAsync(this IMinioClient minioClient,
-        IEnumerable<IApiResponseErrorHandler> errorHandlers,
+        // IEnumerable<IApiResponseErrorHandler> errorHandlers,
         HttpRequestMessageBuilder requestMessageBuilder,
         bool isSts = false,
         CancellationToken cancellationToken = default)
     {
-        var startTime = DateTime.Now;
+        var startTime = Stopwatch.GetTimestamp();
         var v4Authenticator = new V4Authenticator(minioClient.Config.Secure,
             minioClient.Config.AccessKey, minioClient.Config.SecretKey, minioClient.Config.Region,
             minioClient.Config.SessionToken);
 
-        requestMessageBuilder.AddOrUpdateHeaderParameter("Authorization",
+        requestMessageBuilder?.AddOrUpdateHeaderParameter("Authorization",
             v4Authenticator.Authenticate(requestMessageBuilder, isSts));
 
-        var request = requestMessageBuilder.Request;
-
-        var responseResult = new ResponseResult(request, response: null);
-        try
+        var request = requestMessageBuilder?.Request;
+        var responseResult = new ResponseResult(request, new HttpResponseMessage());
+        if (requestMessageBuilder is not null)
         {
             var response = await minioClient.Config.HttpClient.SendAsync(request,
-                    HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                .ConfigureAwait(false);
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken).ConfigureAwait(false);
+
             responseResult = new ResponseResult(request, response);
             if (requestMessageBuilder.ResponseWriter is not null)
                 await requestMessageBuilder.ResponseWriter(responseResult.ContentStream, cancellationToken)
                     .ConfigureAwait(false);
-
-            var path = request.RequestUri.LocalPath.TrimStart('/').TrimEnd('/')
-                .Split('/', StringSplitOptions.RemoveEmptyEntries);
-            if (responseResult.Response.StatusCode == HttpStatusCode.NotFound)
+            if (!Equals(responseResult.StatusCode, HttpStatusCode.OK))
             {
-                if (request.Method == HttpMethod.Get)
-                {
-                    var q = HttpUtility.ParseQueryString(request.RequestUri.Query);
-                    if (q.Get("object-lock") != null)
-                    {
-                        responseResult.Exception = new MissingObjectLockConfigurationException();
-                        return responseResult;
-                    }
-                }
-
-                if (request.Method == HttpMethod.Head)
-                {
-                    if (responseResult.Exception is BucketNotFoundException || path.Length == 1)
-                        responseResult.Exception = new BucketNotFoundException();
-
-                    if (path.Length > 1)
-                    {
-                        var found = await minioClient
-                            .BucketExistsAsync(new BucketExistsArgs().WithBucket(path[0]), cancellationToken)
-                            .ConfigureAwait(false);
-                        responseResult.Exception = !found
-                            ? new Exception("ThrowBucketNotFoundException")
-                            : new ObjectNotFoundException();
-                        throw responseResult.Exception;
-                    }
-                }
-
-                return responseResult;
+                var handler = new DefaultErrorHandler();
+                handler.Handle(responseResult);
             }
-
-            minioClient.HandleIfErrorResponse(responseResult, errorHandlers, startTime);
-            return responseResult;
         }
-        catch (Exception ex) when (ex is not (OperationCanceledException or
-                                       ObjectNotFoundException))
-        {
-            if (ex.Message.Equals("ThrowBucketNotFoundException", StringComparison.Ordinal))
-                throw new BucketNotFoundException();
 
-            if (responseResult is not null)
-                responseResult.Exception = ex;
-            else
-                responseResult = new ResponseResult(request, ex);
-            return responseResult;
-        }
+        return responseResult;
     }
 
-    private static Task<ResponseResult> ExecuteWithRetry(this IMinioClient minioClient,
+    private static async Task<ResponseResult> ExecuteWithRetry(this IMinioClient minioClient,
         Func<Task<ResponseResult>> executeRequestCallback)
     {
         return minioClient.Config.RetryPolicyHandler is null
-            ? executeRequestCallback()
-            : minioClient.Config.RetryPolicyHandler.Handle(executeRequestCallback);
+            ? await executeRequestCallback().ConfigureAwait(false)
+            : await minioClient.Config.RetryPolicyHandler.Handle(executeRequestCallback).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -311,7 +285,7 @@ public static class RequestExtensions
             messageBuilder.AddOrUpdateHeaderParameter("Content-Type", contentType);
         }
 
-        if (headerMap is not null)
+        if (headerMap?.Count > 0)
         {
             if (headerMap.TryGetValue(messageBuilder.ContentTypeKey, out var value) && !string.IsNullOrEmpty(value))
                 headerMap[messageBuilder.ContentTypeKey] = contentType;
@@ -369,23 +343,35 @@ public static class RequestExtensions
     /// <param name="startTime"></param>
     private static void HandleIfErrorResponse(this IMinioClient minioClient, ResponseResult response,
         IEnumerable<IApiResponseErrorHandler> handlers,
-        DateTime startTime)
+        long startTime)
     {
         // Logs Response if HTTP tracing is enabled
         if (minioClient.Config.TraceHttp)
         {
-            var now = DateTime.Now;
-            minioClient.LogRequest(response.Request, response, (now - startTime).TotalMilliseconds);
+            var elapsed = GetElapsedTime(startTime);
+            minioClient.LogRequest(response.Request, response, elapsed.TotalMilliseconds);
         }
 
         if (response.Exception is not null)
-            throw response.Exception;
+        {
+            if (handlers.Any())
+                // Run through handlers passed to take up error handling
+                foreach (var handler in handlers)
+                    handler.Handle(response);
+            else
+                minioClient.DefaultErrorHandler.Handle(response);
+        }
+    }
 
-        if (handlers.Any())
-            // Run through handlers passed to take up error handling
-            foreach (var handler in handlers)
-                handler.Handle(response);
-        else
-            minioClient.DefaultErrorHandler.Handle(response);
+    private static TimeSpan GetElapsedTime(long startTimestamp)
+    {
+#if NET8_0_OR_GREATER
+        return Stopwatch.GetElapsedTime(startTimestamp);
+#else
+        var endTimestamp = Stopwatch.GetTimestamp();
+        var elapsedTicks = endTimestamp - startTimestamp;
+        var seconds = (double)elapsedTicks / Stopwatch.Frequency;
+        return TimeSpan.FromSeconds(seconds);
+#endif
     }
 }

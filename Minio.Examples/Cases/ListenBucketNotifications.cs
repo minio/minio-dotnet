@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,8 +26,7 @@ internal static class ListenBucketNotifications
         string bucketName = "my-bucket-name",
         List<EventType> events = null,
         string prefix = "",
-        string suffix = "",
-        bool recursive = true)
+        string suffix = "")
     {
         try
         {

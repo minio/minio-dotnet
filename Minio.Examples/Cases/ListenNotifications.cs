@@ -40,7 +40,7 @@ internal static class ListenNotifications
                 () => Console.WriteLine("Stopped listening for bucket notifications\n"));
 
             Console.WriteLine("Press any key to stop listening for notifications...");
-            Console.ReadLine();
+            _ = Console.ReadLine();
         }
         catch (Exception e)
         {

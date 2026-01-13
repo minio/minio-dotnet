@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using CommunityToolkit.HighPerformance;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.DataModel.Notification;

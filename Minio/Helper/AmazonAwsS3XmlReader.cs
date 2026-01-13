@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017-2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,10 @@ namespace Minio.Helper;
 public class AmazonAwsS3XmlReader : XmlTextReader
 {
     public AmazonAwsS3XmlReader(Stream stream) : base(stream)
+    {
+    }
+
+    public AmazonAwsS3XmlReader(TextReader textReader) : base(textReader)
     {
     }
 

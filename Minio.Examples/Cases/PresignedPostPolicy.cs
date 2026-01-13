@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,6 @@
  */
 
 using Minio.DataModel;
-using Minio.DataModel.Args;
 
 namespace Minio.Examples.Cases;
 
@@ -34,14 +33,10 @@ public static class PresignedPostPolicy
         form.SetBucket(bucketName);
         form.SetExpires(expiration);
 
-        var args = new PresignedPostPolicyArgs()
-            .WithBucket(bucketName)
-            .WithObject(objectName)
-            .WithPolicy(form);
-
         var tuple = await client.PresignedPostPolicyAsync(form).ConfigureAwait(false);
         var curlCommand = "curl -k --insecure -X POST";
         foreach (var pair in tuple.Item2) curlCommand += $" -F {pair.Key}={pair.Value}";
         curlCommand = curlCommand + " -F file=@/etc/issue " + tuple.Item1 + bucketName + "/";
+        _ = curlCommand;
     }
 }

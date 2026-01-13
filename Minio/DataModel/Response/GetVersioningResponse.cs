@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MinIO .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2020, 2021 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,8 +24,7 @@ internal class GetVersioningResponse : GenericResponse
     internal GetVersioningResponse(HttpStatusCode statusCode, string responseContent)
         : base(statusCode, responseContent)
     {
-        if (string.IsNullOrEmpty(responseContent) ||
-            HttpStatusCode.OK != statusCode)
+        if (string.IsNullOrEmpty(responseContent) || HttpStatusCode.OK != statusCode)
             return;
 
         VersioningConfig = Utils.DeserializeXml<VersioningConfiguration>(responseContent);
