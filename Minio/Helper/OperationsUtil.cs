@@ -25,7 +25,8 @@ public static class OperationsUtil
         "content-type",
         "x-amz-acl",
         "content-disposition",
-        "x-minio-extract"
+        "x-minio-extract",
+        "x-amz-storage-class"
     };
 
     private static readonly List<string> sSEHeaders = new()
