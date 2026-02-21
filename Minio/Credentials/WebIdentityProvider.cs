@@ -45,7 +45,7 @@ public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityPr
         return base.GetCredentialsAsync();
     }
 
-    internal WebIdentityProvider WithJWTSupplier(Func<JsonWebToken> f)
+    public WebIdentityProvider WithJWTSupplier(Func<JsonWebToken> f)
     {
         JWTSupplier = (Func<JsonWebToken>)f.Clone();
         Validate();
@@ -56,6 +56,7 @@ public class WebIdentityProvider : WebIdentityClientGrantsProvider<WebIdentityPr
     {
         Validate();
         CurrentJsonWebToken = JWTSupplier();
+
         // RoleArn to be set already.
         _ = WithRoleAction("AssumeRoleWithWebIdentity");
         _ = WithDurationInSeconds(GetDurationInSeconds(CurrentJsonWebToken.Expiry));
