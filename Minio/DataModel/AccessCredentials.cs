@@ -68,6 +68,6 @@ public class AccessCredentials
     {
         if (string.IsNullOrWhiteSpace(Expiration)) return false;
         var expiry = Utils.From8601String(Expiration);
-        return DateTime.Now.CompareTo(expiry) > 0;
+        return DateTime.UtcNow.CompareTo(expiry) > 0;
     }
 }
