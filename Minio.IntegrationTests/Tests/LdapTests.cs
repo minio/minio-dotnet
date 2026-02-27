@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Minio.CredentialProviders;
+using Minio.IntegrationTests.Helpers;
 using Testcontainers.Keycloak;
 using Testcontainers.Minio;
 using Xunit;
@@ -11,49 +12,16 @@ namespace Minio.IntegrationTests.Tests;
 
 public class LdapTests
 {
-    private class DefaultHttpClientFactory : IHttpClientFactory
+    private sealed class DefaultHttpClientFactory : IHttpClientFactory
     {
         public HttpClient CreateClient(string name) => new();
     }
 
-    private class KeycloakAccessTokenProvider : IAccessTokenProvider
-    {
-        private readonly string _endpoint;
-        private readonly string _realm;
-        private readonly string _clientName;
-        private readonly string _clientSecret;
-
-        public KeycloakAccessTokenProvider(string endpoint, string realm, string clientName, string clientSecret)
-        {
-            _endpoint = endpoint;
-            _realm = realm;
-            _clientName = clientName;
-            _clientSecret = clientSecret;
-        }
-    
-        public async ValueTask<string> GetAccessTokenAsync(CancellationToken cancellationToken)
-        {
-            var tokenEndpoint = new Uri($"{_endpoint}/realms/{_realm}/protocol/openid-connect/token", UriKind.Absolute);
-
-            using var http = new HttpClient();
-            using var form = new FormUrlEncodedContent(new Dictionary<string, string>
-            {
-                ["grant_type"] = "client_credentials",
-                ["client_id"] = _clientName,
-                ["client_secret"] = _clientSecret
-            });
-            var response = await http.PostAsync(tokenEndpoint, form, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
-            return json.RootElement.GetProperty("access_token").GetString()!;
-        }
-    }
-    
     [Fact]
     public async Task TestWebIdentityLogin()
     {
         // Start Keycloak container
-        await using var keycloakContainer = new KeycloakBuilder(Images.Keycloak)
+        await using var keycloakContainer = new KeycloakBuilder(ImageConstants.Keycloak)
             .WithHostname("keycloak")
             .WithExposedPort(KeycloakBuilder.KeycloakPort)
             .Build();
@@ -118,7 +86,7 @@ public class LdapTests
             Assert.True(newClientResponse.IsSuccessStatusCode, "Failed to create client protocol mapper");
         }
         
-        await using var minioContainer = new MinioBuilder(Images.AIStor)
+        await using var minioContainer = new MinioBuilder(ImageConstants.AIStor)
             .WithEnvironment(new Dictionary<string, string>
             {
                 ["MINIO_LICENSE"] = License.Minio,
@@ -132,9 +100,19 @@ public class LdapTests
             .Build();
         await minioContainer.StartAsync();
 
+        var keycloakAccessTokenProviderOptions = new KeycloakAccessTokenProviderOptions
+        {
+            Endpoint = keycloakContainer.GetBaseAddress(),
+            Realm = realmName,
+            ClientName = clientName,
+            ClientSecret = clientSecret,
+        };
+        var webIdentityOptions = new WebIdentityCredentialsOptions
+            {
+                StsEndPoint = minioContainer.GetConnectionString()
+            };
         var httpClientFactory = new DefaultHttpClientFactory();
-        var keycloakAccessTokenProvider = new KeycloakAccessTokenProvider(keycloakContainer.GetBaseAddress(), realmName, clientName, clientSecret);
-        var webIdentityOptions = new WebIdentityCredentialsOptions { StsEndPoint = minioContainer.GetConnectionString() };
+        var keycloakAccessTokenProvider = new KeycloakAccessTokenProvider(Options.Create(keycloakAccessTokenProviderOptions), httpClientFactory);
         var identityProvider = new WebIdentityProvider(httpClientFactory, keycloakAccessTokenProvider, Options.Create(webIdentityOptions));
         var minioClient = new MinioClientBuilder(minioContainer.GetConnectionString())
             .WithCredentialsProvider(identityProvider)

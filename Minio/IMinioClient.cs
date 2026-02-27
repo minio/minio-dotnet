@@ -393,4 +393,7 @@ public interface IMinioClient
     // GetObjectTagsAsync
     // SetObjectTagsAsync
     // RemoveObjectTagsAsync
+    
+    // TODO: Add following convenience operations
+    // UploadObjectAsync - automatically using multi-part upload when needed
 }

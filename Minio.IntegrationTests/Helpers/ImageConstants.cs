@@ -1,6 +1,6 @@
-namespace Minio.IntegrationTests.Tests;
+namespace Minio.IntegrationTests.Helpers;
 
-public static class Images
+internal static class ImageConstants
 {
     public const string Keycloak = "quay.io/keycloak/keycloak:21.1";
     public const string AIStor = "quay.io/minio/aistor/minio:latest";
