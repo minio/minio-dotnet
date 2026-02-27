@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Buffers.Binary;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
@@ -307,10 +308,10 @@ internal class MinioClient : IMinioClient
                     ChecksumAlgorithm.Crc32c => (Ns + "ChecksumCRC32C", 32),
                     ChecksumAlgorithm.Sha1 => (Ns + "ChecksumSHA1", 128),
                     ChecksumAlgorithm.Sha256 => (Ns + "ChecksumSHA256", 256),
-                    _ => throw new System.ArgumentException("Invalid checksum algorithm", nameof(parts))
+                    _ => throw new ArgumentException("Invalid checksum algorithm", nameof(parts))
                 };
                 if (part.Checksum.Length * 8 != length)
-                    throw new System.ArgumentException($"Expected {length}-bit checksum", nameof(parts));
+                    throw new ArgumentException($"Expected {length}-bit checksum", nameof(parts));
                 xPart.Add(new XElement(header, Convert.ToBase64String(part.Checksum)));
             }
 
@@ -356,7 +357,7 @@ internal class MinioClient : IMinioClient
         ArgumentNullException.ThrowIfNull(stream);
 
         if (stream.Length > MaxMultipartPutObjectSize)
-            throw new System.ArgumentOutOfRangeException(nameof(stream), stream.Length, "Stream length out of range");
+            throw new ArgumentOutOfRangeException(nameof(stream), stream.Length, "Stream length out of range");
     
         using var req = CreateRequest(HttpMethod.Put, Encode(bucketName, key));
 
@@ -474,7 +475,7 @@ internal class MinioClient : IMinioClient
                     // TODO: Do this more elegant to prevent repeating code later
                     var stream = await req.Content!.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     if (!stream.CanSeek)
-                        throw new System.ArgumentException("Request content stream must be seekable for Content-MD5 computation.", nameof(req));
+                        throw new ArgumentException("Request content stream must be seekable for Content-MD5 computation.", nameof(req));
                     req.Content.Headers.ContentMD5 = await MD5.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
                     stream.Position = 0;
 
@@ -483,7 +484,7 @@ internal class MinioClient : IMinioClient
                         .SetMfa(mfa);
                     resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
                 }
-                
+
                 using (resp)
                 {
                     if (!quiet)
@@ -543,12 +544,12 @@ internal class MinioClient : IMinioClient
             req.Headers.Add("x-amz-checksum-mode", "ENABLED");
         if (options?.IfMatchETag != null)
         {
-            if (string.IsNullOrEmpty(options.IfMatchETag)) throw new System.ArgumentException(nameof(options.IfMatchETag) + " should not be empty", nameof(options));
+            if (string.IsNullOrEmpty(options.IfMatchETag)) throw new ArgumentException(nameof(options.IfMatchETag) + " should not be empty", nameof(options));
             req.Headers.Add("If-Match", '"' + options.IfMatchETag + '"');
         }
         if (options?.IfMatchETagExcept != null)
         {
-            if (string.IsNullOrEmpty(options.IfMatchETagExcept)) throw new System.ArgumentException(nameof(options.IfMatchETagExcept) + " should not be empty", nameof(options));
+            if (string.IsNullOrEmpty(options.IfMatchETagExcept)) throw new ArgumentException(nameof(options.IfMatchETagExcept) + " should not be empty", nameof(options));
             req.Headers.Add("If-None-Match", '"' + options.IfMatchETagExcept + '"');
         }
         req.Headers.AddIfNotNull("If-Unmodified-Since", options?.IfUnmodifiedSince?.ToIsoTimestamp());
@@ -561,7 +562,7 @@ internal class MinioClient : IMinioClient
                 0 when range.End < 0 => $"bytes={range.End}",
                 > 0 when range.End == 0 => $"bytes={range.Start}-",
                 >= 0 when range.Start < range.End => $"bytes={range.Start}-{range.End}",
-                _ => throw new System.ArgumentException("Invalid range", nameof(options))
+                _ => throw new ArgumentException("Invalid range", nameof(options))
             };
             req.Headers.Add("Range", rangeHeaderValue);
         }
@@ -747,7 +748,7 @@ internal class MinioClient : IMinioClient
     public async Task<IObservable<NotificationEvent>> ListenBucketNotificationsAsync(string bucketName, IEnumerable<EventType> events, string prefix, string suffix, CancellationToken cancellationToken)
     {
         VerifyBucketName(bucketName);
-        if (events == null) throw new System.ArgumentNullException(nameof(events));
+        if (events == null) throw new ArgumentNullException(nameof(events));
 
         var query = new QueryParams();
         query.Add("ping", "10");
@@ -762,7 +763,7 @@ internal class MinioClient : IMinioClient
         }
 
         if (!hasEvents)
-            throw new System.ArgumentException("No events specified", nameof(events));
+            throw new ArgumentException("No events specified", nameof(events));
 
         using var req = CreateRequest(HttpMethod.Get, bucketName, query);
         var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
@@ -873,12 +874,654 @@ internal class MinioClient : IMinioClient
             MfaDelete = mfaDelete,
         };
         var xml = config.Serialize();
-        
+
         var query = new QueryParams();
         query.Add("versioning", string.Empty);
 
         using var req = CreateRequest(HttpMethod.Put, bucketName, xml, query);
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<BucketEncryptionConfiguration> GetBucketEncryptionAsync(string bucketName, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+
+        var q = new QueryParams();
+        q.Add("encryption", string.Empty);
+
+        using var req = CreateRequest(HttpMethod.Get, bucketName, q);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+
+        var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+        return BucketEncryptionConfiguration.Deserialize(xResponse.Root!);
+    }
+
+    public async Task SetBucketEncryptionAsync(string bucketName, BucketEncryptionConfiguration config, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentNullException.ThrowIfNull(config);
+
+        var q = new QueryParams();
+        q.Add("encryption", string.Empty);
+
+        using var req = CreateRequest(HttpMethod.Put, bucketName, config.Serialize(), q);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task RemoveBucketEncryptionAsync(string bucketName, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+
+        var q = new QueryParams();
+        q.Add("encryption", string.Empty);
+
+        using var req = CreateRequest(HttpMethod.Delete, bucketName, q);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<LifecycleConfiguration?> GetBucketLifecycleAsync(string bucketName, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+
+        var q = new QueryParams();
+        q.Add("lifecycle", string.Empty);
+
+        try
+        {
+            using var req = CreateRequest(HttpMethod.Get, bucketName, q);
+            using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+
+            var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+            return LifecycleConfiguration.Deserialize(xResponse.Root!);
+        }
+        catch (MinioHttpException exc) when (exc.Error?.Code == "NoSuchLifecycleConfiguration")
+        {
+            return null;
+        }
+    }
+
+    public async Task SetBucketLifecycleAsync(string bucketName, LifecycleConfiguration config, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentNullException.ThrowIfNull(config);
+
+        var q = new QueryParams();
+        q.Add("lifecycle", string.Empty);
+
+        using var req = CreateRequest(HttpMethod.Put, bucketName, config.Serialize(), q);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task RemoveBucketLifecycleAsync(string bucketName, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+
+        var q = new QueryParams();
+        q.Add("lifecycle", string.Empty);
+
+        using var req = CreateRequest(HttpMethod.Delete, bucketName, q);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<ReplicationConfiguration?> GetBucketReplicationAsync(string bucketName, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+
+        var q = new QueryParams();
+        q.Add("replication", string.Empty);
+
+        try
+        {
+            using var req = CreateRequest(HttpMethod.Get, bucketName, q);
+            using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+
+            var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+            return ReplicationConfiguration.Deserialize(xResponse.Root!);
+        }
+        catch (MinioHttpException exc) when (exc.Error?.Code == "ReplicationConfigurationNotFoundError")
+        {
+            return null;
+        }
+    }
+
+    public async Task SetBucketReplicationAsync(string bucketName, ReplicationConfiguration config, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentNullException.ThrowIfNull(config);
+
+        var q = new QueryParams();
+        q.Add("replication", string.Empty);
+
+        using var req = CreateRequest(HttpMethod.Put, bucketName, config.Serialize(), q);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task RemoveBucketReplicationAsync(string bucketName, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+
+        var q = new QueryParams();
+        q.Add("replication", string.Empty);
+
+        using var req = CreateRequest(HttpMethod.Delete, bucketName, q);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<string?> GetPolicyAsync(string bucketName, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+
+        var q = new QueryParams();
+        q.Add("policy", string.Empty);
+
+        try
+        {
+            using var req = CreateRequest(HttpMethod.Get, bucketName, q);
+            using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+            return await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (MinioHttpException exc) when (exc.Error?.Code == "NoSuchBucketPolicy")
+        {
+            return null;
+        }
+    }
+
+    public async Task SetPolicyAsync(string bucketName, string policy, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(policy);
+
+        var q = new QueryParams();
+        q.Add("policy", string.Empty);
+
+        using var req = CreateRequest(HttpMethod.Put, bucketName, q);
+        req.Content = new StringContent(policy, Encoding.UTF8, "application/json");
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task RemovePolicyAsync(string bucketName, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+
+        var q = new QueryParams();
+        q.Add("policy", string.Empty);
+
+        using var req = CreateRequest(HttpMethod.Delete, bucketName, q);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<LegalHoldStatus> GetObjectLegalHoldAsync(string bucketName, string key, string? versionId, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        var q = new QueryParams();
+        q.Add("legal-hold", string.Empty);
+        q.AddIfNotNullOrEmpty("versionId", versionId);
+
+        using var req = CreateRequest(HttpMethod.Get, Encode(bucketName, key), q);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+
+        var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+        var statusText = xResponse.Root?.Element(Ns + "Status")?.Value;
+        return statusText == "ON" ? LegalHoldStatus.On : LegalHoldStatus.Off;
+    }
+
+    public async Task SetObjectLegalHoldAsync(string bucketName, string key, LegalHoldStatus status, string? versionId, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        var q = new QueryParams();
+        q.Add("legal-hold", string.Empty);
+        q.AddIfNotNullOrEmpty("versionId", versionId);
+
+        var xml = new XElement(Ns + "LegalHold",
+            new XElement(Ns + "Status", status == LegalHoldStatus.On ? "ON" : "OFF"));
+
+        using var req = CreateRequest(HttpMethod.Put, Encode(bucketName, key), xml, q);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<ObjectRetention> GetObjectRetentionAsync(string bucketName, string key, string? versionId, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        var q = new QueryParams();
+        q.Add("retention", string.Empty);
+        q.AddIfNotNullOrEmpty("versionId", versionId);
+
+        using var req = CreateRequest(HttpMethod.Get, Encode(bucketName, key), q);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+
+        var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+        return ObjectRetention.Deserialize(xResponse.Root!);
+    }
+
+    public async Task SetObjectRetentionAsync(string bucketName, string key, ObjectRetention retention, bool bypassGovernanceRetention, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentNullException.ThrowIfNull(retention);
+
+        var q = new QueryParams();
+        q.Add("retention", string.Empty);
+
+        using var req = CreateRequest(HttpMethod.Put, Encode(bucketName, key), retention.Serialize(), q);
+        req.SetBypassGovernanceRetention(bypassGovernanceRetention);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task ClearObjectRetentionAsync(string bucketName, string key, string? versionId, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        var q = new QueryParams();
+        q.Add("retention", string.Empty);
+        q.AddIfNotNullOrEmpty("versionId", versionId);
+
+        var xml = new XElement(Ns + "Retention");
+        using var req = CreateRequest(HttpMethod.Put, Encode(bucketName, key), xml, q);
+        req.Headers.Add("X-Amz-Bypass-Governance-Retention", "true");
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<CopyObjectResult> CopyObjectAsync(string destBucketName, string destKey, string srcBucketName, string srcKey, CopyObjectOptions? options, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(destBucketName);
+        ArgumentException.ThrowIfNullOrEmpty(destKey);
+        VerifyBucketName(srcBucketName);
+        ArgumentException.ThrowIfNullOrEmpty(srcKey);
+
+        using var req = CreateRequest(HttpMethod.Put, Encode(destBucketName, destKey));
+
+        // Build the copy source header
+        var copySource = "/" + Encode(srcBucketName, srcKey);
+        if (!string.IsNullOrEmpty(options?.SourceVersionId))
+            copySource += "?versionId=" + Uri.EscapeDataString(options.SourceVersionId);
+        req.Headers.Add("X-Amz-Copy-Source", copySource);
+
+        if (options?.MetadataDirective != null)
+            req.Headers.Add("X-Amz-Metadata-Directive",
+                options.MetadataDirective == MetadataDirective.Replace ? "REPLACE" : "COPY");
+
+        if (options?.TaggingDirective != null)
+            req.Headers.Add("X-Amz-Tagging-Directive",
+                options.TaggingDirective == TaggingDirective.Replace ? "REPLACE" : "COPY");
+
+        if (options?.IfMatch != null)
+            req.Headers.Add("X-Amz-Copy-Source-If-Match", '"' + options.IfMatch + '"');
+        if (options?.IfNoneMatch != null)
+            req.Headers.Add("X-Amz-Copy-Source-If-None-Match", '"' + options.IfNoneMatch + '"');
+        if (options?.IfModifiedSince != null)
+            req.Headers.Add("X-Amz-Copy-Source-If-Modified-Since", options.IfModifiedSince.Value.ToString("R"));
+        if (options?.IfUnmodifiedSince != null)
+            req.Headers.Add("X-Amz-Copy-Source-If-Unmodified-Since", options.IfUnmodifiedSince.Value.ToString("R"));
+
+        if (options?.MetadataDirective == MetadataDirective.Replace)
+        {
+            req
+                .SetContentType(options.ContentType)
+                .SetContentEncoding(options.ContentEncoding)
+                .SetContentDisposition(options.ContentDisposition)
+                .SetContentLanguage(options.ContentLanguage)
+                .SetCacheControl(options.CacheControl)
+                .SetExpires(options.Expires)
+                .SetUserMetadata(options.UserMetadata);
+        }
+        if (options?.TaggingDirective == TaggingDirective.Replace)
+            req.SetTagging(options.UserTags);
+
+        req
+            .SetStorageClass(options?.StorageClass)
+            .SetWebsiteRedirectLocation(options?.WebsiteRedirectLocation)
+            .SetObjectLockMode(options?.Mode)
+            .SetObjectLockRetainUntilDate(options?.RetainUntilDate)
+            .SetObjectLockLegalHold(options?.LegalHold);
+
+        options?.ServerSideEncryption?.WriteHeaders(req.Headers);
+
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+
+        var versionId = resp.Headers.TryGetValue("X-Amz-Version-Id");
+        var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+
+        return new CopyObjectResult
+        {
+            ETag = xResponse.Root?.Element(Ns + "ETag")?.Value ?? string.Empty,
+            LastModified = DateTimeOffset.Parse(
+                xResponse.Root?.Element(Ns + "LastModified")?.Value ?? string.Empty,
+                CultureInfo.InvariantCulture),
+            VersionId = versionId,
+            ChecksumCRC32 = xResponse.Root?.Element(Ns + "ChecksumCRC32")?.Value,
+            ChecksumCRC32C = xResponse.Root?.Element(Ns + "ChecksumCRC32C")?.Value,
+            ChecksumSHA1 = xResponse.Root?.Element(Ns + "ChecksumSHA1")?.Value,
+            ChecksumSHA256 = xResponse.Root?.Element(Ns + "ChecksumSHA256")?.Value,
+        };
+    }
+
+    public async IAsyncEnumerable<string> SelectObjectContentAsync(string bucketName, string key, SelectObjectOptions options, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentNullException.ThrowIfNull(options);
+
+        var q = new QueryParams();
+        q.Add("select", string.Empty);
+        q.Add("select-type", "2");
+
+        using var req = CreateRequest(HttpMethod.Post, Encode(bucketName, key), options.Serialize(), q);
+        var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await foreach (var record in ReadSelectEventStreamAsync(responseBody, cancellationToken).ConfigureAwait(false))
+            {
+                yield return record;
+            }
+        }
+        finally
+        {
+            resp.Dispose();
+        }
+    }
+
+    private static async IAsyncEnumerable<string> ReadSelectEventStreamAsync(Stream stream, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var prelude = new byte[12];
+        while (true)
+        {
+            if (!await ReadExactAsync(stream, prelude, cancellationToken).ConfigureAwait(false))
+                yield break;
+
+            var totalLength = BinaryPrimitives.ReadInt32BigEndian(prelude.AsSpan(0, 4));
+            var headersLength = BinaryPrimitives.ReadInt32BigEndian(prelude.AsSpan(4, 4));
+            // Bytes 8-11 are the prelude CRC (not validated here)
+
+            var headerBytes = new byte[headersLength];
+            await ReadExactAsync(stream, headerBytes, cancellationToken).ConfigureAwait(false);
+
+            var payloadLength = totalLength - headersLength - 16; // 12 prelude + 4 message CRC
+            var payload = payloadLength > 0 ? new byte[payloadLength] : Array.Empty<byte>();
+            if (payloadLength > 0)
+                await ReadExactAsync(stream, payload, cancellationToken).ConfigureAwait(false);
+
+            // Skip the 4-byte message CRC
+            var crcBuffer = new byte[4];
+            await ReadExactAsync(stream, crcBuffer, cancellationToken).ConfigureAwait(false);
+
+            var headers = ParseEventStreamHeaders(headerBytes);
+
+            if (headers.TryGetValue(":message-type", out var messageType) && messageType == "error")
+            {
+                headers.TryGetValue(":error-code", out var errorCode);
+                headers.TryGetValue(":error-message", out var errorMessage);
+                throw new InvalidOperationException($"S3 Select error {errorCode}: {errorMessage}");
+            }
+
+            if (headers.TryGetValue(":event-type", out var eventType))
+            {
+                if (eventType == "End")
+                    yield break;
+                if (eventType == "Records" && payloadLength > 0)
+                    yield return Encoding.UTF8.GetString(payload);
+            }
+        }
+    }
+
+    private static async Task<bool> ReadExactAsync(Stream stream, byte[] buffer, CancellationToken cancellationToken)
+    {
+        var offset = 0;
+        while (offset < buffer.Length)
+        {
+            var read = await stream.ReadAsync(buffer, offset, buffer.Length - offset, cancellationToken).ConfigureAwait(false);
+            if (read == 0)
+            {
+                if (offset == 0) return false;
+                throw new EndOfStreamException("Unexpected end of S3 Select event stream.");
+            }
+            offset += read;
+        }
+        return true;
+    }
+
+    private static Dictionary<string, string> ParseEventStreamHeaders(byte[] headerBytes)
+    {
+        var headers = new Dictionary<string, string>(StringComparer.Ordinal);
+        var i = 0;
+        while (i < headerBytes.Length)
+        {
+            var nameLen = headerBytes[i++];
+            var name = Encoding.UTF8.GetString(headerBytes, i, nameLen);
+            i += nameLen;
+            var valueType = headerBytes[i++];
+            switch (valueType)
+            {
+                case 0: case 1: break; // bool true/false, no data
+                case 2: i += 1; break; // byte
+                case 3: i += 2; break; // short
+                case 4: i += 4; break; // int
+                case 5: case 8: i += 8; break; // long, timestamp
+                case 9: i += 16; break; // UUID
+                case 6: // bytes (2-byte length + data)
+                {
+                    var len = BinaryPrimitives.ReadInt16BigEndian(headerBytes.AsSpan(i));
+                    i += 2 + len;
+                    break;
+                }
+                case 7: // string (2-byte length + UTF-8 data)
+                {
+                    var len = BinaryPrimitives.ReadInt16BigEndian(headerBytes.AsSpan(i));
+                    i += 2;
+                    headers[name] = Encoding.UTF8.GetString(headerBytes, i, len);
+                    i += len;
+                    break;
+                }
+            }
+        }
+        return headers;
+    }
+
+    public async Task<Uri> PresignedGetObjectAsync(string bucketName, string key, TimeSpan expiry, string? versionId, IDictionary<string, string>? responseHeaders, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        var q = new QueryParams();
+        q.AddIfNotNullOrEmpty("versionId", versionId);
+        if (responseHeaders != null)
+            foreach (var (k, v) in responseHeaders)
+                q.Add(k, v);
+
+        using var req = CreateRequest(HttpMethod.Get, Encode(bucketName, key), q);
+        return await _requestAuthenticator.PresignAsync(req, _options.Value.Region, "s3", expiry, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<Uri> PresignedPutObjectAsync(string bucketName, string key, TimeSpan expiry, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        using var req = CreateRequest(HttpMethod.Put, Encode(bucketName, key));
+        return await _requestAuthenticator.PresignAsync(req, _options.Value.Region, "s3", expiry, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<PostPolicyResult> PresignedPostPolicyAsync(string bucketName, string key, TimeSpan expiry, IEnumerable<PostPolicyCondition>? conditions, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        Uri bucketUri;
+        using (var req = CreateRequest(HttpMethod.Post, bucketName))
+            bucketUri = req.RequestUri!;
+
+        return await _requestAuthenticator.PresignPostPolicyAsync(bucketUri, bucketName, key, expiry, _options.Value.Region, "s3", conditions, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<IDictionary<string, string>?> GetObjectTagsAsync(string bucketName, string key, string? versionId, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        var q = new QueryParams();
+        q.Add("tagging", string.Empty);
+        q.AddIfNotNullOrEmpty("versionId", versionId);
+
+        try
+        {
+            using var req = CreateRequest(HttpMethod.Get, Encode(bucketName, key), q);
+            using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+
+            var tags = new Dictionary<string, string>();
+            var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+
+            var xTags = xResponse.Root!.Element("TagSet")?.Elements("Tag");
+            if (xTags != null)
+            {
+                foreach (var xTag in xTags)
+                {
+                    var tagKey = xTag.Element("Key")?.Value;
+                    if (!string.IsNullOrEmpty(tagKey))
+                        tags[tagKey] = xTag.Element("Value")?.Value ?? string.Empty;
+                }
+            }
+            return tags;
+        }
+        catch (MinioHttpException exc) when (exc.Error?.Code == "NoSuchTagSet")
+        {
+            return null;
+        }
+    }
+
+    public async Task SetObjectTagsAsync(string bucketName, string key, IEnumerable<KeyValuePair<string, string>> tags, string? versionId, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentNullException.ThrowIfNull(tags);
+
+        var q = new QueryParams();
+        q.Add("tagging", string.Empty);
+        q.AddIfNotNullOrEmpty("versionId", versionId);
+
+        var xTagSet = new XElement(Ns + "TagSet");
+        foreach (var (k, v) in tags)
+            xTagSet.Add(new XElement(Ns + "Tag",
+                new XElement(Ns + "Key", k),
+                new XElement(Ns + "Value", v)));
+
+        var xTagging = new XElement(Ns + "Tagging", xTagSet);
+        using var req = CreateRequest(HttpMethod.Put, Encode(bucketName, key), xTagging, q);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task RemoveObjectTagsAsync(string bucketName, string key, string? versionId, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+
+        var q = new QueryParams();
+        q.Add("tagging", string.Empty);
+        q.AddIfNotNullOrEmpty("versionId", versionId);
+
+        using var req = CreateRequest(HttpMethod.Delete, Encode(bucketName, key), q);
+        using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task UploadObjectAsync(string bucketName, string key, Stream stream, PutObjectOptions? options, ProgressHandler? progress, CancellationToken cancellationToken)
+    {
+        VerifyBucketName(bucketName);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentNullException.ThrowIfNull(stream);
+
+        switch (stream.Length)
+        {
+            case > MaxMultipartPutObjectSize:
+                throw new ArgumentOutOfRangeException(nameof(stream), stream.Length, "Stream length out of range");
+            case <= MinPartSize:
+                await PutObjectAsync(bucketName, key, stream, options, progress, cancellationToken).ConfigureAwait(false);
+                return;
+        }
+
+        // Determine part size: aim for at most 10,000 parts
+        var partSize = Math.Max(MinPartSize, (stream.Length + 9999) / 10000);
+
+        var createOptions = options == null ? null : new CreateMultipartUploadOptions
+        {
+            ContentType = options.ContentType,
+            ContentEncoding = options.ContentEncoding,
+            ContentDisposition = options.ContentDisposition,
+            ContentLanguage = options.ContentLanguage,
+            CacheControl = options.CacheControl,
+            Expires = options.Expires,
+            ServerSideEncryption = options.ServerSideEncryption,
+            StorageClass = options.StorageClass,
+            WebsiteRedirectLocation = options.WebsiteRedirectLocation,
+            Mode = options.Mode,
+            RetainUntilDate = options.RetainUntilDate,
+            LegalHold = options.LegalHold,
+        };
+        if (options?.UserTags != null)
+        {
+            foreach (var kv in options.UserTags)
+                (createOptions!.UserTags as Dictionary<string, string>)![kv.Key] = kv.Value;
+        }
+
+        var createResult = await CreateMultipartUploadAsync(bucketName, key, createOptions, cancellationToken).ConfigureAwait(false);
+        var uploadId = createResult.UploadId;
+        var parts = new List<PartInfo>();
+
+        try
+        {
+            var partNumber = 1;
+            var buffer = new byte[partSize];
+            var totalBytesUploaded = 0L;
+            var streamLength = stream.Length;
+
+            while (true)
+            {
+                using var partStream = new MemoryStream();
+                var bytesRead = 0L;
+                while (bytesRead < partSize)
+                {
+                    var toRead = (int)Math.Min(buffer.Length, partSize - bytesRead);
+                    var read = await stream.ReadAsync(buffer, 0, toRead, cancellationToken).ConfigureAwait(false);
+                    if (read == 0) break;
+                    await partStream.WriteAsync(buffer, 0, read, cancellationToken).ConfigureAwait(false);
+                    bytesRead += read;
+                }
+
+                if (bytesRead == 0) break;
+                partStream.Position = 0;
+
+                ProgressHandler? partProgress = null;
+                if (progress != null)
+                {
+                    var capturedOffset = totalBytesUploaded;
+                    partProgress = (pos, _) => progress(capturedOffset + pos, streamLength);
+                }
+
+                var partResult = await UploadPartAsync(bucketName, key, uploadId, partNumber, partStream, null, partProgress, cancellationToken).ConfigureAwait(false);
+                parts.Add(new PartInfo { Etag = partResult.Etag ?? string.Empty });
+                totalBytesUploaded += bytesRead;
+                partNumber++;
+            }
+
+            await CompleteMultipartUploadAsync(bucketName, key, uploadId, parts, null, cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            await AbortMultipartUploadAsync(bucketName, key, uploadId, cancellationToken).ConfigureAwait(false);
+            throw;
+        }
     }
 
     private async Task<HttpResponseMessage> SendRequestAsync(HttpRequestMessage req, CancellationToken cancellationToken)
@@ -887,7 +1530,7 @@ internal class MinioClient : IMinioClient
         {
             var stream = await req.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             if (!stream.CanSeek)
-                throw new System.ArgumentException("Request content stream must be seekable for SHA-256 signing.", nameof(req));
+                throw new ArgumentException("Request content stream must be seekable for SHA-256 signing.", nameof(req));
             var hashSha256 = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
             req.Headers.Add("X-Amz-Content-Sha256", hashSha256.ToHexStringLowercase());
             stream.Position = 0;
@@ -979,9 +1622,9 @@ internal class MinioClient : IMinioClient
 
     private static void VerifyBucketName(string bucketName, [CallerArgumentExpression("bucketName")] string? paramName = null)
     {
-        if (bucketName == null) throw new System.ArgumentNullException(paramName);
+        if (bucketName == null) throw new ArgumentNullException(paramName);
         if (!VerificationHelpers.VerifyBucketName(bucketName))
-            throw new System.ArgumentException("Invalid bucket name", paramName);
+            throw new ArgumentException("Invalid bucket name", paramName);
     }
 
     private static string Encode(string bucketName, string key)
@@ -996,10 +1639,6 @@ internal class MinioClient : IMinioClient
 
         return sb.ToString();
     }
-
-    private bool IsGoogleEndpoint => _options.Value.EndPoint.Host == "storage.googleapis.com";
-    
-    //public readonly record struct PartInfo(int TotalPartsCount, int PartSize, int LastPartSize);
 
     private static ObjectInfo ToObjectInfo(string key, HttpResponseMessage resp)
     {

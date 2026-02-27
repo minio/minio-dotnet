@@ -2,10 +2,12 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Minio.CredentialProviders;
 using Minio.Helpers;
+using Minio.Model;
 
 #if NET6_0
 using SHA256 = Shims.SHA256;
@@ -88,6 +90,111 @@ public partial class V4RequestAuthenticator : IRequestAuthenticator
         request.Headers.Authorization = new AuthenticationHeaderValue("AWS4-HMAC-SHA256", authorization);
         if (!string.IsNullOrEmpty(credentials.SessionToken))
             request.Headers.Add("X-Amz-Security-Token", credentials.SessionToken);
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask<Uri> PresignAsync(HttpRequestMessage request, string region, string service, TimeSpan expiry, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.RequestUri is null) throw new InvalidOperationException("Cannot presign a request without URI");
+
+        var credentials = await _credentialsProvider.GetCredentialsAsync(cancellationToken).ConfigureAwait(false);
+        var signingDate = _timeProvider.UtcNow.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
+        var dateStamp = signingDate[..8];
+        var expirySeconds = ((long)expiry.TotalSeconds).ToString(CultureInfo.InvariantCulture);
+        var credentialScope = $"{dateStamp}/{region}/{service}/aws4_request";
+        var credential = $"{credentials.AccessKey}/{credentialScope}";
+
+        // Collect existing query params plus the presign auth params
+        var existingQuery = request.RequestUri.Query;
+        if (existingQuery.StartsWith('?')) existingQuery = existingQuery[1..];
+
+        var authParams = new List<string>();
+        if (!string.IsNullOrEmpty(existingQuery))
+            authParams.AddRange(existingQuery.Split('&', StringSplitOptions.RemoveEmptyEntries));
+        authParams.Add("X-Amz-Algorithm=AWS4-HMAC-SHA256");
+        authParams.Add($"X-Amz-Credential={Uri.EscapeDataString(credential)}");
+        authParams.Add($"X-Amz-Date={signingDate}");
+        authParams.Add($"X-Amz-Expires={expirySeconds}");
+        if (!string.IsNullOrEmpty(credentials.SessionToken))
+            authParams.Add($"X-Amz-Security-Token={Uri.EscapeDataString(credentials.SessionToken)}");
+        authParams.Add("X-Amz-SignedHeaders=host");
+
+        var sortedQuery = string.Join('&', authParams.OrderBy(s => s, KeyOnlySorter));
+
+        var canonicalUri = request.RequestUri.AbsolutePath;
+        if (string.IsNullOrEmpty(canonicalUri)) canonicalUri = "/";
+
+        var canonicalRequest = string.Join('\n', new[]
+        {
+            request.Method.Method,
+            canonicalUri,
+            sortedQuery,
+            $"host:{request.RequestUri.Authority}\n",
+            "host",
+            "UNSIGNED-PAYLOAD"
+        });
+        LogCanonicalRequest(_logger, canonicalRequest, null);
+
+        var canonicalRequestHash = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalRequest)).ToHexStringLowercase();
+        var stringToSign = $"AWS4-HMAC-SHA256\n{signingDate}\n{credentialScope}\n{canonicalRequestHash}";
+        LogStringToSign(_logger, stringToSign, null);
+
+        var signingKey = DeriveSigningKey(credentials.SecretKey, dateStamp, region, service);
+        var signature = HmacSha256(signingKey, stringToSign).ToHexStringLowercase();
+        LogSignature(_logger, signature, null);
+
+        var baseUrl = request.RequestUri.GetLeftPart(UriPartial.Path);
+        return new Uri($"{baseUrl}?{sortedQuery}&X-Amz-Signature={signature}");
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask<PostPolicyResult> PresignPostPolicyAsync(Uri bucketUri, string bucketName, string key, TimeSpan expiry, string region, string service, IEnumerable<PostPolicyCondition>? conditions, CancellationToken cancellationToken)
+    {
+        var credentials = await _credentialsProvider.GetCredentialsAsync(cancellationToken).ConfigureAwait(false);
+        var signingDate = _timeProvider.UtcNow;
+        var dateStamp = signingDate.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+        var dateTimeStamp = signingDate.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
+        var credentialScope = $"{dateStamp}/{region}/{service}/aws4_request";
+        var credential = $"{credentials.AccessKey}/{credentialScope}";
+        var expiration = signingDate.Add(expiry).ToUniversalTime().ToString("o", CultureInfo.InvariantCulture);
+
+        // Build conditions JSON array
+        var conditionsList = new List<string>
+        {
+            $"{{\"bucket\":{JsonSerializer.Serialize(bucketName)}}}",
+            $"[\"eq\",\"$key\",{JsonSerializer.Serialize(key)}]",
+            "{\"X-Amz-Algorithm\":\"AWS4-HMAC-SHA256\"}",
+            $"{{\"X-Amz-Credential\":{JsonSerializer.Serialize(credential)}}}",
+            $"{{\"X-Amz-Date\":{JsonSerializer.Serialize(dateTimeStamp)}}}",
+        };
+        if (!string.IsNullOrEmpty(credentials.SessionToken))
+            conditionsList.Add($"{{\"X-Amz-Security-Token\":{JsonSerializer.Serialize(credentials.SessionToken)}}}");
+        if (conditions != null)
+        {
+            foreach (var condition in conditions)
+                conditionsList.Add(condition.ToJson());
+        }
+
+        var policyJson = $"{{\"expiration\":\"{expiration}\",\"conditions\":[{string.Join(",", conditionsList)}]}}";
+        var policyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(policyJson));
+
+        var signingKey = DeriveSigningKey(credentials.SecretKey, dateStamp, region, service);
+        var signature = HmacSha256(signingKey, policyBase64).ToHexStringLowercase();
+
+        var fields = new Dictionary<string, string>
+        {
+            ["key"] = key,
+            ["policy"] = policyBase64,
+            ["X-Amz-Algorithm"] = "AWS4-HMAC-SHA256",
+            ["X-Amz-Credential"] = credential,
+            ["X-Amz-Date"] = dateTimeStamp,
+            ["X-Amz-Signature"] = signature,
+        };
+        if (!string.IsNullOrEmpty(credentials.SessionToken))
+            fields["X-Amz-Security-Token"] = credentials.SessionToken;
+
+        return new PostPolicyResult(bucketUri, fields);
     }
 
     private string CalculateAuthorization(Credentials credentials, string region, string service, HttpRequestMessage request)
@@ -179,9 +286,17 @@ public partial class V4RequestAuthenticator : IRequestAuthenticator
         return $"Credential={credentials.AccessKey}/{signingDate[..8]}/{region}/{service}/aws4_request, SignedHeaders={signedHeaders}, Signature={signature}";
     }
 
+    private static byte[] DeriveSigningKey(string secretKey, string dateStamp, string region, string service)
+    {
+        var dateKey = HmacSha256($"AWS4{secretKey}", dateStamp);
+        var dateRegionKey = HmacSha256(dateKey, region);
+        var dateRegionServiceKey = HmacSha256(dateRegionKey, service);
+        return HmacSha256(dateRegionServiceKey, "aws4_request");
+    }
+
     private static byte[] HmacSha256(string key, string data) => HmacSha256(Encoding.UTF8.GetBytes(key), data);
     private static byte[] HmacSha256(byte[] key, string data) => HmacSha256(key, Encoding.UTF8.GetBytes(data));
-    
+
     private static byte[] HmacSha256(byte[] key, byte[] data)
     {
         using var hmac = new HMACSHA256(key);

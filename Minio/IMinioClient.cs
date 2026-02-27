@@ -365,35 +365,300 @@ public interface IMinioClient
     /// <returns>A task that represents the asynchronous set-versioning operation.</returns>
     Task SetBucketVersioningAsync(string bucketName, VersioningStatus status, bool mfaDelete = false, CancellationToken cancellationToken = default);
 
-    // TODO: Add following bucket operations
-    // SetBucketEncryptionAsync
-    // GetBucketEncryptionAsync
-    // RemoveBucketEncryptionAsync
-    // SetBucketLifecycleAsync
-    // GetBucketLifecycleAsync
-    // RemoveBucketLifecycleAsync
-    // GetBucketReplicationAsync
-    // SetBucketReplicationAsync
-    // RemoveBucketReplicationAsync
-    // GetPolicyAsync
-    // RemovePolicyAsync
-    // SetPolicyAsync
+    // Bucket encryption
 
-    // TODO: Add following object operations
-    // GetObjectLegalHoldAsync
-    // SetObjectLegalHoldAsync
-    // SetObjectRetentionAsync
-    // GetObjectRetentionAsync
-    // ClearObjectRetentionAsync
-    // CopyObjectAsync
-    // SelectObjectContentAsync
-    // PresignedGetObjectAsync
-    // PresignedPostPolicyAsync
-    // PresignedPutObjectAsync
-    // GetObjectTagsAsync
-    // SetObjectTagsAsync
-    // RemoveObjectTagsAsync
-    
-    // TODO: Add following convenience operations
-    // UploadObjectAsync - automatically using multi-part upload when needed
+    /// <summary>
+    /// Retrieves the server-side encryption configuration for the specified bucket.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that completes with the <see cref="BucketEncryptionConfiguration"/> for the bucket.</returns>
+    Task<BucketEncryptionConfiguration> GetBucketEncryptionAsync(string bucketName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the server-side encryption configuration on the specified bucket.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket.</param>
+    /// <param name="config">The encryption configuration to apply.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous set-encryption operation.</returns>
+    Task SetBucketEncryptionAsync(string bucketName, BucketEncryptionConfiguration config, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the server-side encryption configuration from the specified bucket.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous remove-encryption operation.</returns>
+    Task RemoveBucketEncryptionAsync(string bucketName, CancellationToken cancellationToken = default);
+
+    // Bucket lifecycle
+
+    /// <summary>
+    /// Retrieves the lifecycle configuration for the specified bucket.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>
+    /// A task that completes with the <see cref="LifecycleConfiguration"/> for the bucket,
+    /// or <see langword="null"/> if no lifecycle configuration is set.
+    /// </returns>
+    Task<LifecycleConfiguration?> GetBucketLifecycleAsync(string bucketName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the lifecycle configuration on the specified bucket.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket.</param>
+    /// <param name="config">The lifecycle configuration to apply.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous set-lifecycle operation.</returns>
+    Task SetBucketLifecycleAsync(string bucketName, LifecycleConfiguration config, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the lifecycle configuration from the specified bucket.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous remove-lifecycle operation.</returns>
+    Task RemoveBucketLifecycleAsync(string bucketName, CancellationToken cancellationToken = default);
+
+    // Bucket replication
+
+    /// <summary>
+    /// Retrieves the replication configuration for the specified bucket.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>
+    /// A task that completes with the <see cref="ReplicationConfiguration"/> for the bucket,
+    /// or <see langword="null"/> if no replication configuration is set.
+    /// </returns>
+    Task<ReplicationConfiguration?> GetBucketReplicationAsync(string bucketName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the replication configuration on the specified bucket.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket.</param>
+    /// <param name="config">The replication configuration to apply.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous set-replication operation.</returns>
+    Task SetBucketReplicationAsync(string bucketName, ReplicationConfiguration config, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the replication configuration from the specified bucket.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous remove-replication operation.</returns>
+    Task RemoveBucketReplicationAsync(string bucketName, CancellationToken cancellationToken = default);
+
+    // Bucket policy
+
+    /// <summary>
+    /// Retrieves the bucket policy for the specified bucket as a JSON string.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>
+    /// A task that completes with the bucket policy JSON string,
+    /// or <see langword="null"/> if no policy is set on the bucket.
+    /// </returns>
+    Task<string?> GetPolicyAsync(string bucketName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the bucket policy on the specified bucket.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket.</param>
+    /// <param name="policy">The IAM policy document as a JSON string.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous set-policy operation.</returns>
+    Task SetPolicyAsync(string bucketName, string policy, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the bucket policy from the specified bucket.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous remove-policy operation.</returns>
+    Task RemovePolicyAsync(string bucketName, CancellationToken cancellationToken = default);
+
+    // Object legal hold
+
+    /// <summary>
+    /// Retrieves the legal hold status for a specific object version.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket containing the object.</param>
+    /// <param name="key">The object key (path) within the bucket.</param>
+    /// <param name="versionId">The specific version ID, or <see langword="null"/> for the current version.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that completes with the <see cref="LegalHoldStatus"/> of the object.</returns>
+    Task<LegalHoldStatus> GetObjectLegalHoldAsync(string bucketName, string key, string? versionId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets or clears the legal hold status for a specific object version.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket containing the object.</param>
+    /// <param name="key">The object key (path) within the bucket.</param>
+    /// <param name="status">The legal hold status to apply.</param>
+    /// <param name="versionId">The specific version ID, or <see langword="null"/> for the current version.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous set-legal-hold operation.</returns>
+    Task SetObjectLegalHoldAsync(string bucketName, string key, LegalHoldStatus status, string? versionId = null, CancellationToken cancellationToken = default);
+
+    // Object retention
+
+    /// <summary>
+    /// Retrieves the retention configuration for a specific object version.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket containing the object.</param>
+    /// <param name="key">The object key (path) within the bucket.</param>
+    /// <param name="versionId">The specific version ID, or <see langword="null"/> for the current version.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that completes with the <see cref="ObjectRetention"/> of the object.</returns>
+    Task<ObjectRetention> GetObjectRetentionAsync(string bucketName, string key, string? versionId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the retention configuration for a specific object version.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket containing the object.</param>
+    /// <param name="key">The object key (path) within the bucket.</param>
+    /// <param name="retention">The retention configuration to apply.</param>
+    /// <param name="bypassGovernanceRetention">
+    /// When <see langword="true"/>, bypasses Governance-mode retention to allow reducing the retention period.
+    /// Requires the <c>s3:BypassGovernanceRetention</c> permission.
+    /// </param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous set-retention operation.</returns>
+    Task SetObjectRetentionAsync(string bucketName, string key, ObjectRetention retention, bool bypassGovernanceRetention = false, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Clears the retention configuration for a specific object version.
+    /// Only applicable to objects in Governance mode; requires the <c>s3:BypassGovernanceRetention</c> permission.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket containing the object.</param>
+    /// <param name="key">The object key (path) within the bucket.</param>
+    /// <param name="versionId">The specific version ID, or <see langword="null"/> for the current version.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous clear-retention operation.</returns>
+    Task ClearObjectRetentionAsync(string bucketName, string key, string? versionId = null, CancellationToken cancellationToken = default);
+
+    // Object copy
+
+    /// <summary>
+    /// Copies an object from a source bucket and key to a destination bucket and key, server-side.
+    /// </summary>
+    /// <param name="destBucketName">The name of the destination bucket.</param>
+    /// <param name="destKey">The destination object key.</param>
+    /// <param name="srcBucketName">The name of the source bucket.</param>
+    /// <param name="srcKey">The source object key.</param>
+    /// <param name="options">Optional settings such as metadata directive, conditions, and SSE.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that completes with the <see cref="CopyObjectResult"/> for the newly created object.</returns>
+    Task<CopyObjectResult> CopyObjectAsync(string destBucketName, string destKey, string srcBucketName, string srcKey, CopyObjectOptions? options = null, CancellationToken cancellationToken = default);
+
+    // S3 Select
+
+    /// <summary>
+    /// Executes an S3 Select query against the specified object and streams the record payloads.
+    /// Each yielded string contains one or more records in the requested output format (CSV or JSON).
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket containing the object.</param>
+    /// <param name="key">The object key (path) within the bucket.</param>
+    /// <param name="options">Query options including the SQL expression and serialization settings.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>An async sequence of record payload strings.</returns>
+    IAsyncEnumerable<string> SelectObjectContentAsync(string bucketName, string key, SelectObjectOptions options, CancellationToken cancellationToken = default);
+
+    // Presigned URLs
+
+    /// <summary>
+    /// Generates a presigned URL that grants temporary GET access to the specified object.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket containing the object.</param>
+    /// <param name="key">The object key (path) within the bucket.</param>
+    /// <param name="expiry">How long the presigned URL remains valid.</param>
+    /// <param name="versionId">The specific version ID to include in the URL, or <see langword="null"/> for the current version.</param>
+    /// <param name="responseHeaders">
+    /// Optional response header overrides (e.g., <c>response-content-type</c>) to embed in the presigned URL.
+    /// </param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that completes with the presigned <see cref="Uri"/>.</returns>
+    Task<Uri> PresignedGetObjectAsync(string bucketName, string key, TimeSpan expiry, string? versionId = null, IDictionary<string, string>? responseHeaders = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Generates a presigned URL that grants temporary PUT access to the specified object key.
+    /// </summary>
+    /// <param name="bucketName">The name of the destination bucket.</param>
+    /// <param name="key">The destination object key.</param>
+    /// <param name="expiry">How long the presigned URL remains valid.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that completes with the presigned <see cref="Uri"/>.</returns>
+    Task<Uri> PresignedPutObjectAsync(string bucketName, string key, TimeSpan expiry, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Generates a presigned POST policy for browser-based uploads directly to S3.
+    /// </summary>
+    /// <param name="bucketName">The name of the destination bucket.</param>
+    /// <param name="key">The destination object key that must be submitted as a form field.</param>
+    /// <param name="expiry">How long the POST policy remains valid.</param>
+    /// <param name="conditions">
+    /// Optional additional policy conditions (e.g., content-type constraints or size limits).
+    /// </param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>
+    /// A task that completes with a <see cref="PostPolicyResult"/> containing the upload URL
+    /// and the required form fields to include in the multipart/form-data request.
+    /// </returns>
+    Task<PostPolicyResult> PresignedPostPolicyAsync(string bucketName, string key, TimeSpan expiry, IEnumerable<PostPolicyCondition>? conditions = null, CancellationToken cancellationToken = default);
+
+    // Object tags
+
+    /// <summary>
+    /// Retrieves the tags associated with a specific object version.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket containing the object.</param>
+    /// <param name="key">The object key (path) within the bucket.</param>
+    /// <param name="versionId">The specific version ID, or <see langword="null"/> for the current version.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>
+    /// A task that completes with a dictionary of tag key-value pairs,
+    /// or <see langword="null"/> if no tags are set on the object.
+    /// </returns>
+    Task<IDictionary<string, string>?> GetObjectTagsAsync(string bucketName, string key, string? versionId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets or replaces the tags on a specific object version.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket containing the object.</param>
+    /// <param name="key">The object key (path) within the bucket.</param>
+    /// <param name="tags">The tag key-value pairs to apply.</param>
+    /// <param name="versionId">The specific version ID, or <see langword="null"/> for the current version.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous set-tags operation.</returns>
+    Task SetObjectTagsAsync(string bucketName, string key, IEnumerable<KeyValuePair<string, string>> tags, string? versionId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes all tags from a specific object version.
+    /// </summary>
+    /// <param name="bucketName">The name of the bucket containing the object.</param>
+    /// <param name="key">The object key (path) within the bucket.</param>
+    /// <param name="versionId">The specific version ID, or <see langword="null"/> for the current version.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous remove-tags operation.</returns>
+    Task RemoveObjectTagsAsync(string bucketName, string key, string? versionId = null, CancellationToken cancellationToken = default);
+
+    // Convenience
+
+    /// <summary>
+    /// Uploads an object to the specified bucket, automatically selecting single-part or multipart
+    /// upload based on the stream size. Streams larger than 16 MiB are uploaded using multipart upload.
+    /// </summary>
+    /// <param name="bucketName">The name of the destination bucket.</param>
+    /// <param name="key">The object key (path) within the bucket.</param>
+    /// <param name="stream">The data stream to upload.</param>
+    /// <param name="options">Optional settings such as content type, metadata, and storage class.</param>
+    /// <param name="progress">Optional callback invoked as data is uploaded.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous upload operation.</returns>
+    Task UploadObjectAsync(string bucketName, string key, Stream stream, PutObjectOptions? options = null, ProgressHandler? progress = null, CancellationToken cancellationToken = default);
 }
