@@ -766,35 +766,45 @@ internal class MinioClient : IMinioClient
 
         using var req = CreateRequest(HttpMethod.Get, bucketName, query);
         var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
-        var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-
-        return Observable.Create<NotificationEvent>(async (obs, ct) =>
+        try
         {
-            using (resp)
-            await using (responseBody.ConfigureAwait(false))
+            var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            return Observable.Create<NotificationEvent>(async (obs, ct) =>
             {
-                using var sr = new StreamReader(responseBody);
-                while (!sr.EndOfStream)
+                // ReSharper disable once AccessToDisposedClosure
+                // This variable is only disposed when an exception occured,
+                // so then this delegate won't be called.
+                using (resp)
+                await using (responseBody.ConfigureAwait(false))
                 {
-                    ct.ThrowIfCancellationRequested();
+                    using var sr = new StreamReader(responseBody);
+                    while (!sr.EndOfStream)
+                    {
+                        ct.ThrowIfCancellationRequested();
 #if NET7_0_OR_GREATER
-                    var line = await sr.ReadLineAsync(ct).ConfigureAwait(false);
+                        var line = await sr.ReadLineAsync(ct).ConfigureAwait(false);
 #else
                     var line = await sr.ReadLineAsync().ConfigureAwait(false);
 #endif
-                    if (string.IsNullOrEmpty(line))
-                        continue;
+                        if (string.IsNullOrEmpty(line))
+                            continue;
 
-                    var bucketNotificationEvent = JsonSerializer.Deserialize<BucketNotificationEvent>(line);
-                    if (bucketNotificationEvent?.Records != null)
-                    {
-                        foreach (var e in bucketNotificationEvent.Records)
-                            obs.OnNext(e);
+                        var bucketNotificationEvent = JsonSerializer.Deserialize<BucketNotificationEvent>(line);
+                        if (bucketNotificationEvent?.Records != null)
+                        {
+                            foreach (var e in bucketNotificationEvent.Records)
+                                obs.OnNext(e);
+                        }
                     }
+                    obs.OnCompleted();
                 }
-                obs.OnCompleted();
-            }
-        }).SubscribeOn(TaskPoolScheduler.Default);
+            }).SubscribeOn(TaskPoolScheduler.Default);
+        }
+        catch
+        {
+            resp.Dispose();
+            throw;
+        }
     }
 
     public async Task<ObjectLockConfiguration> GetObjectLockConfigurationAsync(string bucketName, CancellationToken cancellationToken = default)
@@ -889,7 +899,6 @@ internal class MinioClient : IMinioClient
 
         req.Headers.Add("X-Amz-Date", _timeProvider.UtcNow.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture));
         await _requestAuthenticator.AuthenticateAsync(req, _options.Value.Region, "s3", cancellationToken).ConfigureAwait(false);
-
         
         using var httpClient = _httpClientFactory.CreateClient(_options.Value.MinioHttpClient);
         var requestId = Interlocked.Increment(ref _requestId);
@@ -902,41 +911,44 @@ internal class MinioClient : IMinioClient
             var resp = await httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             if (!resp.IsSuccessStatusCode)
             {
-                var responseData = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                var contentType = resp.Content.Headers.ContentType?.MediaType;
-                if (contentType == "application/xml" && !string.IsNullOrEmpty(responseData))
+                using (resp)
                 {
-                    var xRoot = XDocument.Parse(responseData).Root;
-                    if (xRoot != null)
+                    var responseData = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                    var contentType = resp.Content.Headers.ContentType?.MediaType;
+                    if (contentType == "application/xml" && !string.IsNullOrEmpty(responseData))
                     {
-                        var err = new ErrorResponse
+                        var xRoot = XDocument.Parse(responseData).Root;
+                        if (xRoot != null)
                         {
-                            Code = xRoot.Element("Code")?.Value ?? string.Empty,
-                            Message = xRoot.Element("Message")?.Value ?? string.Empty,
-                            BucketName = xRoot.Element("BucketName")?.Value ?? string.Empty,
-                            Key = xRoot.Element("Key")?.Value ?? string.Empty,
-                            Resource = xRoot.Element("Resource")?.Value ?? string.Empty,
-                            RequestId = xRoot.Element("RequestId")?.Value ?? string.Empty,
-                            HostId = xRoot.Element("HostId")?.Value ?? string.Empty,
-                            Region = xRoot.Element("Region")?.Value ?? string.Empty,
-                            Server = xRoot.Element("Server")?.Value ?? string.Empty,
-                        };
-                        if (_logger.IsEnabled(LogLevel.Debug))
-                            _logger.LogDebug("Response #{RequestID} failed {StatusCode} - {Code}: {Message} ({Duration})", requestId, resp.StatusCode, err.Code, err.Message, sw.Elapsed);
-                        throw new MinioHttpException(req, resp, err);
+                            var err = new ErrorResponse
+                            {
+                                Code = xRoot.Element("Code")?.Value ?? string.Empty,
+                                Message = xRoot.Element("Message")?.Value ?? string.Empty,
+                                BucketName = xRoot.Element("BucketName")?.Value ?? string.Empty,
+                                Key = xRoot.Element("Key")?.Value ?? string.Empty,
+                                Resource = xRoot.Element("Resource")?.Value ?? string.Empty,
+                                RequestId = xRoot.Element("RequestId")?.Value ?? string.Empty,
+                                HostId = xRoot.Element("HostId")?.Value ?? string.Empty,
+                                Region = xRoot.Element("Region")?.Value ?? string.Empty,
+                                Server = xRoot.Element("Server")?.Value ?? string.Empty,
+                            };
+                            if (_logger.IsEnabled(LogLevel.Debug))
+                                _logger.LogDebug("Response #{RequestID} failed {StatusCode} - {Code}: {Message} ({Duration})", requestId, resp.StatusCode, err.Code, err.Message, sw.Elapsed);
+                            throw new MinioHttpException(req, resp, err);
+                        }
                     }
-                }
 
-                if (_logger.IsEnabled(LogLevel.Debug))
-                    _logger.LogDebug("Response #{RequestID} failed {StatusCode} ({Duration})", requestId, resp.StatusCode, sw.Elapsed);
-                throw new MinioHttpException(req, resp, null);
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                        _logger.LogDebug("Response #{RequestID} failed {StatusCode} ({Duration})", requestId, resp.StatusCode, sw.Elapsed);
+                    throw new MinioHttpException(req, resp, null);
+                }
             }
 
             if (_logger.IsEnabled(LogLevel.Debug))
                 _logger.LogDebug("Response #{RequestID} {StatusCode} ({Duration})", requestId, resp.StatusCode, sw.Elapsed);
             return resp;
         }
-        catch (Exception exc)
+        catch (Exception exc) when (exc is not MinioHttpException)
         {
             if (_logger.IsEnabled(LogLevel.Debug))
                 _logger.LogDebug(exc, "Response #{RequestID} threw an exception ({Duration})", requestId, sw.Elapsed);

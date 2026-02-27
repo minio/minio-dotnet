@@ -83,34 +83,32 @@ public class WebIdentityProvider : ICredentialsProvider
         };
         using var req = new HttpRequestMessage(HttpMethod.Post, builder.Uri);
         using var httpClient = _httpClientFactory.CreateClient(opts.MinioHttpClient);
-        var resp = await httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        using var resp = await httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         if (!resp.IsSuccessStatusCode)
         {
             var responseData = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             var contentType = resp.Content.Headers.ContentType?.MediaType;
-            if (contentType == "application/xml" && !string.IsNullOrEmpty(responseData))
+            if (contentType != "application/xml" || string.IsNullOrEmpty(responseData))
+                throw new MinioHttpException(req, resp, null);
+            
+            var xRoot = XDocument.Parse(responseData).Root;
+            if (xRoot == null) throw new MinioHttpException(req, resp, null);
+            
+            var xError = xRoot.Element(Ns + "Error");
+            var err = new ErrorResponse
             {
-                var xRoot = XDocument.Parse(responseData).Root;
-                if (xRoot != null)
-                {
-                    var xError = xRoot.Element(Ns + "Error");
-                    var err = new ErrorResponse
-                    {
-                        Code = xError?.Element(Ns + "Code")?.Value ?? string.Empty,
-                        Message = xError?.Element(Ns + "Message")?.Value ?? string.Empty,
-                        RequestId = xRoot.Element(Ns + "RequestId")?.Value ?? string.Empty,
-                        BucketName = string.Empty,
-                        Key = string.Empty,
-                        Resource = string.Empty,
-                        HostId = string.Empty,
-                        Region = string.Empty,
-                        Server = string.Empty,
-                    };
-                    throw new MinioHttpException(req, resp, err);
-                }
-            }
+                Code = xError?.Element(Ns + "Code")?.Value ?? string.Empty,
+                Message = xError?.Element(Ns + "Message")?.Value ?? string.Empty,
+                RequestId = xRoot.Element(Ns + "RequestId")?.Value ?? string.Empty,
+                BucketName = string.Empty,
+                Key = string.Empty,
+                Resource = string.Empty,
+                HostId = string.Empty,
+                Region = string.Empty,
+                Server = string.Empty,
+            };
+            throw new MinioHttpException(req, resp, err);
 
-            throw new MinioHttpException(req, resp, null);
         }
 
         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);

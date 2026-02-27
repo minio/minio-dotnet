@@ -49,9 +49,9 @@ public sealed class KeycloakAccessTokenProvider : IAccessTokenProvider
             ["client_secret"] = opts.ClientSecret
         });
         using var httpClient = _httpClientFactory.CreateClient(opts.HttpClientName);
-        var response = await httpClient.PostAsync(tokenEndpoint, form, cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.PostAsync(tokenEndpoint, form, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
         return json.RootElement.GetProperty("access_token").GetString()!;
     }
 }
