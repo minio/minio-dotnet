@@ -1,36 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<AssemblyName>Minio</AssemblyName>
-		<RootNamespace>Minio</RootNamespace>
-		<TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-		<AssemblyOriginatorKeyFile>..\Minio.snk</AssemblyOriginatorKeyFile>
-		<SignAssembly>true</SignAssembly>
-		<PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-		<Description>MinIO .NET SDK for Amazon S3 Compatible Cloud Storage.</Description>
-		<Product>Minio</Product>
-	</PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+      <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
-		<PackageReference Include="System.IO.Hashing" Version="9.0.4" />
-		<PackageReference Include="System.Reactive" Version="6.0.1" />
-		<!--
-		<PackageReference Include="System.Reactive.Async" Version="6.0.0-alpha.18" />
-		-->
-		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.0" />
-	</ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.4" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3" />
+      <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+      <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
+      <PackageReference Include="System.IO.Hashing" Version="8.0.0" />
+      <PackageReference Include="System.Reactive" Version="6.1.0" />
+    </ItemGroup>
 
-	<ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard2')) ">
-		<PackageReference Include="System.Net.Http" Version="4.3.4" />
-		<PackageReference Include="System.Net.Primitives" Version="4.3.1" />
-		<PackageReference Include="System.ValueTuple" Version="4.5.0" />
-        <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.0" />
-        <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-	  <PackageReference Include="System.Text.Json" Version="9.0.1" />
-	</ItemGroup>
-
+    <ItemGroup>
+        <!-- Allow Minio.Tests to access the internal classes -->
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>$(AssemblyName).UnitTests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
 </Project>

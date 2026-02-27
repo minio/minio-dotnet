@@ -1,0 +1,348 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="935e30be-109a-462d-a7dd-a3c64bd42e32" name="@RDK-PREC7560 2026-02-27 17:14:37" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-02-27T17:14:37.4757787+01:00" queuing="2026-02-27T17:14:37.4757788+01:00" start="2026-02-27T17:14:31.0531736+01:00" finish="2026-02-27T17:15:16.1930756+01:00" />
+  <TestSettings name="default" id="e02d8c6f-d7b2-4404-8a50-c981ad9bb7f0">
+    <Deployment runDeploymentRoot="_RDK-PREC7560_2026-02-27_17_14_37" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="5674ae0a-e58f-4284-b0e4-cb7bce6bf34c" testId="3ea03db8-53e6-db81-97d7-a27905a33fe4" testName="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects1" computerName="RDK-PREC7560" duration="00:00:00.2190828" startTime="2026-02-27T17:14:58.3837250+01:00" endTime="2026-02-27T17:15:01.0481858+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5674ae0a-e58f-4284-b0e4-cb7bce6bf34c" />
+    <UnitTestResult executionId="67fe7726-99c1-4cd8-8030-e4d05792027e" testId="10a304eb-55eb-6ee5-035b-58405743aab0" testName="Minio.IntegrationTests.Tests.BucketNotificationTests.TestBucketNotificationsViaNats" computerName="RDK-PREC7560" duration="00:00:08.6564547" startTime="2026-02-27T17:14:31.6098506+01:00" endTime="2026-02-27T17:14:40.2707592+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="67fe7726-99c1-4cd8-8030-e4d05792027e" />
+    <UnitTestResult executionId="08cb0bd9-0f19-4ec3-ab1d-b8b554d0e73a" testId="87591125-ec57-53f3-accc-5755d349e585" testName="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects2(prefix: &quot;字首&quot;)" computerName="RDK-PREC7560" duration="00:00:00.0244244" startTime="2026-02-27T17:14:46.9968149+01:00" endTime="2026-02-27T17:14:50.8780371+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="08cb0bd9-0f19-4ec3-ab1d-b8b554d0e73a" />
+    <UnitTestResult executionId="a168636f-896b-4953-a75c-ac975304396a" testId="8792fbcc-83f8-fad1-6c50-96033eadb599" testName="Minio.IntegrationTests.Tests.ObjectTests.TestDeleteObjectLotsOfFilesQuiet" computerName="RDK-PREC7560" duration="00:00:00.7946643" startTime="2026-02-27T17:15:03.2742235+01:00" endTime="2026-02-27T17:15:06.2593908+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a168636f-896b-4953-a75c-ac975304396a" />
+    <UnitTestResult executionId="65acb726-cb53-4803-bf30-8b4e63a43890" testId="e1401945-542e-33d8-ca95-86a928cf1e29" testName="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects2(prefix: &quot;prefix&quot;)" computerName="RDK-PREC7560" duration="00:00:00.0301175" startTime="2026-02-27T17:14:38.0010564+01:00" endTime="2026-02-27T17:14:40.9452814+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="65acb726-cb53-4803-bf30-8b4e63a43890" />
+    <UnitTestResult executionId="3ca6096e-a7ab-4d96-9d12-53668f786719" testId="1cd2ad0e-4dc1-01e1-db23-9f253f48ab7d" testName="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects2(prefix: &quot;資料夾/字首&quot;)" computerName="RDK-PREC7560" duration="00:00:00.0401923" startTime="2026-02-27T17:14:44.4411042+01:00" endTime="2026-02-27T17:14:46.9965456+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3ca6096e-a7ab-4d96-9d12-53668f786719" />
+    <UnitTestResult executionId="3409e60a-54d9-4726-b4ce-50d409a4c418" testId="373fdf53-643a-354a-e56d-a49a934b1e98" testName="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects2(prefix: &quot;!@#$%^&amp;*()&quot;)" computerName="RDK-PREC7560" duration="00:00:00.0386122" startTime="2026-02-27T17:14:40.9495954+01:00" endTime="2026-02-27T17:14:44.4408494+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3409e60a-54d9-4726-b4ce-50d409a4c418" />
+    <UnitTestResult executionId="f3669986-c293-4421-82cf-3aa26f7cb0bd" testId="6b3572f5-f884-ff27-8c51-38c5c2c39235" testName="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects2(prefix: &quot;folder/prefix&quot;)" computerName="RDK-PREC7560" duration="00:00:00.2204690" startTime="2026-02-27T17:14:31.6098256+01:00" endTime="2026-02-27T17:14:37.9995948+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f3669986-c293-4421-82cf-3aa26f7cb0bd" />
+    <UnitTestResult executionId="48e1e8b3-d2c5-4946-afd5-4695b57741ed" testId="1f7100b7-f1d6-bd73-91c7-f9e0a97da86e" testName="Minio.IntegrationTests.Tests.BucketTests.BucketTagging" computerName="RDK-PREC7560" duration="00:00:00.1585013" startTime="2026-02-27T17:14:40.5932443+01:00" endTime="2026-02-27T17:14:44.0369127+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="48e1e8b3-d2c5-4946-afd5-4695b57741ed" />
+    <UnitTestResult executionId="4f61a8fc-6c2e-4851-a445-1758bb429fa9" testId="38144872-77ba-91a7-dda3-f7cd45e31b0f" testName="Minio.IntegrationTests.Tests.ObjectTests.TestDeleteObjectSimple" computerName="RDK-PREC7560" duration="00:00:00.0312399" startTime="2026-02-27T17:14:53.4258808+01:00" endTime="2026-02-27T17:14:56.1593817+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4f61a8fc-6c2e-4851-a445-1758bb429fa9" />
+    <UnitTestResult executionId="5c669ded-a5b4-4fdd-858d-503a6eb3c172" testId="73af7115-d0fa-1141-e5ce-31a1ccc4fa9d" testName="Minio.IntegrationTests.Tests.LdapTests.TestWebIdentityLogin" computerName="RDK-PREC7560" duration="00:00:30.0329090" startTime="2026-02-27T17:14:31.6097444+01:00" endTime="2026-02-27T17:15:01.6468469+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5c669ded-a5b4-4fdd-858d-503a6eb3c172" />
+    <UnitTestResult executionId="83f6d24a-4b18-47b9-94b0-cc4d25c43f1a" testId="db04f90a-d061-6634-b901-cbacdfbdd30f" testName="Minio.IntegrationTests.Tests.BucketTests.ListBuckets" computerName="RDK-PREC7560" duration="00:00:02.0374699" startTime="2026-02-27T17:14:46.4599129+01:00" endTime="2026-02-27T17:14:51.4553016+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="83f6d24a-4b18-47b9-94b0-cc4d25c43f1a" />
+    <UnitTestResult executionId="30b09e1f-01da-4f40-8992-a47016443613" testId="3470f67d-8e32-bd53-4a51-1ab7bf938762" testName="Minio.IntegrationTests.Tests.ObjectTests.TestDeleteBucketVersioning" computerName="RDK-PREC7560" duration="00:00:00.0612038" startTime="2026-02-27T17:15:06.2599826+01:00" endTime="2026-02-27T17:15:08.3636023+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="30b09e1f-01da-4f40-8992-a47016443613" />
+    <UnitTestResult executionId="3d78eace-1f34-4fd3-bce2-98f1a381cd09" testId="d996c325-0cc5-8d70-cea7-b066b17035b3" testName="Minio.IntegrationTests.Tests.BucketTests.MakeStandardBucket" computerName="RDK-PREC7560" duration="00:00:00.0397865" startTime="2026-02-27T17:14:37.4341292+01:00" endTime="2026-02-27T17:14:40.5927136+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3d78eace-1f34-4fd3-bce2-98f1a381cd09" />
+    <UnitTestResult executionId="e665ab28-6bc9-41dd-b9f7-cce96fc4edc8" testId="6eb11080-d806-f1c8-de0e-6c2bff45432b" testName="Minio.IntegrationTests.Tests.ObjectTests.TestMultipartUpload" computerName="RDK-PREC7560" duration="00:00:00.3685429" startTime="2026-02-27T17:15:11.2364624+01:00" endTime="2026-02-27T17:15:13.7793460+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e665ab28-6bc9-41dd-b9f7-cce96fc4edc8" />
+    <UnitTestResult executionId="17493c94-a217-44b5-8963-d525daa89502" testId="e3fab54a-525b-4a14-17a9-265690fdd3ad" testName="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects2(prefix: &quot;!@#$%/^&amp;*()&quot;)" computerName="RDK-PREC7560" duration="00:00:00.0393637" startTime="2026-02-27T17:14:50.8813640+01:00" endTime="2026-02-27T17:14:53.4253734+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="17493c94-a217-44b5-8963-d525daa89502" />
+    <UnitTestResult executionId="74dca4cc-352f-432a-9bb0-1fa73971e09e" testId="414895d7-dee1-f925-1abc-4689712a8f85" testName="Minio.IntegrationTests.Tests.ObjectTests.TestPutZeroObject" computerName="RDK-PREC7560" duration="00:00:00.0372453" startTime="2026-02-27T17:14:56.1599548+01:00" endTime="2026-02-27T17:14:58.3781025+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="74dca4cc-352f-432a-9bb0-1fa73971e09e">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NotSupportedException : Specified method is not supported.</Message>
+          <StackTrace>   at System.Net.Http.HttpBaseStream.get_Length()
+   at Minio.Helpers.BaseStream.get_Length() in /home/ramon/minio/minio-dotnet/Minio/Helpers/BaseStream.cs:line 237
+   at Minio.IntegrationTests.Tests.ObjectTests.TestPutZeroObject() in /home/ramon/minio/minio-dotnet/Minio.IntegrationTests/Tests/ObjectTests.cs:line 65
+   at Minio.IntegrationTests.Tests.ObjectTests.TestPutZeroObject() in /home/ramon/minio/minio-dotnet/Minio.IntegrationTests/Tests/ObjectTests.cs:line 65
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1b746fb5-8f89-45a3-96d9-d0470520aace" testId="b3a3e543-69b7-df24-5c97-365e2ca8e3b3" testName="Minio.IntegrationTests.Tests.ObjectTests.TestListMultipartUpload" computerName="RDK-PREC7560" duration="00:00:00.0372283" startTime="2026-02-27T17:15:13.7802585+01:00" endTime="2026-02-27T17:15:16.1235082+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1b746fb5-8f89-45a3-96d9-d0470520aace" />
+    <UnitTestResult executionId="e891cbc6-1ad4-4624-8839-9a31fdef8634" testId="b713dba8-6296-ce47-f297-6a35f2ac9776" testName="Minio.IntegrationTests.Tests.ObjectTests.TestPutAndGetObject" computerName="RDK-PREC7560" duration="00:00:00.0243731" startTime="2026-02-27T17:15:01.0489090+01:00" endTime="2026-02-27T17:15:03.2734516+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e891cbc6-1ad4-4624-8839-9a31fdef8634">
+      <Output>
+        <ErrorInfo>
+          <Message>System.NotSupportedException : Specified method is not supported.</Message>
+          <StackTrace>   at System.Net.Http.HttpBaseStream.get_Length()
+   at Minio.Helpers.BaseStream.get_Length() in /home/ramon/minio/minio-dotnet/Minio/Helpers/BaseStream.cs:line 237
+   at Minio.IntegrationTests.Tests.ObjectTests.TestPutAndGetObject() in /home/ramon/minio/minio-dotnet/Minio.IntegrationTests/Tests/ObjectTests.cs:line 47
+   at Minio.IntegrationTests.Tests.ObjectTests.TestPutAndGetObject() in /home/ramon/minio/minio-dotnet/Minio.IntegrationTests/Tests/ObjectTests.cs:line 52
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4637c317-695f-4b63-94bf-ef1dc9e7e3d4" testId="9a1e13c2-3c1b-fc36-7d5d-1403ae0d33b1" testName="Minio.IntegrationTests.Tests.BucketTests.BucketObjectLock" computerName="RDK-PREC7560" duration="00:00:00.3324849" startTime="2026-02-27T17:14:31.6080559+01:00" endTime="2026-02-27T17:14:37.3999407+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4637c317-695f-4b63-94bf-ef1dc9e7e3d4" />
+    <UnitTestResult executionId="c895280b-2072-4609-9a06-186f44e300c8" testId="73a3ed2f-f77d-6fca-e81d-9cce9126f07b" testName="Minio.IntegrationTests.Tests.BucketTests.BucketObjectWithoutLocking" computerName="RDK-PREC7560" duration="00:00:00.0164089" startTime="2026-02-27T17:14:44.0380857+01:00" endTime="2026-02-27T17:14:46.4596204+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c895280b-2072-4609-9a06-186f44e300c8" />
+    <UnitTestResult executionId="04a73cd1-7699-4972-956f-4f41a335aa09" testId="ffb1b8c7-fc94-e3b7-5a66-779e0ff07401" testName="Minio.IntegrationTests.Tests.BucketNotificationTests.TestMinioBucketNotifications" computerName="RDK-PREC7560" duration="00:00:03.3675610" startTime="2026-02-27T17:14:40.2718456+01:00" endTime="2026-02-27T17:14:43.6394362+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="04a73cd1-7699-4972-956f-4f41a335aa09" />
+    <UnitTestResult executionId="aaa204c6-084b-41f4-ac20-e6f749414138" testId="b96dc68f-0da9-8bda-b9f5-5d2e1a5e7309" testName="Minio.IntegrationTests.Tests.ObjectTests.TestDeleteObjectLotsOfFiles" computerName="RDK-PREC7560" duration="00:00:00.7742440" startTime="2026-02-27T17:15:08.3640893+01:00" endTime="2026-02-27T17:15:11.2360706+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="aaa204c6-084b-41f4-ac20-e6f749414138" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestPutAndGetObject" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="b713dba8-6296-ce47-f297-6a35f2ac9776">
+      <Execution id="e891cbc6-1ad4-4624-8839-9a31fdef8634" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestPutAndGetObject" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.BucketNotificationTests.TestBucketNotificationsViaNats" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="10a304eb-55eb-6ee5-035b-58405743aab0">
+      <Execution id="67fe7726-99c1-4cd8-8030-e4d05792027e" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.BucketNotificationTests" name="TestBucketNotificationsViaNats" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects1" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="3ea03db8-53e6-db81-97d7-a27905a33fe4">
+      <Execution id="5674ae0a-e58f-4284-b0e4-cb7bce6bf34c" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestListObjects1" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects2(prefix: &quot;字首&quot;)" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="87591125-ec57-53f3-accc-5755d349e585">
+      <Execution id="08cb0bd9-0f19-4ec3-ab1d-b8b554d0e73a" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestListObjects2" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestDeleteObjectSimple" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="38144872-77ba-91a7-dda3-f7cd45e31b0f">
+      <Execution id="4f61a8fc-6c2e-4851-a445-1758bb429fa9" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestDeleteObjectSimple" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.BucketTests.MakeStandardBucket" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="d996c325-0cc5-8d70-cea7-b066b17035b3">
+      <Execution id="3d78eace-1f34-4fd3-bce2-98f1a381cd09" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.BucketTests" name="MakeStandardBucket" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.BucketTests.BucketObjectLock" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="9a1e13c2-3c1b-fc36-7d5d-1403ae0d33b1">
+      <Execution id="4637c317-695f-4b63-94bf-ef1dc9e7e3d4" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.BucketTests" name="BucketObjectLock" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects2(prefix: &quot;!@#$%^&amp;*()&quot;)" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="373fdf53-643a-354a-e56d-a49a934b1e98">
+      <Execution id="3409e60a-54d9-4726-b4ce-50d409a4c418" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestListObjects2" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects2(prefix: &quot;prefix&quot;)" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="e1401945-542e-33d8-ca95-86a928cf1e29">
+      <Execution id="65acb726-cb53-4803-bf30-8b4e63a43890" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestListObjects2" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects2(prefix: &quot;folder/prefix&quot;)" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="6b3572f5-f884-ff27-8c51-38c5c2c39235">
+      <Execution id="f3669986-c293-4421-82cf-3aa26f7cb0bd" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestListObjects2" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.BucketTests.ListBuckets" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="db04f90a-d061-6634-b901-cbacdfbdd30f">
+      <Execution id="83f6d24a-4b18-47b9-94b0-cc4d25c43f1a" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.BucketTests" name="ListBuckets" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestDeleteBucketVersioning" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="3470f67d-8e32-bd53-4a51-1ab7bf938762">
+      <Execution id="30b09e1f-01da-4f40-8992-a47016443613" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestDeleteBucketVersioning" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.BucketTests.BucketTagging" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="1f7100b7-f1d6-bd73-91c7-f9e0a97da86e">
+      <Execution id="48e1e8b3-d2c5-4946-afd5-4695b57741ed" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.BucketTests" name="BucketTagging" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestDeleteObjectLotsOfFiles" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="b96dc68f-0da9-8bda-b9f5-5d2e1a5e7309">
+      <Execution id="aaa204c6-084b-41f4-ac20-e6f749414138" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestDeleteObjectLotsOfFiles" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestDeleteObjectLotsOfFilesQuiet" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="8792fbcc-83f8-fad1-6c50-96033eadb599">
+      <Execution id="a168636f-896b-4953-a75c-ac975304396a" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestDeleteObjectLotsOfFilesQuiet" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.LdapTests.TestWebIdentityLogin" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="73af7115-d0fa-1141-e5ce-31a1ccc4fa9d">
+      <Execution id="5c669ded-a5b4-4fdd-858d-503a6eb3c172" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.LdapTests" name="TestWebIdentityLogin" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestListMultipartUpload" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="b3a3e543-69b7-df24-5c97-365e2ca8e3b3">
+      <Execution id="1b746fb5-8f89-45a3-96d9-d0470520aace" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestListMultipartUpload" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestMultipartUpload" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="6eb11080-d806-f1c8-de0e-6c2bff45432b">
+      <Execution id="e665ab28-6bc9-41dd-b9f7-cce96fc4edc8" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestMultipartUpload" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestPutZeroObject" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="414895d7-dee1-f925-1abc-4689712a8f85">
+      <Execution id="74dca4cc-352f-432a-9bb0-1fa73971e09e" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestPutZeroObject" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.BucketNotificationTests.TestMinioBucketNotifications" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="ffb1b8c7-fc94-e3b7-5a66-779e0ff07401">
+      <Execution id="04a73cd1-7699-4972-956f-4f41a335aa09" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.BucketNotificationTests" name="TestMinioBucketNotifications" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.BucketTests.BucketObjectWithoutLocking" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="73a3ed2f-f77d-6fca-e81d-9cce9126f07b">
+      <Execution id="c895280b-2072-4609-9a06-186f44e300c8" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.BucketTests" name="BucketObjectWithoutLocking" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects2(prefix: &quot;資料夾/字首&quot;)" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="1cd2ad0e-4dc1-01e1-db23-9f253f48ab7d">
+      <Execution id="3ca6096e-a7ab-4d96-9d12-53668f786719" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestListObjects2" />
+    </UnitTest>
+    <UnitTest name="Minio.IntegrationTests.Tests.ObjectTests.TestListObjects2(prefix: &quot;!@#$%/^&amp;*()&quot;)" storage="/home/ramon/minio/minio-dotnet/minio.integrationtests/bin/release/net10.0/minio.integrationtests.dll" id="e3fab54a-525b-4a14-17a9-265690fdd3ad">
+      <Execution id="17493c94-a217-44b5-8963-d525daa89502" />
+      <TestMethod codeBase="/home/ramon/minio/minio-dotnet/Minio.IntegrationTests/bin/Release/net10.0/Minio.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Minio.IntegrationTests.Tests.ObjectTests" name="TestListObjects2" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="3ea03db8-53e6-db81-97d7-a27905a33fe4" executionId="5674ae0a-e58f-4284-b0e4-cb7bce6bf34c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="10a304eb-55eb-6ee5-035b-58405743aab0" executionId="67fe7726-99c1-4cd8-8030-e4d05792027e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="87591125-ec57-53f3-accc-5755d349e585" executionId="08cb0bd9-0f19-4ec3-ab1d-b8b554d0e73a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8792fbcc-83f8-fad1-6c50-96033eadb599" executionId="a168636f-896b-4953-a75c-ac975304396a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e1401945-542e-33d8-ca95-86a928cf1e29" executionId="65acb726-cb53-4803-bf30-8b4e63a43890" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1cd2ad0e-4dc1-01e1-db23-9f253f48ab7d" executionId="3ca6096e-a7ab-4d96-9d12-53668f786719" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="373fdf53-643a-354a-e56d-a49a934b1e98" executionId="3409e60a-54d9-4726-b4ce-50d409a4c418" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6b3572f5-f884-ff27-8c51-38c5c2c39235" executionId="f3669986-c293-4421-82cf-3aa26f7cb0bd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1f7100b7-f1d6-bd73-91c7-f9e0a97da86e" executionId="48e1e8b3-d2c5-4946-afd5-4695b57741ed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="38144872-77ba-91a7-dda3-f7cd45e31b0f" executionId="4f61a8fc-6c2e-4851-a445-1758bb429fa9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="73af7115-d0fa-1141-e5ce-31a1ccc4fa9d" executionId="5c669ded-a5b4-4fdd-858d-503a6eb3c172" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="db04f90a-d061-6634-b901-cbacdfbdd30f" executionId="83f6d24a-4b18-47b9-94b0-cc4d25c43f1a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3470f67d-8e32-bd53-4a51-1ab7bf938762" executionId="30b09e1f-01da-4f40-8992-a47016443613" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d996c325-0cc5-8d70-cea7-b066b17035b3" executionId="3d78eace-1f34-4fd3-bce2-98f1a381cd09" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6eb11080-d806-f1c8-de0e-6c2bff45432b" executionId="e665ab28-6bc9-41dd-b9f7-cce96fc4edc8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e3fab54a-525b-4a14-17a9-265690fdd3ad" executionId="17493c94-a217-44b5-8963-d525daa89502" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="414895d7-dee1-f925-1abc-4689712a8f85" executionId="74dca4cc-352f-432a-9bb0-1fa73971e09e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b3a3e543-69b7-df24-5c97-365e2ca8e3b3" executionId="1b746fb5-8f89-45a3-96d9-d0470520aace" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b713dba8-6296-ce47-f297-6a35f2ac9776" executionId="e891cbc6-1ad4-4624-8839-9a31fdef8634" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9a1e13c2-3c1b-fc36-7d5d-1403ae0d33b1" executionId="4637c317-695f-4b63-94bf-ef1dc9e7e3d4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="73a3ed2f-f77d-6fca-e81d-9cce9126f07b" executionId="c895280b-2072-4609-9a06-186f44e300c8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ffb1b8c7-fc94-e3b7-5a66-779e0ff07401" executionId="04a73cd1-7699-4972-956f-4f41a335aa09" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b96dc68f-0da9-8bda-b9f5-5d2e1a5e7309" executionId="aaa204c6-084b-41f4-ac20-e6f749414138" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="23" executed="23" passed="21" failed="2" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.3)
+[xUnit.net 00:00:00.07]   Discovering: Minio.IntegrationTests
+[xUnit.net 00:00:00.12]   Discovered:  Minio.IntegrationTests
+[xUnit.net 00:00:00.14]   Starting:    Minio.IntegrationTests
+[testcontainers.org 00:00:00.13] Connected to Docker:
+  Host: unix:///var/run/docker.sock
+  Server Version: 29.2.1
+  Kernel Version: 6.6.87.2-microsoft-standard-WSL2
+  API Version: 1.53
+  Operating System: Docker Desktop
+  Total Memory: 23.08 GB
+  Labels: 
+    com.docker.desktop.address=unix:///var/run/docker-cli.sock
+[testcontainers.org 00:00:00.33] Docker container fa6449c1afa9 created
+[testcontainers.org 00:00:00.38] Start Docker container fa6449c1afa9
+[testcontainers.org 00:00:01.23] Wait for Docker container fa6449c1afa9 to complete readiness checks
+[testcontainers.org 00:00:01.24] Docker container fa6449c1afa9 ready
+[testcontainers.org 00:00:01.38] Docker container 11330c04c207 created
+[testcontainers.org 00:00:01.39] Start Docker container 11330c04c207
+[testcontainers.org 00:00:01.44] Docker container 6e70c846e332 created
+[testcontainers.org 00:00:01.47] Start Docker container 6e70c846e332
+[testcontainers.org 00:00:01.48] Docker container 28d5b799ddec created
+[testcontainers.org 00:00:01.49] Docker container 1a3aa6f34440 created
+[testcontainers.org 00:00:01.50] Start Docker container 28d5b799ddec
+[testcontainers.org 00:00:01.51] Start Docker container 1a3aa6f34440
+[testcontainers.org 00:00:02.52] Wait for Docker container 11330c04c207 to complete readiness checks
+[testcontainers.org 00:00:02.99] Wait for Docker container 6e70c846e332 to complete readiness checks
+[testcontainers.org 00:00:03.21] Wait for Docker container 28d5b799ddec to complete readiness checks
+[testcontainers.org 00:00:03.47] Wait for Docker container 1a3aa6f34440 to complete readiness checks
+[testcontainers.org 00:00:03.60] Docker container 11330c04c207 ready
+[testcontainers.org 00:00:03.85] Docker container e67a0f73e125 created
+[testcontainers.org 00:00:03.87] Start Docker container e67a0f73e125
+[testcontainers.org 00:00:04.52] Docker container 1a3aa6f34440 ready
+[testcontainers.org 00:00:04.74] Stop Docker container 1a3aa6f34440
+[testcontainers.org 00:00:04.76] Wait for Docker container e67a0f73e125 to complete readiness checks
+[testcontainers.org 00:00:05.44] Docker container 28d5b799ddec ready
+[testcontainers.org 00:00:05.54] Stop Docker container 28d5b799ddec
+[testcontainers.org 00:00:05.78] Docker container a33354b7c977 created
+[testcontainers.org 00:00:05.82] Start Docker container a33354b7c977
+[testcontainers.org 00:00:05.83] Docker container e67a0f73e125 ready
+[testcontainers.org 00:00:05.99] Delete Docker container e67a0f73e125
+[testcontainers.org 00:00:06.37] Docker container b0a477339316 created
+[testcontainers.org 00:00:06.40] Start Docker container b0a477339316
+[testcontainers.org 00:00:06.70] Delete Docker container 11330c04c207
+[testcontainers.org 00:00:06.73] Wait for Docker container a33354b7c977 to complete readiness checks
+[testcontainers.org 00:00:07.16] Wait for Docker container b0a477339316 to complete readiness checks
+[testcontainers.org 00:00:07.79] Docker container a33354b7c977 ready
+[testcontainers.org 00:00:07.85] Stop Docker container a33354b7c977
+[testcontainers.org 00:00:08.20] Docker container b0a477339316 ready
+[testcontainers.org 00:00:08.24] Stop Docker container b0a477339316
+[testcontainers.org 00:00:08.67] Docker container bc3f66139a53 created
+[testcontainers.org 00:00:08.70] Start Docker container bc3f66139a53
+[testcontainers.org 00:00:08.98] Docker container a6319af72235 created
+[testcontainers.org 00:00:09.03] Start Docker container a6319af72235
+[testcontainers.org 00:00:09.59] Docker container 0c0890b17264 created
+[testcontainers.org 00:00:09.66] Wait for Docker container bc3f66139a53 to complete readiness checks
+[testcontainers.org 00:00:09.66] Start Docker container 0c0890b17264
+[testcontainers.org 00:00:10.10] Wait for Docker container a6319af72235 to complete readiness checks
+[testcontainers.org 00:00:10.81] Wait for Docker container 0c0890b17264 to complete readiness checks
+[testcontainers.org 00:00:10.84] Docker container bc3f66139a53 ready
+[testcontainers.org 00:00:10.95] Delete Docker container bc3f66139a53
+[testcontainers.org 00:00:11.32] Docker container a6319af72235 ready
+[testcontainers.org 00:00:11.51] Stop Docker container a6319af72235
+[testcontainers.org 00:00:11.88] Docker container 0c0890b17264 ready
+[testcontainers.org 00:00:11.93] Stop Docker container 0c0890b17264
+[testcontainers.org 00:00:12.41] Docker container 3831ecd31707 created
+[testcontainers.org 00:00:12.44] Start Docker container 3831ecd31707
+[testcontainers.org 00:00:12.86] Docker container 80f917536ece created
+[testcontainers.org 00:00:12.88] Start Docker container 80f917536ece
+[testcontainers.org 00:00:13.08] Wait for Docker container 3831ecd31707 to complete readiness checks
+[testcontainers.org 00:00:13.57] Wait for Docker container 80f917536ece to complete readiness checks
+[testcontainers.org 00:00:14.12] Docker container 3831ecd31707 ready
+[testcontainers.org 00:00:14.15] Stop Docker container 3831ecd31707
+[testcontainers.org 00:00:14.62] Docker container 80f917536ece ready
+[testcontainers.org 00:00:14.67] Stop Docker container 80f917536ece
+[testcontainers.org 00:00:14.86] Docker container 509029dcf1e8 created
+[testcontainers.org 00:00:14.89] Start Docker container 509029dcf1e8
+[testcontainers.org 00:00:15.37] Docker container 743222a299c2 created
+[testcontainers.org 00:00:15.38] Start Docker container 743222a299c2
+[testcontainers.org 00:00:15.58] Wait for Docker container 509029dcf1e8 to complete readiness checks
+[testcontainers.org 00:00:16.05] Wait for Docker container 743222a299c2 to complete readiness checks
+[testcontainers.org 00:00:16.61] Docker container 509029dcf1e8 ready
+[testcontainers.org 00:00:17.10] Docker container 743222a299c2 ready
+[testcontainers.org 00:00:17.13] Stop Docker container 743222a299c2
+[testcontainers.org 00:00:18.66] Stop Docker container 509029dcf1e8
+[testcontainers.org 00:00:19.28] Docker container ac39d0e2898a created
+[testcontainers.org 00:00:19.30] Start Docker container ac39d0e2898a
+[testcontainers.org 00:00:19.93] Wait for Docker container ac39d0e2898a to complete readiness checks
+[testcontainers.org 00:00:20.97] Docker container ac39d0e2898a ready
+[testcontainers.org 00:00:21.03] Stop Docker container ac39d0e2898a
+[testcontainers.org 00:00:21.81] Docker container 9d7f92f01d62 created
+[testcontainers.org 00:00:21.85] Start Docker container 9d7f92f01d62
+[testcontainers.org 00:00:22.77] Wait for Docker container 9d7f92f01d62 to complete readiness checks
+[testcontainers.org 00:00:23.81] Docker container 9d7f92f01d62 ready
+[testcontainers.org 00:00:23.85] Stop Docker container 9d7f92f01d62
+[testcontainers.org 00:00:24.49] Docker container 3b6f068b13bf created
+[testcontainers.org 00:00:24.51] Start Docker container 3b6f068b13bf
+[testcontainers.org 00:00:24.96] Wait for Docker container 3b6f068b13bf to complete readiness checks
+[testcontainers.org 00:00:25.06] Docker container 6e70c846e332 ready
+[testcontainers.org 00:00:25.99] Docker container 3b6f068b13bf ready
+[testcontainers.org 00:00:26.04] Stop Docker container 3b6f068b13bf
+[testcontainers.org 00:00:26.49] Docker container f704dee04a2d created
+[testcontainers.org 00:00:26.51] Start Docker container f704dee04a2d
+[xUnit.net 00:00:26.95]       System.NotSupportedException : Specified method is not supported.
+[xUnit.net 00:00:26.95]       Stack Trace:
+[xUnit.net 00:00:26.95]            at System.Net.Http.HttpBaseStream.get_Length()
+[xUnit.net 00:00:26.95]         /home/ramon/minio/minio-dotnet/Minio/Helpers/BaseStream.cs(237,0): at Minio.Helpers.BaseStream.get_Length()
+[xUnit.net 00:00:26.95]         /home/ramon/minio/minio-dotnet/Minio.IntegrationTests/Tests/ObjectTests.cs(65,0): at Minio.IntegrationTests.Tests.ObjectTests.TestPutZeroObject()
+[xUnit.net 00:00:26.95]         /home/ramon/minio/minio-dotnet/Minio.IntegrationTests/Tests/ObjectTests.cs(65,0): at Minio.IntegrationTests.Tests.ObjectTests.TestPutZeroObject()
+[xUnit.net 00:00:26.95]         --- End of stack trace from previous location ---
+[testcontainers.org 00:00:26.72] Docker container 55cab4c017c2 created
+[testcontainers.org 00:00:26.74] Start Docker container 55cab4c017c2
+[testcontainers.org 00:00:27.05] Wait for Docker container f704dee04a2d to complete readiness checks
+[testcontainers.org 00:00:27.41] Wait for Docker container 55cab4c017c2 to complete readiness checks
+[testcontainers.org 00:00:28.08] Docker container f704dee04a2d ready
+[testcontainers.org 00:00:28.15] Delete Docker container f704dee04a2d
+[testcontainers.org 00:00:28.44] Docker container 55cab4c017c2 ready
+[testcontainers.org 00:00:28.67] Stop Docker container 55cab4c017c2
+[testcontainers.org 00:00:28.78] Delete Docker container 6e70c846e332
+[testcontainers.org 00:00:29.38] Docker container 87c135ff09cc created
+[testcontainers.org 00:00:29.40] Start Docker container 87c135ff09cc
+[testcontainers.org 00:00:29.92] Wait for Docker container 87c135ff09cc to complete readiness checks
+[testcontainers.org 00:00:30.96] Docker container 87c135ff09cc ready
+[testcontainers.org 00:00:30.99] Stop Docker container 87c135ff09cc
+[xUnit.net 00:00:31.84]       System.NotSupportedException : Specified method is not supported.
+[xUnit.net 00:00:31.84]       Stack Trace:
+[xUnit.net 00:00:31.84]            at System.Net.Http.HttpBaseStream.get_Length()
+[xUnit.net 00:00:31.84]         /home/ramon/minio/minio-dotnet/Minio/Helpers/BaseStream.cs(237,0): at Minio.Helpers.BaseStream.get_Length()
+[xUnit.net 00:00:31.84]         /home/ramon/minio/minio-dotnet/Minio.IntegrationTests/Tests/ObjectTests.cs(47,0): at Minio.IntegrationTests.Tests.ObjectTests.TestPutAndGetObject()
+[xUnit.net 00:00:31.84]         /home/ramon/minio/minio-dotnet/Minio.IntegrationTests/Tests/ObjectTests.cs(52,0): at Minio.IntegrationTests.Tests.ObjectTests.TestPutAndGetObject()
+[xUnit.net 00:00:31.84]         --- End of stack trace from previous location ---
+[testcontainers.org 00:00:31.61] Docker container a0659db1e087 created
+[testcontainers.org 00:00:31.62] Start Docker container a0659db1e087
+[testcontainers.org 00:00:32.15] Wait for Docker container a0659db1e087 to complete readiness checks
+[testcontainers.org 00:00:33.19] Docker container a0659db1e087 ready
+[testcontainers.org 00:00:33.99] Stop Docker container a0659db1e087
+[testcontainers.org 00:00:34.59] Docker container 2812571c303e created
+[testcontainers.org 00:00:34.61] Start Docker container 2812571c303e
+[testcontainers.org 00:00:35.05] Wait for Docker container 2812571c303e to complete readiness checks
+[testcontainers.org 00:00:36.08] Docker container 2812571c303e ready
+[testcontainers.org 00:00:36.15] Stop Docker container 2812571c303e
+[testcontainers.org 00:00:36.70] Docker container e803c5081235 created
+[testcontainers.org 00:00:36.72] Start Docker container e803c5081235
+[testcontainers.org 00:00:37.17] Wait for Docker container e803c5081235 to complete readiness checks
+[testcontainers.org 00:00:38.21] Docker container e803c5081235 ready
+[testcontainers.org 00:00:38.99] Stop Docker container e803c5081235
+[testcontainers.org 00:00:39.57] Docker container 767e16dce8f3 created
+[testcontainers.org 00:00:39.58] Start Docker container 767e16dce8f3
+[testcontainers.org 00:00:40.03] Wait for Docker container 767e16dce8f3 to complete readiness checks
+[testcontainers.org 00:00:41.06] Docker container 767e16dce8f3 ready
+[testcontainers.org 00:00:41.44] Stop Docker container 767e16dce8f3
+[testcontainers.org 00:00:42.24] Docker container ab1303be0242 created
+[testcontainers.org 00:00:42.26] Start Docker container ab1303be0242
+[testcontainers.org 00:00:42.74] Wait for Docker container ab1303be0242 to complete readiness checks
+[testcontainers.org 00:00:43.77] Docker container ab1303be0242 ready
+[testcontainers.org 00:00:43.82] Stop Docker container ab1303be0242
+[xUnit.net 00:00:44.70]   Finished:    Minio.IntegrationTests
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="RDK-PREC7560" outcome="Error" timestamp="2026-02-27T17:14:58.3806835+01:00">
+        <Text>[xUnit.net 00:00:26.95]     Minio.IntegrationTests.Tests.ObjectTests.TestPutZeroObject [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="RDK-PREC7560" outcome="Error" timestamp="2026-02-27T17:15:03.2743694+01:00">
+        <Text>[xUnit.net 00:00:31.84]     Minio.IntegrationTests.Tests.ObjectTests.TestPutAndGetObject [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

@@ -1,0 +1,4 @@
+{
+  "dotnet.defaultSolution": "minio-dotnet2.sln",
+  "editor.formatOnSave": true
+}
