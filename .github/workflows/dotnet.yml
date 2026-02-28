@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-artifact@v6
         if: ${{ !cancelled() }}
         with:
-          name: unit-tests
+          name: unit-tests-${{ matrix.dotnet-version }}-${{ matrix.configuration }}
           path: UnitTestResults
 
       - name: Publish test report
@@ -69,7 +69,7 @@ jobs:
         uses: actions/upload-artifact@v6
         if: ${{ !cancelled() }}
         with:
-          name: integration-tests
+          name: integration-tests-${{ matrix.dotnet-version }}-${{ matrix.configuration }}
           path: IntegrationTestResults
 
       - name: Publish test report
