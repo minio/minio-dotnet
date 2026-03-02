@@ -1,9 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-      <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Title>MinIO SDK for .NET Core</Title>
+        <OutputType>Library</OutputType>
+        <PackageId>MinIO</PackageId>
+        <PackageTags>MinIO AIStor S3 ObjectStore</PackageTags>
+        <Description>MinIO SDK for .NET Core is used to access the MinIO/AIStor service</Description>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <IsPackable>true</IsPackable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
       <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
       <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.4" />

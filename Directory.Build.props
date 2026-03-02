@@ -16,11 +16,14 @@
   
   <PropertyGroup>
     <Version>0.0.0</Version>
-    <Product>Minio SDK for .NET</Product>
+    <Product>Minio SDK for .NET Core</Product>
     <Company>Minio</Company>
     <Copyright>Copyright 2023-$([System.DateTime]::Now.ToString(yyyy)) Minio</Copyright>
     <Configuration>Release build</Configuration>
     <Configuration Condition=" '$(Configuration)' == 'Debug' ">Debug build (INTERNAL USE ONLY)</Configuration>
-    <InformationalVersion>Unofficial developer build</InformationalVersion>
+    <PackageProjectUrl>https://github.com/minio/minio-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/minio/minio-dotnet</RepositoryUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
 </Project>
