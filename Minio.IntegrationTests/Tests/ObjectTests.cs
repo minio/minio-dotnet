@@ -263,7 +263,7 @@ public class ObjectTests : MinioTest
         await client.DeleteObjectAsync(BucketName, ObjectKey).ConfigureAwait(true);
     }
 
-    [Fact]
+    [Fact(Skip = "Community MinIO does not return delete errors for invalid ETag")]
     public async Task TestDeleteObjectLotsOfFiles()
     {
         const int successFiles = 1015;  // Should be >1000 to batch deletes
