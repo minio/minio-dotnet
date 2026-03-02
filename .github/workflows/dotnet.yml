@@ -1,0 +1,79 @@
+name: dotnet package
+
+on: [push]
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  unittest:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        configuration: [Release]
+        dotnet-version: ["8.0", "9.0", "10.0"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v5
+        id: setup-dotnet
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}.x
+
+      - name: Run unit tests
+        run: dotnet test Minio.UnitTests --framework net${{ matrix.dotnet-version }} --configuration ${{ matrix.configuration }} --logger trx --results-directory "UnitTestResults"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v6
+        if: ${{ !cancelled() }}
+        with:
+          name: unit-tests-${{ matrix.dotnet-version }}-${{ matrix.configuration }}
+          path: UnitTestResults
+
+      - name: Publish test report
+        uses: dorny/test-reporter@v2
+        if: ${{ !cancelled() }}
+        with:
+          name: Unit test report
+          path: UnitTestResults/*.trx
+          reporter: dotnet-trx
+
+  integrationtest:
+    name: Run integration tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        configuration: [Release]
+        dotnet-version: ["8.0", "9.0", "10.0"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v5
+        id: setup-dotnet
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}.x
+
+      - name: Run integration tests
+        run: dotnet test Minio.IntegrationTests --framework net${{ matrix.dotnet-version }} --configuration ${{ matrix.configuration }} --logger trx --results-directory "IntegrationTestResults"
+        env:
+          MINIO_LICENSE: ${{secrets.MINIO_LICENSE}}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v6
+        if: ${{ !cancelled() }}
+        with:
+          name: integration-tests-${{ matrix.dotnet-version }}-${{ matrix.configuration }}
+          path: IntegrationTestResults
+
+      - name: Publish test report
+        uses: dorny/test-reporter@v2
+        if: ${{ !cancelled() }}
+        with:
+          name: Integration test report
+          path: IntegrationTestResults/*.trx
+          reporter: dotnet-trx

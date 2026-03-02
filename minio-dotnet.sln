@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Examples.Host", "Minio.Examples.Host\Minio.Examples.Host.csproj", "{3B0E7676-7780-461C-89BD-F2F36553440E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio", "Minio\Minio.csproj", "{CE3B14B0-342A-476D-9A29-8F58697A2C1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.UnitTests", "Minio.UnitTests\Minio.UnitTests.csproj", "{6F9B405F-D223-46EB-9087-067E2ED12AED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution files", "Solution files", "{72C1F715-BD16-4F7F-9E52-111B815E7348}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		DEVELOPMENT.md = DEVELOPMENT.md
+		CLAUDE.md = CLAUDE.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.IntegrationTests", "Minio.IntegrationTests\Minio.IntegrationTests.csproj", "{80DE6DB6-D10F-4324-8C17-A77E3E52DD03}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Examples.Simple", "Minio.Examples.Simple\Minio.Examples.Simple.csproj", "{7E8B7A9F-CD5D-44F0-9E71-8D8AE281BB3A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{4E8E49B2-A2A9-4ED3-8270-CADDA83A0BEA}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3B0E7676-7780-461C-89BD-F2F36553440E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B0E7676-7780-461C-89BD-F2F36553440E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B0E7676-7780-461C-89BD-F2F36553440E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B0E7676-7780-461C-89BD-F2F36553440E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE3B14B0-342A-476D-9A29-8F58697A2C1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE3B14B0-342A-476D-9A29-8F58697A2C1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE3B14B0-342A-476D-9A29-8F58697A2C1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE3B14B0-342A-476D-9A29-8F58697A2C1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F9B405F-D223-46EB-9087-067E2ED12AED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F9B405F-D223-46EB-9087-067E2ED12AED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F9B405F-D223-46EB-9087-067E2ED12AED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F9B405F-D223-46EB-9087-067E2ED12AED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80DE6DB6-D10F-4324-8C17-A77E3E52DD03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80DE6DB6-D10F-4324-8C17-A77E3E52DD03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80DE6DB6-D10F-4324-8C17-A77E3E52DD03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80DE6DB6-D10F-4324-8C17-A77E3E52DD03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E8B7A9F-CD5D-44F0-9E71-8D8AE281BB3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E8B7A9F-CD5D-44F0-9E71-8D8AE281BB3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E8B7A9F-CD5D-44F0-9E71-8D8AE281BB3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E8B7A9F-CD5D-44F0-9E71-8D8AE281BB3A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4E8E49B2-A2A9-4ED3-8270-CADDA83A0BEA} = {72C1F715-BD16-4F7F-9E52-111B815E7348}
+	EndGlobalSection
+EndGlobal

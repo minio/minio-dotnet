@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Examples.Simple",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-simple",
+            "program": "${workspaceFolder}/Minio.Examples.Simple/bin/Debug/net10.0/Minio.Examples.Simple.dll",
+            "cwd": "${workspaceFolder}/Minio.Examples.Simple",
+        },
+        {
+            "name": "Examples.Host",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-host",
+            "program": "${workspaceFolder}/Minio.Examples.Host/bin/Debug/net10.0/Minio.Examples.Host.dll",
+            "cwd": "${workspaceFolder}/Minio.Examples.Host",
+        }
+    ]
+}
