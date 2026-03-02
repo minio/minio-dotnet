@@ -86,7 +86,7 @@ public class LdapTests
             Assert.True(newClientResponse.IsSuccessStatusCode, "Failed to create client protocol mapper");
         }
         
-        await using var minioContainer = new MinioBuilder(ImageConstants.AIStor)
+        await using var minioContainer = new MinioBuilder(ImageConstants.MinIO)
             .WithEnvironment(new Dictionary<string, string>
             {
                 ["MINIO_LICENSE"] = License.Minio,

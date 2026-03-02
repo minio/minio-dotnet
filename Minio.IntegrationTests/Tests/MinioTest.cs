@@ -6,7 +6,7 @@ namespace Minio.IntegrationTests.Tests;
 
 public abstract class MinioTest : IAsyncLifetime
 {
-    private readonly MinioContainer _minioContainer = new MinioBuilder(ImageConstants.AIStor)
+    private readonly MinioContainer _minioContainer = new MinioBuilder(ImageConstants.MinIO)
         .WithEnvironment(new Dictionary<string, string>
         {
             ["MINIO_LICENSE"] =  License.Minio,
