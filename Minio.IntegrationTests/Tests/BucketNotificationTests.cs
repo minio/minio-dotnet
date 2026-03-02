@@ -43,10 +43,9 @@ public class BucketNotificationTests
             using var natsSubscription = natsObservable.Subscribe(e => tsc.TrySetResult(e.Data!));
 
             // Start MinIO container with proper NATS configuration
-            await using var minioContainer = new MinioBuilder(ImageConstants.AIStor)
+            await using var minioContainer = new MinioBuilder(ImageConstants.MinIO)
                 .WithEnvironment(new Dictionary<string, string>
                 {
-                    ["MINIO_LICENSE"] = License.Minio,
                     [$"MINIO_NOTIFY_NATS_ENABLE_{natsIdentifier}"] = "on",
                     [$"MINIO_NOTIFY_NATS_ADDRESS_{natsIdentifier}"] = $"{natsContainer.IpAddress}:4222",
                     [$"MINIO_NOTIFY_NATS_SUBJECT_{natsIdentifier}"] = natsSubject,
@@ -128,9 +127,7 @@ public class BucketNotificationTests
     public async Task TestMinioBucketNotifications()
     {
         // Start MinIO container
-        await using var minioContainer = new MinioBuilder(ImageConstants.AIStor)
-            .WithEnvironment("MINIO_LICENSE", License.Minio)
-            .Build();
+        await using var minioContainer = new MinioBuilder(ImageConstants.MinIO).Build();
         await minioContainer.StartAsync().ConfigureAwait(true);
 
         var client = new MinioClientBuilder(minioContainer.GetConnectionString())

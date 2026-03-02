@@ -1,11 +1,10 @@
 name: dotnet package
 
-on: [push]
-
-permissions:
-  contents: read
-  actions: read
-  checks: write
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
 
 jobs:
   unittest:
@@ -60,8 +59,6 @@ jobs:
 
       - name: Run integration tests
         run: dotnet test Minio.IntegrationTests --framework net${{ matrix.dotnet-version }} --configuration ${{ matrix.configuration }} --logger trx --results-directory "IntegrationTestResults"
-        env:
-          MINIO_LICENSE: ${{secrets.MINIO_LICENSE}}
 
       - name: Upload test results
         uses: actions/upload-artifact@v6

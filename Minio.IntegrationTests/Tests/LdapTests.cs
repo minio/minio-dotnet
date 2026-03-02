@@ -86,10 +86,9 @@ public class LdapTests
             Assert.True(newClientResponse.IsSuccessStatusCode, "Failed to create client protocol mapper");
         }
         
-        await using var minioContainer = new MinioBuilder(ImageConstants.AIStor)
+        await using var minioContainer = new MinioBuilder(ImageConstants.MinIO)
             .WithEnvironment(new Dictionary<string, string>
             {
-                ["MINIO_LICENSE"] = License.Minio,
                 ["MINIO_IDENTITY_OPENID_CONFIG_URL"] = $"http://{keycloakContainer.IpAddress}:8080/realms/{realmName}/.well-known/openid-configuration",
                 ["MINIO_IDENTITY_OPENID_CLIENT_ID"] = clientName,
                 ["MINIO_IDENTITY_OPENID_CLIENT_SECRET"] = clientSecret,
