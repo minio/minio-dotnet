@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Http;
+﻿using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Minio.CredentialProviders;
 using Minio.Implementation;
 using Minio.UnitTests.Services;
+using Polly;
 
 namespace Minio.UnitTests.Tests;
 
@@ -36,10 +37,22 @@ public abstract class MinioUnitTests
         DelegatingHandler messageHandler = new MockHttpMessageHandler(handler);
         if (withPolicy)
         {
-            messageHandler = new PolicyHttpMessageHandler(MinioClientBuilder.GetRetryPolicy())
+            var pipeline = new ResiliencePipelineBuilder<HttpResponseMessage>()
+                .AddRetry(new HttpRetryStrategyOptions
+                {
+                    MaxRetryAttempts = 3, 
+                    BackoffType = DelayBackoffType.Exponential,
+                    UseJitter = true
+                })
+                .AddTimeout(TimeSpan.FromSeconds(10)) 
+                .Build();
+            
+            #pragma warning disable EXTEXP0001
+            messageHandler = new ResilienceHandler(pipeline)
             {
                 InnerHandler = messageHandler
             };
+            #pragma warning restore EXTEXP0001
         }
 
         using (messageHandler)

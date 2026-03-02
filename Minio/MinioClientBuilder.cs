@@ -1,14 +1,8 @@
-using System.Net;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Minio.CredentialProviders;
 using Minio.Implementation;
-using Polly;
-using Polly.Contrib.WaitAndRetry;
-using Polly.Extensions.Http;
-using Polly.Retry;
 
 namespace Minio;
 
@@ -142,41 +136,8 @@ public sealed class MinioClientBuilder
         return WithCredentialsProvider(new EnvironmentCredentialsProvider());
     }
 
-    internal static AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicy()
-    {
-        return Policy<HttpResponseMessage>.Handle<HttpRequestException>().OrResult(resp =>
-        {
-            switch (resp.StatusCode)
-            {
-                case HttpStatusCode.RequestTimeout /* 408 */:
-                case HttpStatusCode.Locked /* 423 */:
-                case HttpStatusCode.TooManyRequests /* 429 */:
-                case HttpStatusCode.InternalServerError /* 500 */:
-                case HttpStatusCode.BadGateway /* 502 */:
-                case HttpStatusCode.ServiceUnavailable /* 503 */:
-                case HttpStatusCode.GatewayTimeout /* 504 */:
-                    return true;
-            }
-            return false;
-        }).WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(
-            medianFirstRetryDelay: TimeSpan.FromMilliseconds(250),
-            retryCount: 5
-        ));
-
-    }
-
     private sealed class HttpClientFactory : IHttpClientFactory
     {
-        private readonly HttpMessageHandler _httpMessageHandler;
-
-        public HttpClientFactory()
-        {
-            var socketHandler = new SocketsHttpHandler();
-            var pollyHttpMessageHandler = new PolicyHttpMessageHandler(GetRetryPolicy());
-            pollyHttpMessageHandler.InnerHandler = socketHandler;
-            _httpMessageHandler = pollyHttpMessageHandler;
-        }
-
-        public HttpClient CreateClient(string name) => new(_httpMessageHandler, false);
+        public HttpClient CreateClient(string name) => new();
     }
 }

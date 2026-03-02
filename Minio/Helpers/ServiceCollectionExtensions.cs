@@ -96,7 +96,8 @@ public static class ServiceCollectionServiceExtensions
         Action<ClientOptions>? configure = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
-        services.AddHttpClient("Minio").AddPolicyHandler(MinioClientBuilder.GetRetryPolicy());
+        var httpBuilder =services.AddHttpClient("Minio"); 
+        httpBuilder.AddStandardResilienceHandler();
         services.TryAddSingleton<ITimeProvider, DefaultTimeProvider>();
         services.TryAdd(new ServiceDescriptor(typeof(IRequestAuthenticator), typeof(V4RequestAuthenticator), lifetime));
         services.TryAdd(new ServiceDescriptor(typeof(IMinioClient), typeof(MinioClient), lifetime));
