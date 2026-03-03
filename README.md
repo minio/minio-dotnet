@@ -45,24 +45,3 @@ dotnet run --project Minio.Examples.Simple
 # or
 dotnet run --project Minio.Examples.Host
 ```
-
-## Missing Functionality
-
-The following operations are not yet implemented:
-
-**Bucket operations**
-- `SetBucketEncryptionAsync` / `GetBucketEncryptionAsync` / `RemoveBucketEncryptionAsync`
-- `SetBucketLifecycleAsync` / `GetBucketLifecycleAsync` / `RemoveBucketLifecycleAsync`
-- `SetBucketReplicationAsync` / `GetBucketReplicationAsync` / `RemoveBucketReplicationAsync`
-- `SetPolicyAsync` / `GetPolicyAsync` / `RemovePolicyAsync`
-
-**Object operations**
-- `CopyObjectAsync`
-- `SelectObjectContentAsync`
-- `PresignedGetObjectAsync` / `PresignedPutObjectAsync` / `PresignedPostPolicyAsync`
-- `GetObjectTagsAsync` / `SetObjectTagsAsync` / `RemoveObjectTagsAsync`
-- `SetObjectRetentionAsync` / `GetObjectRetentionAsync` / `ClearObjectRetentionAsync`
-- `SetObjectLegalHoldAsync` / `GetObjectLegalHoldAsync`
-
-**Convenience operations**
-- `UploadObjectAsync` — automatic multi-part upload for large objects
