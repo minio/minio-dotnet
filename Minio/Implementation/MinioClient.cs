@@ -196,6 +196,7 @@ internal class MinioClient : IMinioClient
             var xTagging = new XElement(Ns + "Tagging", xTagSet);
 
             using var req = CreateRequest(HttpMethod.Put, bucketName, xTagging, query);
+            await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
             using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
         }
         else
@@ -839,9 +840,10 @@ internal class MinioClient : IMinioClient
         var xml = config.Serialize();
         
         using var req = CreateRequest(HttpMethod.Put, bucketName, xml, query);
+        await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
     }
-    
+
     public async Task<VersioningConfiguration> GetBucketVersioningAsync(string bucketName, CancellationToken cancellationToken)
     {
         VerifyBucketName(bucketName);
@@ -1081,6 +1083,7 @@ internal class MinioClient : IMinioClient
             new XElement(Ns + "Status", status == LegalHoldStatus.On ? "ON" : "OFF"));
 
         using var req = CreateRequest(HttpMethod.Put, Encode(bucketName, key), xml, q);
+        await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
     }
 
@@ -1111,6 +1114,7 @@ internal class MinioClient : IMinioClient
         q.Add("retention", string.Empty);
 
         using var req = CreateRequest(HttpMethod.Put, Encode(bucketName, key), retention.Serialize(), q);
+        await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
         req.SetBypassGovernanceRetention(bypassGovernanceRetention);
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
     }
@@ -1126,6 +1130,7 @@ internal class MinioClient : IMinioClient
 
         var xml = new XElement(Ns + "Retention");
         using var req = CreateRequest(HttpMethod.Put, Encode(bucketName, key), xml, q);
+        await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
         req.Headers.Add("X-Amz-Bypass-Governance-Retention", "true");
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
     }
@@ -1417,6 +1422,7 @@ internal class MinioClient : IMinioClient
 
         var xTagging = new XElement(Ns + "Tagging", xTagSet);
         using var req = CreateRequest(HttpMethod.Put, Encode(bucketName, key), xTagging, q);
+        await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
     }
 

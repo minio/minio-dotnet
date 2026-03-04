@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using Minio.Model;
 using Xunit;
@@ -9,16 +10,17 @@ public class BucketTests : MinioTest
     [Fact]
     public async Task MakeStandardBucket()
     {
+        const string bucketName = "test";
         var client = CreateClient();
-        
+
         // Create the bucket
-        await client.CreateBucketAsync("test").ConfigureAwait(true);
-        var bucketExists = await client.BucketExistsAsync("test").ConfigureAwait(true);
+        await client.CreateBucketAsync(bucketName).ConfigureAwait(true);
+        var bucketExists = await client.BucketExistsAsync(bucketName).ConfigureAwait(true);
         Assert.True(bucketExists);
 
         // Delete the bucket again
-        await client.DeleteBucketAsync("test").ConfigureAwait(true);
-        bucketExists = await client.BucketExistsAsync("test").ConfigureAwait(true);
+        await client.DeleteBucketAsync(bucketName).ConfigureAwait(true);
+        bucketExists = await client.BucketExistsAsync(bucketName).ConfigureAwait(true);
         Assert.False(bucketExists);
     }
 
@@ -33,10 +35,10 @@ public class BucketTests : MinioTest
         await client.CreateBucketAsync("test2").ConfigureAwait(true);
 
         var endTimeUtc = DateTimeOffset.Now.AddMinutes(1); // allow some deviation
-        
+
         var buckets = await client.ListBucketsAsync().ToListAsync().ConfigureAwait(true);
         buckets.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.Ordinal));
-        
+
         Assert.Equal(2, buckets.Count);
         Assert.Equal("test1", buckets[0].Name);
         Assert.Equal("test2", buckets[1].Name);
@@ -48,9 +50,10 @@ public class BucketTests : MinioTest
     [Fact]
     public async Task BucketTagging()
     {
+        const string bucketName = "test";
         var client = CreateClient();
-        await client.CreateBucketAsync("test").ConfigureAwait(true);
-        var tags1 = await client.GetBucketTaggingAsync("test").ConfigureAwait(true);
+        await client.CreateBucketAsync(bucketName).ConfigureAwait(true);
+        var tags1 = await client.GetBucketTaggingAsync(bucketName).ConfigureAwait(true);
         Assert.Null(tags1);
 
         var tags2 = new Dictionary<string, string>
@@ -58,22 +61,22 @@ public class BucketTests : MinioTest
             { "tag1", "abc" },
             { "tag2", "def" },
         };
-        await client.SetBucketTaggingAsync("test", tags2).ConfigureAwait(true);
+        await client.SetBucketTaggingAsync(bucketName, tags2).ConfigureAwait(true);
 
-        var tags3 = await client.GetBucketTaggingAsync("test").ConfigureAwait(true);
+        var tags3 = await client.GetBucketTaggingAsync(bucketName).ConfigureAwait(true);
         Assert.NotNull(tags3);
         Assert.Equal(tags2, tags3);
 
-        await client.DeleteBucketTaggingAsync("test").ConfigureAwait(true);
+        await client.DeleteBucketTaggingAsync(bucketName).ConfigureAwait(true);
 
-        var tags4 = await client.GetBucketTaggingAsync("test").ConfigureAwait(true);
+        var tags4 = await client.GetBucketTaggingAsync(bucketName).ConfigureAwait(true);
         Assert.Null(tags4);
 
         // ReSharper disable once CollectionNeverUpdated.Local
         var tags5 = new Dictionary<string, string>();
-        await client.SetBucketTaggingAsync("test", tags5).ConfigureAwait(true);
+        await client.SetBucketTaggingAsync(bucketName, tags5).ConfigureAwait(true);
 
-        var tags6 = await client.GetBucketTaggingAsync("test").ConfigureAwait(true);
+        var tags6 = await client.GetBucketTaggingAsync(bucketName).ConfigureAwait(true);
         Assert.NotNull(tags6);
         Assert.Empty(tags6);
     }
@@ -81,37 +84,39 @@ public class BucketTests : MinioTest
     [Fact]
     public async Task BucketObjectWithoutLocking()
     {
+        const string bucketName = "test";
         var client = CreateClient();
-        await client.CreateBucketAsync("test").ConfigureAwait(true);
-        var objLock = await client.GetObjectLockConfigurationAsync("test").ConfigureAwait(true);
+        await client.CreateBucketAsync(bucketName).ConfigureAwait(true);
+        var objLock = await client.GetObjectLockConfigurationAsync(bucketName).ConfigureAwait(true);
         Assert.Null(objLock.DefaultRetentionRule);
     }
-    
+
 
     [Fact]
     public async Task BucketObjectLock()
     {
+        const string bucketName = "test";
         var client = CreateClient();
-        await client.CreateBucketAsync("test", objectLocking: true).ConfigureAwait(true);
-        var objLock = await client.GetObjectLockConfigurationAsync("test").ConfigureAwait(true);
+        await client.CreateBucketAsync(bucketName, objectLocking: true).ConfigureAwait(true);
+        var objLock = await client.GetObjectLockConfigurationAsync(bucketName).ConfigureAwait(true);
         Assert.Null(objLock.DefaultRetentionRule);
 
         // Enable object lock (governance, days)
-        await client.SetObjectLockConfigurationAsync("test", new RetentionRuleDays(RetentionMode.Governance, 100)).ConfigureAwait(true);
-        objLock = await client.GetObjectLockConfigurationAsync("test").ConfigureAwait(true);
+        await client.SetObjectLockConfigurationAsync(bucketName, new RetentionRuleDays(RetentionMode.Governance, 100)).ConfigureAwait(true);
+        objLock = await client.GetObjectLockConfigurationAsync(bucketName).ConfigureAwait(true);
         Assert.IsType<RetentionRuleDays>(objLock.DefaultRetentionRule);
         var ruleDays = (RetentionRuleDays)objLock.DefaultRetentionRule;
         Assert.Equal(RetentionMode.Governance, ruleDays.Mode);
         Assert.Equal(100, ruleDays.Days);
- 
+
         // Disable object lock
-        await client.SetObjectLockConfigurationAsync("test", null).ConfigureAwait(true);
-        objLock = await client.GetObjectLockConfigurationAsync("test").ConfigureAwait(true);
+        await client.SetObjectLockConfigurationAsync(bucketName, null).ConfigureAwait(true);
+        objLock = await client.GetObjectLockConfigurationAsync(bucketName).ConfigureAwait(true);
         Assert.Null(objLock.DefaultRetentionRule);
 
         // Enable object lock (compliance, days)
-        await client.SetObjectLockConfigurationAsync("test", new RetentionRuleYears(RetentionMode.Compliance, 3)).ConfigureAwait(true);
-        objLock = await client.GetObjectLockConfigurationAsync("test").ConfigureAwait(true);
+        await client.SetObjectLockConfigurationAsync(bucketName, new RetentionRuleYears(RetentionMode.Compliance, 3)).ConfigureAwait(true);
+        objLock = await client.GetObjectLockConfigurationAsync(bucketName).ConfigureAwait(true);
         Assert.IsType<RetentionRuleYears>(objLock.DefaultRetentionRule);
         var ruleYears = (RetentionRuleYears)objLock.DefaultRetentionRule;
         Assert.Equal(RetentionMode.Compliance, ruleYears.Mode);
@@ -121,26 +126,54 @@ public class BucketTests : MinioTest
     [Fact]
     public async Task BucketEncryptionWithoutConfig()
     {
+        const string bucketName = "test";
         var client = CreateClient();
-        await client.CreateBucketAsync("test").ConfigureAwait(true);
+        await client.CreateBucketAsync(bucketName).ConfigureAwait(true);
 
         // No configuration set → throws with ServerSideEncryptionConfigurationNotFoundError.
-        // A full Set/Get/Remove round-trip is not covered here because the standard MinIO
-        // container does not support bucket-default SSE without KMS configured
-        // (SetBucketEncryptionAsync returns 501 NotImplemented for SSE-S3/AES256).
+        // A full Set/Get/Remove round-trip is not covered here because MinIO requires a KMS
+        // backend to enable bucket-default SSE; the standard Testcontainers image has none.
         var ex = await Assert.ThrowsAsync<MinioHttpException>(
-            () => client.GetBucketEncryptionAsync("test")).ConfigureAwait(true);
+            () => client.GetBucketEncryptionAsync(bucketName)).ConfigureAwait(true);
         Assert.Equal("ServerSideEncryptionConfigurationNotFoundError", ex.Error?.Code);
+    }
+
+    [Fact]
+    public async Task BucketEncryptionSetThrowsNotImplemented()
+    {
+        const string bucketName = "test";
+        var client = CreateClient();
+        await client.CreateBucketAsync(bucketName).ConfigureAwait(true);
+
+        // MinIO requires a KMS backend (e.g. KES/Vault) to enable bucket-default SSE, regardless
+        // of algorithm. The standard Testcontainers MinIO image has no KMS configured, so the server
+        // returns HTTP 501 Not Implemented. Verify the SDK surfaces this as a MinioHttpException.
+        var config = new BucketEncryptionConfiguration { SseAlgorithm = SseAlgorithm.Aes256 };
+        var ex = await Assert.ThrowsAsync<MinioHttpException>(
+            () => client.SetBucketEncryptionAsync(bucketName, config)).ConfigureAwait(true);
+        Assert.Equal(HttpStatusCode.NotImplemented, ex.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task BucketEncryptionRemoveWithoutConfig()
+    {
+        const string bucketName = "test";
+        var client = CreateClient();
+        await client.CreateBucketAsync(bucketName).ConfigureAwait(true);
+
+        // Removing encryption config when none has been set should succeed (idempotent S3 behavior).
+        await client.RemoveBucketEncryptionAsync(bucketName).ConfigureAwait(true);
     }
 
     [Fact]
     public async Task BucketLifecycle()
     {
+        const string bucketName = "test";
         var client = CreateClient();
-        await client.CreateBucketAsync("test").ConfigureAwait(true);
+        await client.CreateBucketAsync(bucketName).ConfigureAwait(true);
 
         // No configuration set → returns null
-        var lc1 = await client.GetBucketLifecycleAsync("test").ConfigureAwait(true);
+        var lc1 = await client.GetBucketLifecycleAsync(bucketName).ConfigureAwait(true);
         Assert.Null(lc1);
 
         // Set a lifecycle rule that expires objects after 30 days
@@ -157,10 +190,10 @@ public class BucketTests : MinioTest
                 },
             ],
         };
-        await client.SetBucketLifecycleAsync("test", config).ConfigureAwait(true);
+        await client.SetBucketLifecycleAsync(bucketName, config).ConfigureAwait(true);
 
         // Retrieve and verify the rule round-trips correctly
-        var lc2 = await client.GetBucketLifecycleAsync("test").ConfigureAwait(true);
+        var lc2 = await client.GetBucketLifecycleAsync(bucketName).ConfigureAwait(true);
         Assert.NotNull(lc2);
         Assert.Single(lc2.Rules);
         Assert.Equal("expire-after-30-days", lc2.Rules[0].Id);
@@ -168,19 +201,20 @@ public class BucketTests : MinioTest
         Assert.Equal(30, lc2.Rules[0].Expiration?.Days);
 
         // Remove and confirm the configuration is gone
-        await client.RemoveBucketLifecycleAsync("test").ConfigureAwait(true);
-        var lc3 = await client.GetBucketLifecycleAsync("test").ConfigureAwait(true);
+        await client.RemoveBucketLifecycleAsync(bucketName).ConfigureAwait(true);
+        var lc3 = await client.GetBucketLifecycleAsync(bucketName).ConfigureAwait(true);
         Assert.Null(lc3);
     }
 
     [Fact]
     public async Task BucketReplicationWithoutConfig()
     {
+        const string bucketName = "test";
         var client = CreateClient();
-        await client.CreateBucketAsync("test").ConfigureAwait(true);
+        await client.CreateBucketAsync(bucketName).ConfigureAwait(true);
 
         // No replication configuration set → returns null
-        var rc = await client.GetBucketReplicationAsync("test").ConfigureAwait(true);
+        var rc = await client.GetBucketReplicationAsync(bucketName).ConfigureAwait(true);
         Assert.Null(rc);
     }
 
@@ -188,11 +222,12 @@ public class BucketTests : MinioTest
     [Fact]
     public async Task BucketPolicy()
     {
+        const string bucketName = "test";
         var client = CreateClient();
-        await client.CreateBucketAsync("test").ConfigureAwait(true);
+        await client.CreateBucketAsync(bucketName).ConfigureAwait(true);
 
         // No policy set → returns null
-        var policy1 = await client.GetPolicyAsync("test").ConfigureAwait(true);
+        var policy1 = await client.GetPolicyAsync(bucketName).ConfigureAwait(true);
         Assert.Null(policy1);
 
         // Set a read-only public policy for the bucket
@@ -209,10 +244,10 @@ public class BucketTests : MinioTest
                 ]
             }
             """;
-        await client.SetPolicyAsync("test", policyJson).ConfigureAwait(true);
+        await client.SetPolicyAsync(bucketName, policyJson).ConfigureAwait(true);
 
         // Retrieve and verify the policy contains the expected statement
-        var policy2 = await client.GetPolicyAsync("test").ConfigureAwait(true);
+        var policy2 = await client.GetPolicyAsync(bucketName).ConfigureAwait(true);
         Assert.NotNull(policy2);
         using var doc = JsonDocument.Parse(policy2!);
         var statements = doc.RootElement.GetProperty("Statement");
@@ -222,8 +257,8 @@ public class BucketTests : MinioTest
             statements[0].GetProperty("Action").EnumerateArray().Select(e => e.GetString()!));
 
         // Remove and confirm the policy is gone
-        await client.RemovePolicyAsync("test").ConfigureAwait(true);
-        var policy3 = await client.GetPolicyAsync("test").ConfigureAwait(true);
+        await client.RemovePolicyAsync(bucketName).ConfigureAwait(true);
+        var policy3 = await client.GetPolicyAsync(bucketName).ConfigureAwait(true);
         Assert.Null(policy3);
     }
 }
