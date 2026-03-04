@@ -18,11 +18,8 @@ internal static class XmlHelper
 
         void RemoveNamespaces(XElement element)
         {
-            if (element.HasElements)
-            {
-                foreach (var child in element.Elements())
-                    RemoveNamespaces(child);
-            }
+            foreach (var child in element.Elements()) 
+                RemoveNamespaces(child);
             if (!string.IsNullOrEmpty(element.Name.NamespaceName))
                 element.Name = element.Name.LocalName;
             var attr = element.FirstAttribute;

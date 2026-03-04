@@ -110,19 +110,20 @@ public class WebIdentityProvider : ICredentialsProvider
         }
 
         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        await using (responseBody.ConfigureAwait(false));
-        var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
-
-        var xCreds = xResponse.Root?.Element("AssumeRoleWithWebIdentityResult")?.Element("Credentials");
-        if (xCreds == null)
-            throw new InvalidOperationException("STS response did not contain a Credentials element.");
-        var exp = xCreds.Element("Expiration")?.Value;
-        return new Credentials
+        await using (responseBody.ConfigureAwait(false))
         {
-            AccessKey = xCreds.Element("AccessKeyId")?.Value ?? string.Empty,
-            SecretKey = xCreds.Element("SecretAccessKey")?.Value ?? string.Empty,
-            SessionToken = xCreds.Element("SessionToken")?.Value ?? string.Empty,
-            Expiration = exp != null ? DateTime.Parse(exp, null, DateTimeStyles.RoundtripKind) : null,
-        };
+            var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
+            var xCreds = xResponse.Root?.Element("AssumeRoleWithWebIdentityResult")?.Element("Credentials");
+            if (xCreds == null)
+                throw new InvalidOperationException("STS response did not contain a Credentials element.");
+            var exp = xCreds.Element("Expiration")?.Value;
+            return new Credentials
+            {
+                AccessKey = xCreds.Element("AccessKeyId")?.Value ?? string.Empty,
+                SecretKey = xCreds.Element("SecretAccessKey")?.Value ?? string.Empty,
+                SessionToken = xCreds.Element("SessionToken")?.Value ?? string.Empty,
+                Expiration = exp != null ? DateTime.Parse(exp, null, DateTimeStyles.RoundtripKind) : null,
+            };
+        }
     }
 }
