@@ -13,19 +13,41 @@ internal static class XmlHelper
     public static async Task<XDocument> LoadXDocumentAsync(Stream stream, CancellationToken cancellationToken)
     {
         var xDoc = await XDocument.LoadAsync(stream, LoadOptions.None, cancellationToken).ConfigureAwait(false);
-        return new XDocument(Remove(xDoc.Root!));
+        RemoveNamespaces(xDoc.Root!);
+        return xDoc;
 
-        XElement Remove(XElement element)
+        void RemoveNamespaces(XElement element)
         {
-            var newElement = new XElement(element.Name.LocalName, element.HasElements ? element.Elements().Select(Remove) : (object?)element.Value);
-            foreach (var attr in element.Attributes())
+            if (element.HasElements)
             {
-                if (!attr.IsNamespaceDeclaration)
-                    newElement.Add(new XAttribute(attr.Name.LocalName, attr.Value));
+                foreach (var child in element.Elements())
+                    RemoveNamespaces(child);
             }
-            return newElement;
+            if (!string.IsNullOrEmpty(element.Name.NamespaceName))
+                element.Name = element.Name.LocalName;
+            var attr = element.FirstAttribute;
+            while (attr != null)
+            {
+                var nextAttr = attr.NextAttribute;
+                if (attr.IsNamespaceDeclaration)
+                {
+                    attr.Remove();
+                } 
+                else if (!string.IsNullOrEmpty(attr.Name.NamespaceName))
+                {
+                    // niche case where attributes also use namespaces 
+                    var attrs = new List<XAttribute>();
+                    foreach (var a in element.Attributes())
+                    {
+                        if (!a.IsNamespaceDeclaration)
+                            attrs.Add(new XAttribute(a.Name.LocalName, a.Value));
+                    }
+                    element.ReplaceAttributes(attrs);
+                    break;
+                }
+                attr = nextAttr;
+            }
         }
-
     }
 
 }

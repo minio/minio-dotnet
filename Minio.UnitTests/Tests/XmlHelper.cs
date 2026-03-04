@@ -23,11 +23,11 @@ public class XmlHelperTests
                 new XAttribute("attribute3", "value3"))));
         var xmlOrg = xDocOrg.ToString();
 
-        var ms = new MemoryStream(Encoding.UTF8.GetBytes(xmlOrg));
+        using var ms = new MemoryStream(Encoding.UTF8.GetBytes(xmlOrg));
         var xDocParsed = await XmlHelper.LoadXDocumentAsync(ms, CancellationToken.None).ConfigureAwait(true);
         var xmlParsed = xDocParsed.ToString();
 
-        const string expectedXml = "<root>\n  <child1 attribute1=\"value1\" attribute2=\"value2\" attribute3=\"value3\"></child1>\n  <child2 attribute1=\"value1\" attribute2=\"value2\" attribute3=\"value3\"></child2>\n</root>";
+        const string expectedXml = "<root>\n  <child1 attribute1=\"value1\" attribute2=\"value2\" attribute3=\"value3\" />\n  <child2 attribute1=\"value1\" attribute2=\"value2\" attribute3=\"value3\" />\n</root>";
         Assert.Equal(expectedXml, xmlParsed);
     }
 
