@@ -110,6 +110,7 @@ public class WebIdentityProvider : ICredentialsProvider
         }
 
         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using (responseBody.ConfigureAwait(false));
         var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
         var xCreds = xResponse.Root?.Element("AssumeRoleWithWebIdentityResult")?.Element("Credentials");
