@@ -30,8 +30,6 @@ namespace Minio.Implementation;
 
 internal class MinioClient : IMinioClient
 {
-    private static readonly XNamespace Ns = Constants.S3Ns;
-    
     private const string EmptySha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
     private static readonly Regex ExpirationRegex = new("expiry-date=\"(.*?)\", rule-id=\"(.*?)\"", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex RestoreRegex = new("ongoing-request=\"(.*?)\"(, expiry-date=\"(.*?)\")?", RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -75,11 +73,11 @@ internal class MinioClient : IMinioClient
     {
         VerifyBucketName(bucketName);
         
-        var xml = new XElement(Ns + "CreateBucketConfiguration");
+        var xml = new XElement("CreateBucketConfiguration");
         if (!string.IsNullOrEmpty(region) && region != "us-east-1")
         {
-            xml.Add(new XElement(Ns + "Location",
-                new XElement(Ns + "Name", region)));
+            xml.Add(new XElement("Location",
+                new XElement("Name", region)));
         }
 
         using var req = CreateRequest(HttpMethod.Put, bucketName, xml);
@@ -120,17 +118,17 @@ internal class MinioClient : IMinioClient
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
 
         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+        var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
-        var buckets = xResponse.Root?.Element(Ns + "Buckets");
+        var buckets = xResponse.Root?.Element("Buckets");
         if (buckets != null)
         {
-            foreach (var xContent in buckets.Elements(Ns + "Bucket"))
+            foreach (var xContent in buckets.Elements("Bucket"))
             {
                 yield return new BucketInfo
                 {
-                    CreationDate = xContent.Element(Ns + "CreationDate")?.Value.ParseIsoTimestamp() ?? DateTimeOffset.UnixEpoch,
-                    Name = xContent.Element(Ns + "Name")?.Value ?? string.Empty,
+                    CreationDate = xContent.Element("CreationDate")?.Value.ParseIsoTimestamp() ?? DateTimeOffset.UnixEpoch,
+                    Name = xContent.Element("Name")?.Value ?? string.Empty,
                 };
             }
         }
@@ -152,7 +150,7 @@ internal class MinioClient : IMinioClient
             if (resp.StatusCode == HttpStatusCode.OK)
             {
                 var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+                var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
                 var xTags = xResponse.Root!.Element("TagSet")?.Elements("Tag");
                 if (xTags != null)
@@ -187,13 +185,13 @@ internal class MinioClient : IMinioClient
 
         if (tags != null)
         {
-            var xTagSet = new XElement(Ns + "TagSet");
+            var xTagSet = new XElement("TagSet");
             foreach (var (key, value) in tags)
-                xTagSet.Add(new XElement(Ns + "Tag",
-                    new XElement(Ns + "Key", key),
-                    new XElement(Ns + "Value", value)));
+                xTagSet.Add(new XElement("Tag",
+                    new XElement("Key", key),
+                    new XElement("Value", value)));
 
-            var xTagging = new XElement(Ns + "Tagging", xTagSet);
+            var xTagging = new XElement("Tagging", xTagSet);
 
             using var req = CreateRequest(HttpMethod.Put, bucketName, xTagging, query);
             await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
@@ -238,13 +236,13 @@ internal class MinioClient : IMinioClient
         var abortRuleId = resp.Headers.TryGetValue("X-Amz-Abort-Rule-Id");
         
         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+        var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
         return new CreateMultipartUploadResult
         {
-            Bucket = xResponse.Root?.Element(Ns + "Bucket")?.Value ?? bucketName,
-            Key = xResponse.Root?.Element(Ns + "Key")?.Value ?? key,
-            UploadId = xResponse.Root?.Element(Ns + "UploadId")?.Value ?? string.Empty,
+            Bucket = xResponse.Root?.Element("Bucket")?.Value ?? bucketName,
+            Key = xResponse.Root?.Element("Key")?.Value ?? key,
+            UploadId = xResponse.Root?.Element("UploadId")?.Value ?? string.Empty,
             AbortDate = abortDate,
             AbortRuleId = abortRuleId,
             CreateOptions = options
@@ -293,22 +291,22 @@ internal class MinioClient : IMinioClient
         var query = new QueryParams();
         query.Add("uploadId", uploadId);
 
-        var xml = new XElement(Ns + "CompleteMultipartUploadResult");
+        var xml = new XElement("CompleteMultipartUploadResult");
         var partNumber = 1;
         foreach (var part in parts)
         {
-            var xPart = new XElement(Ns + "Part",
-                new XElement(Ns + "PartNumber", partNumber++),
-                new XElement(Ns + "ETag", part.Etag));
+            var xPart = new XElement("Part",
+                new XElement("PartNumber", partNumber++),
+                new XElement("ETag", part.Etag));
 
             if (part.ChecksumAlgorithm != null && part.Checksum != null)
             {
                 var (header, length) = part.ChecksumAlgorithm switch
                 {
-                    ChecksumAlgorithm.Crc32 => (Ns + "ChecksumCRC32", 32),
-                    ChecksumAlgorithm.Crc32c => (Ns + "ChecksumCRC32C", 32),
-                    ChecksumAlgorithm.Sha1 => (Ns + "ChecksumSHA1", 128),
-                    ChecksumAlgorithm.Sha256 => (Ns + "ChecksumSHA256", 256),
+                    ChecksumAlgorithm.Crc32 => ("ChecksumCRC32", 32),
+                    ChecksumAlgorithm.Crc32c => ("ChecksumCRC32C", 32),
+                    ChecksumAlgorithm.Sha1 => ("ChecksumSHA1", 128),
+                    ChecksumAlgorithm.Sha256 => ("ChecksumSHA256", 256),
                     _ => throw new ArgumentException("Invalid checksum algorithm", nameof(parts))
                 };
                 if (part.Checksum.Length * 8 != length)
@@ -323,18 +321,18 @@ internal class MinioClient : IMinioClient
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
 
         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+        var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
         return new CompleteMultipartUploadResult
         {
-            Location = xResponse.Root?.Element(Ns + "Location")?.Value ?? string.Empty,
-            Bucket = xResponse.Root?.Element(Ns + "Bucket")?.Value ?? string.Empty,
-            Key = xResponse.Root?.Element(Ns + "Key")?.Value ?? string.Empty,
-            Etag = xResponse.Root?.Element(Ns + "ETag")?.Value ?? string.Empty,
-            ChecksumCRC32 = xResponse.Root?.Element(Ns + "ChecksumCRC32")?.Value,
-            ChecksumCRC32C = xResponse.Root?.Element(Ns + "ChecksumCRC32C")?.Value,
-            ChecksumSHA1 = xResponse.Root?.Element(Ns + "ChecksumSHA1")?.Value,
-            ChecksumSHA256 = xResponse.Root?.Element(Ns + "ChecksumSHA256")?.Value
+            Location = xResponse.Root?.Element("Location")?.Value ?? string.Empty,
+            Bucket = xResponse.Root?.Element("Bucket")?.Value ?? string.Empty,
+            Key = xResponse.Root?.Element("Key")?.Value ?? string.Empty,
+            Etag = xResponse.Root?.Element("ETag")?.Value ?? string.Empty,
+            ChecksumCRC32 = xResponse.Root?.Element("ChecksumCRC32")?.Value,
+            ChecksumCRC32C = xResponse.Root?.Element("ChecksumCRC32C")?.Value,
+            ChecksumSHA1 = xResponse.Root?.Element("ChecksumSHA1")?.Value,
+            ChecksumSHA256 = xResponse.Root?.Element("ChecksumSHA256")?.Value
         };
     }
     
@@ -443,9 +441,9 @@ internal class MinioClient : IMinioClient
         using var enumerator = objects.GetEnumerator();
         while (itemsLeft)
         {
-            var xDelete = new XElement(Ns + "Delete");
+            var xDelete = new XElement("Delete");
             if (quiet)
-                xDelete.Add(new XElement(Ns + "Quiet", true));
+                xDelete.Add(new XElement("Quiet", true));
 
             var items = 0;
             while (items < 1000)
@@ -454,15 +452,15 @@ internal class MinioClient : IMinioClient
                 if (!itemsLeft) break;
                 
                 var obj = enumerator.Current;
-                var xObject = new XElement(Ns + "Object", new XElement(Ns + "Key", obj.Key));
+                var xObject = new XElement("Object", new XElement("Key", obj.Key));
                 if (obj.VersionId != null)
-                    xObject.Add(new XElement(Ns + "VersionId", obj.VersionId));
+                    xObject.Add(new XElement("VersionId", obj.VersionId));
                 if (!string.IsNullOrEmpty(obj.ETag))
-                    xObject.Add(new XElement(Ns + "ETag", obj.ETag));
+                    xObject.Add(new XElement("ETag", obj.ETag));
                 if (obj.LastModifiedTime != null)
-                    xObject.Add(new XElement(Ns + "LastModifiedTime", obj.LastModifiedTime));
+                    xObject.Add(new XElement("LastModifiedTime", obj.LastModifiedTime));
                 if (obj.Size != null)
-                    xObject.Add(new XElement(Ns + "Size", obj.Size));
+                    xObject.Add(new XElement("Size", obj.Size));
                 xDelete.Add(xObject);
                 ++items;
             }
@@ -485,32 +483,32 @@ internal class MinioClient : IMinioClient
                     if (!quiet)
                     {
                         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+                        var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
-                        foreach (var xResult in xResponse.Root!.Elements().Where(x => x.Name.Namespace == Ns))
+                        foreach (var xResult in xResponse.Root!.Elements())
                         {
                             switch (xResult.Name.LocalName)
                             {
                                 case "Deleted":
                                 {
-                                    var key = xResult.Element(Ns + "Key")?.Value ?? string.Empty;
-                                    var versionIdText = xResult.Element(Ns + "VersionId")?.Value;
+                                    var key = xResult.Element("Key")?.Value ?? string.Empty;
+                                    var versionIdText = xResult.Element("VersionId")?.Value;
                                     var versionId = !string.IsNullOrEmpty(versionIdText) ? versionIdText : null;
-                                    var deleteMarkerText = xResult.Element(Ns + "DeleteMarker")?.Value;
+                                    var deleteMarkerText = xResult.Element("DeleteMarker")?.Value;
                                     var deleteMarker = deleteMarkerText != null ? bool.TryParse(deleteMarkerText, out var dm) ? (bool?)dm : null : null;
-                                    var deleteMarkerVersionIdText = xResult.Element(Ns + "DeleteMarkerVersionId")?.Value;
+                                    var deleteMarkerVersionIdText = xResult.Element("DeleteMarkerVersionId")?.Value;
                                     var deleteMarkerVersionId = !string.IsNullOrEmpty(deleteMarkerVersionIdText) ? deleteMarkerVersionIdText : null;
                                     yield return new DeleteResult(key, versionId, deleteMarker, deleteMarkerVersionId);
                                     break;
                                 }
                                 case "Error":
                                 {
-                                    var key = xResult.Element(Ns + "Key")?.Value ?? string.Empty;
-                                    var versionIdText = xResult.Element(Ns + "VersionId")?.Value;
+                                    var key = xResult.Element("Key")?.Value ?? string.Empty;
+                                    var versionIdText = xResult.Element("VersionId")?.Value;
                                     var versionId = !string.IsNullOrEmpty(versionIdText) ? versionIdText : null;
-                                    var errorCodeText = xResult.Element(Ns + "Code")?.Value;
+                                    var errorCodeText = xResult.Element("Code")?.Value;
                                     var errorCode = !string.IsNullOrEmpty(errorCodeText) ? errorCodeText : null;
-                                    var errorMessageText = xResult.Element(Ns + "Message")?.Value;
+                                    var errorMessageText = xResult.Element("Message")?.Value;
                                     var errorMessage = !string.IsNullOrEmpty(errorMessageText) ? errorMessageText : null;
                                     yield return new DeleteResult(key, versionId, ErrorCode: errorCode, ErrorMessage: errorMessage);
                                     break;
@@ -588,23 +586,23 @@ internal class MinioClient : IMinioClient
             using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
 
             var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+            var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
-            foreach (var xContent in xResponse.Root!.Elements(Ns + "Contents"))
+            foreach (var xContent in xResponse.Root!.Elements("Contents"))
             {
                 MediaTypeHeaderValue? contentType = null;
                 DateTimeOffset? expires = null;
                 var userMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 if (includeMetadata)
                 {
-                    var xUserMetadata = xContent.Element(Ns + "UserMetadata");
+                    var xUserMetadata = xContent.Element("UserMetadata");
                     if (xUserMetadata == null)
                         throw new InvalidOperationException("Client doesn't support metadata while listing objects (MinIO specific feature)");
 
-                    contentType = MediaTypeHeaderValue.TryParse(xUserMetadata.Element(Ns + "content-type")?.Value, out var ct) ? ct : null;
-                    expires = DateTimeOffset.TryParseExact(xUserMetadata.Element(Ns + "expires")?.Value, "r", CultureInfo.InvariantCulture, DateTimeStyles.None, out var v) ? v : null;
+                    contentType = MediaTypeHeaderValue.TryParse(xUserMetadata.Element("content-type")?.Value, out var ct) ? ct : null;
+                    expires = DateTimeOffset.TryParseExact(xUserMetadata.Element("expires")?.Value, "r", CultureInfo.InvariantCulture, DateTimeStyles.None, out var v) ? v : null;
                     const string metaElementPrefix = "X-Amz-Meta-";
-                    foreach (var xHeader in xUserMetadata.Elements().Where(x => x.Name.Namespace == Ns && x.Name.LocalName.StartsWith(metaElementPrefix, StringComparison.OrdinalIgnoreCase)))
+                    foreach (var xHeader in xUserMetadata.Elements().Where(x => x.Name.LocalName.StartsWith(metaElementPrefix, StringComparison.OrdinalIgnoreCase)))
                     {
                         var key = xHeader.Name.LocalName[metaElementPrefix.Length..];
                         userMetaData[key] = xHeader.Value;
@@ -613,11 +611,11 @@ internal class MinioClient : IMinioClient
 
                 var objItem = new ObjectItem
                 {
-                    Key = Uri.UnescapeDataString(xContent.Element(Ns + "Key")?.Value ?? string.Empty),
-                    ETag = xContent.Element(Ns + "ETag")?.Value ?? string.Empty,
-                    Size = long.TryParse(xContent.Element(Ns + "Size")?.Value, out var size) ? size : -1,
-                    StorageClass = xContent.Element(Ns + "StorageClass")?.Value ?? string.Empty,
-                    LastModified = xContent.Element(Ns + "LastModified")?.Value.ParseIsoTimestamp() ?? DateTimeOffset.MinValue,
+                    Key = Uri.UnescapeDataString(xContent.Element("Key")?.Value ?? string.Empty),
+                    ETag = xContent.Element("ETag")?.Value ?? string.Empty,
+                    Size = long.TryParse(xContent.Element("Size")?.Value, out var size) ? size : -1,
+                    StorageClass = xContent.Element("StorageClass")?.Value ?? string.Empty,
+                    LastModified = xContent.Element("LastModified")?.Value.ParseIsoTimestamp() ?? DateTimeOffset.MinValue,
                     ContentType = contentType,
                     Expires = expires,
                     UserMetadata = userMetaData
@@ -626,8 +624,8 @@ internal class MinioClient : IMinioClient
                 yield return objItem;
             }
             
-            continuationToken = xResponse.Root!.Element(Ns + "NextContinuationToken")?.Value;
-            var isTruncated = xResponse.Root!.Element(Ns + "IsTruncated")?.Value == "true";
+            continuationToken = xResponse.Root!.Element("NextContinuationToken")?.Value;
+            var isTruncated = xResponse.Root!.Element("IsTruncated")?.Value == "true";
             if (!isTruncated) break;
         }
     }
@@ -648,25 +646,25 @@ internal class MinioClient : IMinioClient
             using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
 
             var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+            var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
-            foreach (var xPart in xResponse.Root!.Elements(Ns + "Part"))
+            foreach (var xPart in xResponse.Root!.Elements("Part"))
             {
                 yield return new PartItem
                 {
-                    ETag = xPart.Element(Ns + "ETag")?.Value ?? string.Empty,
-                    LastModified = DateTimeOffset.Parse(xPart.Element(Ns + "LastModified")?.Value ?? string.Empty, CultureInfo.InvariantCulture),
-                    PartNumber = int.Parse(xPart.Element(Ns + "PartNumber")?.Value ?? "0", CultureInfo.InvariantCulture),
-                    Size = long.Parse(xPart.Element(Ns + "Size")?.Value ?? "0", CultureInfo.InvariantCulture),
-                    ChecksumCRC32 = xPart.Element(Ns + "ChecksumCRC32")?.Value,
-                    ChecksumCRC32C = xPart.Element(Ns + "ChecksumCRC32C")?.Value,
-                    ChecksumSHA1 = xPart.Element(Ns + "ChecksumSHA1")?.Value,
-                    ChecksumSHA256 = xPart.Element(Ns + "ChecksumSHA256")?.Value
+                    ETag = xPart.Element("ETag")?.Value ?? string.Empty,
+                    LastModified = DateTimeOffset.Parse(xPart.Element("LastModified")?.Value ?? string.Empty, CultureInfo.InvariantCulture),
+                    PartNumber = int.Parse(xPart.Element("PartNumber")?.Value ?? "0", CultureInfo.InvariantCulture),
+                    Size = long.Parse(xPart.Element("Size")?.Value ?? "0", CultureInfo.InvariantCulture),
+                    ChecksumCRC32 = xPart.Element("ChecksumCRC32")?.Value,
+                    ChecksumCRC32C = xPart.Element("ChecksumCRC32C")?.Value,
+                    ChecksumSHA1 = xPart.Element("ChecksumSHA1")?.Value,
+                    ChecksumSHA256 = xPart.Element("ChecksumSHA256")?.Value
                 };
             }
             
-            partNumberMarker = xResponse.Root!.Element(Ns + "NextPartNumberMarker")?.Value;
-            var isTruncated = xResponse.Root!.Element(Ns + "IsTruncated")?.Value == "true";
+            partNumberMarker = xResponse.Root!.Element("NextPartNumberMarker")?.Value;
+            var isTruncated = xResponse.Root!.Element("IsTruncated")?.Value == "true";
             if (!isTruncated) break;
         }
     }
@@ -691,22 +689,22 @@ internal class MinioClient : IMinioClient
             using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
 
             var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+            var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
-            foreach (var xUpload in xResponse.Root!.Elements(Ns + "Upload"))
+            foreach (var xUpload in xResponse.Root!.Elements("Upload"))
             {
                 yield return new UploadItem
                 {
-                    UploadId = xUpload.Element(Ns + "UploadId")?.Value ?? string.Empty,
-                    Key = xUpload.Element(Ns + "Key")?.Value ?? string.Empty,
-                    Initiated = DateTimeOffset.Parse(xUpload.Element(Ns + "Initiated")?.Value ?? string.Empty, CultureInfo.InvariantCulture),
-                    StorageClass = xUpload.Element(Ns + "StorageClass")?.Value ?? string.Empty,
+                    UploadId = xUpload.Element("UploadId")?.Value ?? string.Empty,
+                    Key = xUpload.Element("Key")?.Value ?? string.Empty,
+                    Initiated = DateTimeOffset.Parse(xUpload.Element("Initiated")?.Value ?? string.Empty, CultureInfo.InvariantCulture),
+                    StorageClass = xUpload.Element("StorageClass")?.Value ?? string.Empty,
                 };
             }
             
-            keyMarker = xResponse.Root!.Element(Ns + "NextKeyMarker")?.Value;
-            uploadIdMarker = xResponse.Root!.Element(Ns + "NextUploadIdMarker")?.Value;
-            var isTruncated = xResponse.Root!.Element(Ns + "IsTruncated")?.Value == "true";
+            keyMarker = xResponse.Root!.Element("NextKeyMarker")?.Value;
+            uploadIdMarker = xResponse.Root!.Element("NextUploadIdMarker")?.Value;
+            var isTruncated = xResponse.Root!.Element("IsTruncated")?.Value == "true";
             if (!isTruncated) break;
         }
     }
@@ -722,7 +720,7 @@ internal class MinioClient : IMinioClient
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
 
         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+        var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
         return BucketNotification.Deserialize(xResponse.Root!);
     }
@@ -816,7 +814,7 @@ internal class MinioClient : IMinioClient
             using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
 
             var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+            var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
             return ObjectLockConfiguration.Deserialize(xResponse.Root!);
         }
@@ -855,7 +853,7 @@ internal class MinioClient : IMinioClient
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
 
         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+        var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
         return VersioningConfiguration.Deserialize(xResponse.Root!);
     }
@@ -889,7 +887,7 @@ internal class MinioClient : IMinioClient
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
 
         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+        var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
         return BucketEncryptionConfiguration.Deserialize(xResponse.Root!);
     }
 
@@ -930,7 +928,7 @@ internal class MinioClient : IMinioClient
             using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
 
             var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+            var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
             return LifecycleConfiguration.Deserialize(xResponse.Root!);
         }
         catch (MinioHttpException exc) when (exc.Error?.Code == "NoSuchLifecycleConfiguration")
@@ -976,7 +974,7 @@ internal class MinioClient : IMinioClient
             using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
 
             var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+            var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
             return ReplicationConfiguration.Deserialize(xResponse.Root!);
         }
         catch (MinioHttpException exc) when (exc.Error?.Code == "ReplicationConfigurationNotFoundError")
@@ -1065,8 +1063,8 @@ internal class MinioClient : IMinioClient
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
 
         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
-        var statusText = xResponse.Root?.Element(Ns + "Status")?.Value;
+        var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
+        var statusText = xResponse.Root?.Element("Status")?.Value;
         return statusText == "ON" ? LegalHoldStatus.On : LegalHoldStatus.Off;
     }
 
@@ -1079,8 +1077,8 @@ internal class MinioClient : IMinioClient
         q.Add("legal-hold", string.Empty);
         q.AddIfNotNullOrEmpty("versionId", versionId);
 
-        var xml = new XElement(Ns + "LegalHold",
-            new XElement(Ns + "Status", status == LegalHoldStatus.On ? "ON" : "OFF"));
+        var xml = new XElement("LegalHold",
+            new XElement("Status", status == LegalHoldStatus.On ? "ON" : "OFF"));
 
         using var req = CreateRequest(HttpMethod.Put, Encode(bucketName, key), xml, q);
         await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
@@ -1100,7 +1098,7 @@ internal class MinioClient : IMinioClient
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
 
         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+        var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
         return ObjectRetention.Deserialize(xResponse.Root!);
     }
 
@@ -1128,7 +1126,7 @@ internal class MinioClient : IMinioClient
         q.Add("retention", string.Empty);
         q.AddIfNotNullOrEmpty("versionId", versionId);
 
-        var xml = new XElement(Ns + "Retention");
+        var xml = new XElement("Retention");
         using var req = CreateRequest(HttpMethod.Put, Encode(bucketName, key), xml, q);
         await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
         req.Headers.Add("X-Amz-Bypass-Governance-Retention", "true");
@@ -1194,19 +1192,19 @@ internal class MinioClient : IMinioClient
 
         var versionId = resp.Headers.TryGetValue("X-Amz-Version-Id");
         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+        var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
         return new CopyObjectResult
         {
-            ETag = xResponse.Root?.Element(Ns + "ETag")?.Value ?? string.Empty,
+            ETag = xResponse.Root?.Element("ETag")?.Value ?? string.Empty,
             LastModified = DateTimeOffset.Parse(
-                xResponse.Root?.Element(Ns + "LastModified")?.Value ?? string.Empty,
+                xResponse.Root?.Element("LastModified")?.Value ?? string.Empty,
                 CultureInfo.InvariantCulture),
             VersionId = versionId,
-            ChecksumCRC32 = xResponse.Root?.Element(Ns + "ChecksumCRC32")?.Value,
-            ChecksumCRC32C = xResponse.Root?.Element(Ns + "ChecksumCRC32C")?.Value,
-            ChecksumSHA1 = xResponse.Root?.Element(Ns + "ChecksumSHA1")?.Value,
-            ChecksumSHA256 = xResponse.Root?.Element(Ns + "ChecksumSHA256")?.Value,
+            ChecksumCRC32 = xResponse.Root?.Element("ChecksumCRC32")?.Value,
+            ChecksumCRC32C = xResponse.Root?.Element("ChecksumCRC32C")?.Value,
+            ChecksumSHA1 = xResponse.Root?.Element("ChecksumSHA1")?.Value,
+            ChecksumSHA256 = xResponse.Root?.Element("ChecksumSHA256")?.Value,
         };
     }
 
@@ -1384,7 +1382,7 @@ internal class MinioClient : IMinioClient
 
             var tags = new Dictionary<string, string>();
             var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+            var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
 
             var xTags = xResponse.Root!.Element("TagSet")?.Elements("Tag");
             if (xTags != null)
@@ -1414,13 +1412,13 @@ internal class MinioClient : IMinioClient
         q.Add("tagging", string.Empty);
         q.AddIfNotNullOrEmpty("versionId", versionId);
 
-        var xTagSet = new XElement(Ns + "TagSet");
+        var xTagSet = new XElement("TagSet");
         foreach (var (k, v) in tags)
-            xTagSet.Add(new XElement(Ns + "Tag",
-                new XElement(Ns + "Key", k),
-                new XElement(Ns + "Value", v)));
+            xTagSet.Add(new XElement("Tag",
+                new XElement("Key", k),
+                new XElement("Value", v)));
 
-        var xTagging = new XElement(Ns + "Tagging", xTagSet);
+        var xTagging = new XElement("Tagging", xTagSet);
         using var req = CreateRequest(HttpMethod.Put, Encode(bucketName, key), xTagging, q);
         await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);

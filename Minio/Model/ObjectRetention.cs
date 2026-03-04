@@ -17,21 +17,20 @@ public class ObjectRetention
     /// <summary>Serializes this configuration to its S3 XML representation.</summary>
     public XElement Serialize()
     {
-        return new XElement(Constants.S3Ns + "Retention",
-            new XElement(Constants.S3Ns + "Mode", RetentionModeExtensions.Serialize(Mode)),
-            new XElement(Constants.S3Ns + "RetainUntilDate",
+        return new XElement("Retention",
+            new XElement("Mode", RetentionModeExtensions.Serialize(Mode)),
+            new XElement("RetainUntilDate",
                 RetainUntilDate.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture)));
     }
 
     /// <summary>Deserializes an <see cref="ObjectRetention"/> from an XML element.</summary>
     public static ObjectRetention Deserialize(XElement xElement)
     {
-        var ns = Constants.S3Ns;
         return new ObjectRetention
         {
-            Mode = RetentionModeExtensions.Deserialize(xElement.Element(ns + "Mode")?.Value ?? string.Empty),
+            Mode = RetentionModeExtensions.Deserialize(xElement.Element("Mode")?.Value ?? string.Empty),
             RetainUntilDate = DateTimeOffset.Parse(
-                xElement.Element(ns + "RetainUntilDate")?.Value ?? string.Empty,
+                xElement.Element("RetainUntilDate")?.Value ?? string.Empty,
                 CultureInfo.InvariantCulture),
         };
     }

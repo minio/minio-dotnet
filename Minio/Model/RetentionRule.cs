@@ -43,9 +43,9 @@ public abstract class RetentionRule
     public static RetentionRule Deserialize(XElement xElement)
     {
         if (xElement == null) throw new ArgumentNullException(nameof(xElement));
-        if (xElement.Element(Constants.S3Ns + "Days") != null)
+        if (xElement.Element("Days") != null)
             return RetentionRuleDays.Deserialize(xElement);
-        if (xElement.Element(Constants.S3Ns + "Years") != null)
+        if (xElement.Element("Years") != null)
             return RetentionRuleYears.Deserialize(xElement);
         throw new InvalidOperationException("No 'Days' or 'Years' element found.");
     }
@@ -76,9 +76,9 @@ public class RetentionRuleDays : RetentionRule
     /// </summary>
     /// <returns>An <see cref="XElement"/> representing the <c>DefaultRetention</c> XML element with a <c>Days</c> child.</returns>
     public override XElement Serialize()
-        => new XElement(Constants.S3Ns + "DefaultRetention",
-            new XElement(Constants.S3Ns + "Mode", RetentionModeExtensions.Serialize(Mode)),
-            new XElement(Constants.S3Ns + "Days", Days));
+        => new XElement("DefaultRetention",
+            new XElement("Mode", RetentionModeExtensions.Serialize(Mode)),
+            new XElement("Days", Days));
 
     /// <summary>
     /// Deserializes a <see cref="RetentionRuleDays"/> from an S3 <c>DefaultRetention</c> XML element.
@@ -89,8 +89,8 @@ public class RetentionRuleDays : RetentionRule
     public new static RetentionRuleDays Deserialize(XElement xElement)
     {
         if (xElement == null) throw new ArgumentNullException(nameof(xElement));
-        var mode = RetentionModeExtensions.Deserialize(xElement.Element(Constants.S3Ns + "Mode")?.Value ?? string.Empty);
-        var days = int.Parse(xElement.Element(Constants.S3Ns + "Days")?.Value ?? string.Empty, CultureInfo.InvariantCulture);
+        var mode = RetentionModeExtensions.Deserialize(xElement.Element("Mode")?.Value ?? string.Empty);
+        var days = int.Parse(xElement.Element("Days")?.Value ?? string.Empty, CultureInfo.InvariantCulture);
         return new RetentionRuleDays(mode, days);
     }
 }
@@ -120,9 +120,9 @@ public class RetentionRuleYears : RetentionRule
     /// </summary>
     /// <returns>An <see cref="XElement"/> representing the <c>DefaultRetention</c> XML element with a <c>Years</c> child.</returns>
     public override XElement Serialize()
-        => new XElement(Constants.S3Ns + "DefaultRetention",
-            new XElement(Constants.S3Ns + "Mode", RetentionModeExtensions.Serialize(Mode)),
-            new XElement(Constants.S3Ns + "Years", Years));
+        => new XElement("DefaultRetention",
+            new XElement("Mode", RetentionModeExtensions.Serialize(Mode)),
+            new XElement("Years", Years));
 
     /// <summary>
     /// Deserializes a <see cref="RetentionRuleYears"/> from an S3 <c>DefaultRetention</c> XML element.
@@ -133,8 +133,8 @@ public class RetentionRuleYears : RetentionRule
     public new static RetentionRuleYears Deserialize(XElement xElement)
     {
         if (xElement == null) throw new ArgumentNullException(nameof(xElement));
-        var mode = RetentionModeExtensions.Deserialize(xElement.Element(Constants.S3Ns + "Mode")?.Value ?? string.Empty);
-        var years = int.Parse(xElement.Element(Constants.S3Ns + "Years")?.Value ?? string.Empty, CultureInfo.InvariantCulture);
+        var mode = RetentionModeExtensions.Deserialize(xElement.Element("Mode")?.Value ?? string.Empty);
+        var years = int.Parse(xElement.Element("Years")?.Value ?? string.Empty, CultureInfo.InvariantCulture);
         return new RetentionRuleYears(mode, years);
     }
 }

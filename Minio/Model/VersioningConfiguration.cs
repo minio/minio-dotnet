@@ -8,8 +8,6 @@ namespace Minio.Model;
 /// </summary>
 public class VersioningConfiguration
 {
-    private static readonly XNamespace Ns = Constants.S3Ns;
-
     /// <summary>
     /// Gets the current versioning status of the bucket.
     /// </summary>
@@ -28,9 +26,9 @@ public class VersioningConfiguration
     /// <returns>An <see cref="XElement"/> representing the <c>VersioningConfiguration</c> XML element.</returns>
     public XElement Serialize()
     {
-        return new XElement(Ns + "VersioningConfiguration",
-            new XElement(Ns + "Status", VersioningStatusExtensions.Serialize(Status)),
-            new XElement(Ns + "MfaDelete", MfaDelete ? "Enabled" : "Disabled"));
+        return new XElement("VersioningConfiguration",
+            new XElement("Status", VersioningStatusExtensions.Serialize(Status)),
+            new XElement("MfaDelete", MfaDelete ? "Enabled" : "Disabled"));
     }
 
     /// <summary>
@@ -42,8 +40,8 @@ public class VersioningConfiguration
     public static VersioningConfiguration Deserialize(XElement xElement)
     {
         if (xElement == null) throw new ArgumentNullException(nameof(xElement));
-        var status = VersioningStatusExtensions.Deserialize(xElement.Element(Constants.S3Ns + "Status")?.Value ?? string.Empty);
-        var mfaDelete = xElement.Element(Constants.S3Ns + "Status")?.Value is "Enabled";
+        var status = VersioningStatusExtensions.Deserialize(xElement.Element("Status")?.Value ?? string.Empty);
+        var mfaDelete = xElement.Element("Status")?.Value is "Enabled";
         return new VersioningConfiguration
         {
             Status = status,

@@ -29,7 +29,7 @@ public sealed class BucketNotification
     /// <returns>An <see cref="XElement"/> representing the <c>NotificationConfiguration</c> XML element.</returns>
     public XElement Serialize()
     {
-        return new XElement(Constants.S3Ns + "NotificationConfiguration",
+        return new XElement("NotificationConfiguration",
             LambdaConfigs.Select(c => c.Serialize()),
             TopicConfigs.Select(c => c.Serialize()),
             QueueConfigs.Select(c => c.Serialize()));
@@ -45,11 +45,11 @@ public sealed class BucketNotification
     public static BucketNotification Deserialize(XElement xElement)
     {
         ArgumentNullException.ThrowIfNull(xElement);
-        if (xElement.Name != Constants.S3Ns + "NotificationConfiguration")
+        if (xElement.Name != "NotificationConfiguration")
             throw new InvalidOperationException("Invalid XML element encountered");
 
         var bucketNotification = new BucketNotification();
-        foreach (var xConfig in xElement.Elements().Where(x => x.Name.NamespaceName == Constants.S3Ns))
+        foreach (var xConfig in xElement.Elements())
         {
             switch (xConfig.Name.LocalName)
             {
@@ -101,16 +101,16 @@ public abstract class NotificationConfiguration
     {
         ArgumentNullException.ThrowIfNull(xElement);
         if (!string.IsNullOrEmpty(Id))
-            xElement.Add(new XElement(Constants.S3Ns + "Id", Id));
+            xElement.Add(new XElement("Id", Id));
         foreach (var evt in Events)
-            xElement.Add(new XElement(Constants.S3Ns + "Event", evt.ToString()));
+            xElement.Add(new XElement("Event", evt.ToString()));
 
         if (Filter.Count > 0)
-            xElement.Add(new XElement(Constants.S3Ns + "Filter",
-                new XElement(Constants.S3Ns + "S3Key",
-                    Filter.Select(kv => new XElement(Constants.S3Ns + "FilterRule",
-                        new XElement(Constants.S3Ns + "Name", kv.Key),
-                        new XElement(Constants.S3Ns + "Value", kv.Value))))));
+            xElement.Add(new XElement("Filter",
+                new XElement("S3Key",
+                    Filter.Select(kv => new XElement("FilterRule",
+                        new XElement("Name", kv.Key),
+                        new XElement("Value", kv.Value))))));
     }
 
     /// <summary>
@@ -123,20 +123,20 @@ public abstract class NotificationConfiguration
     protected void DeserializeInner(XElement xElement)
     {
         ArgumentNullException.ThrowIfNull(xElement);
-        Id = xElement.Element(Constants.S3Ns + "Id")?.Value ?? string.Empty;
-        foreach (var xEvent in xElement.Elements(Constants.S3Ns + "Event"))
+        Id = xElement.Element("Id")?.Value ?? string.Empty;
+        foreach (var xEvent in xElement.Elements("Event"))
             Events.Add(new EventType(xEvent.Value));
         var xFilterRules = xElement
-            .Element(Constants.S3Ns + "Filter")?
-            .Element(Constants.S3Ns + "S3Key")?
-            .Elements(Constants.S3Ns + "FilterRule");
+            .Element("Filter")?
+            .Element("S3Key")?
+            .Elements("FilterRule");
         if (xFilterRules != null)
         {
             foreach (var xFilter in xFilterRules)
             {
-                var name = xFilter.Element(Constants.S3Ns + "Name")?.Value ??
+                var name = xFilter.Element("Name")?.Value ??
                            throw new InvalidOperationException("Missing Name in XML");
-                var value = xFilter.Element(Constants.S3Ns + "Value")?.Value ??
+                var value = xFilter.Element("Value")?.Value ??
                             throw new InvalidOperationException("Missing Value in XML");
                 Filter[name] = value;
             }
@@ -160,8 +160,8 @@ public sealed class LambdaConfig : NotificationConfiguration
     /// <returns>An <see cref="XElement"/> representing the <c>CloudFunctionConfiguration</c> XML element.</returns>
     public XElement Serialize()
     {
-        var xElement = new XElement(Constants.S3Ns + "CloudFunctionConfiguration",
-            new XElement(Constants.S3Ns + "CloudFunction", Lambda));
+        var xElement = new XElement("CloudFunctionConfiguration",
+            new XElement("CloudFunction", Lambda));
         SerializeInner(xElement);
         return xElement;
     }
@@ -176,12 +176,12 @@ public sealed class LambdaConfig : NotificationConfiguration
     public static LambdaConfig Deserialize(XElement xElement)
     {
         ArgumentNullException.ThrowIfNull(xElement);
-        if (xElement.Name != Constants.S3Ns + "CloudFunctionConfiguration")
+        if (xElement.Name != "CloudFunctionConfiguration")
             throw new InvalidOperationException("Invalid XML element encountered");
 
         var lambdaConfig = new LambdaConfig
         {
-            Lambda = xElement.Element(Constants.S3Ns + "CloudFunction")?.Value ??
+            Lambda = xElement.Element("CloudFunction")?.Value ??
                      throw new InvalidOperationException("Missing CloudFunction in XML")
         };
         lambdaConfig.DeserializeInner(xElement);
@@ -205,8 +205,8 @@ public sealed class TopicConfig : NotificationConfiguration
     /// <returns>An <see cref="XElement"/> representing the <c>TopicConfiguration</c> XML element.</returns>
     public XElement Serialize()
     {
-        var xElement = new XElement(Constants.S3Ns + "TopicConfiguration",
-            new XElement(Constants.S3Ns + "Topic", Topic));
+        var xElement = new XElement("TopicConfiguration",
+            new XElement("Topic", Topic));
         SerializeInner(xElement);
         return xElement;
     }
@@ -221,12 +221,12 @@ public sealed class TopicConfig : NotificationConfiguration
     public static TopicConfig Deserialize(XElement xElement)
     {
         ArgumentNullException.ThrowIfNull(xElement);
-        if (xElement.Name != Constants.S3Ns + "TopicConfiguration")
+        if (xElement.Name != "TopicConfiguration")
             throw new InvalidOperationException("Invalid XML element encountered");
 
         var topicConfig = new TopicConfig
         {
-            Topic = xElement.Element(Constants.S3Ns + "Topic")?.Value ??
+            Topic = xElement.Element("Topic")?.Value ??
                     throw new InvalidOperationException("Missing Topic in XML")
         };
         topicConfig.DeserializeInner(xElement);
@@ -250,8 +250,8 @@ public sealed class QueueConfig: NotificationConfiguration
     /// <returns>An <see cref="XElement"/> representing the <c>QueueConfiguration</c> XML element.</returns>
     public XElement Serialize()
     {
-        var xElement = new XElement(Constants.S3Ns + "QueueConfiguration",
-            new XElement(Constants.S3Ns + "Queue", Queue));
+        var xElement = new XElement("QueueConfiguration",
+            new XElement("Queue", Queue));
         SerializeInner(xElement);
         return xElement;
     }
@@ -266,12 +266,12 @@ public sealed class QueueConfig: NotificationConfiguration
     public static QueueConfig Deserialize(XElement xElement)
     {
         ArgumentNullException.ThrowIfNull(xElement);
-        if (xElement.Name != Constants.S3Ns + "QueueConfiguration")
+        if (xElement.Name != "QueueConfiguration")
             throw new InvalidOperationException("Invalid XML element encountered");
 
         var queueConfig = new QueueConfig
         {
-            Queue = xElement.Element(Constants.S3Ns + "Queue")?.Value ??
+            Queue = xElement.Element("Queue")?.Value ??
                      throw new InvalidOperationException("Missing Queue in XML")
         };
         queueConfig.DeserializeInner(xElement);

@@ -109,8 +109,6 @@ public class ReplicationRule
 /// <summary>The complete replication configuration for a bucket.</summary>
 public class ReplicationConfiguration
 {
-    private static readonly XNamespace Ns = Constants.S3Ns;
-
     /// <summary>IAM role ARN that S3 assumes when replicating objects.</summary>
     public string? Role { get; set; }
 
@@ -120,9 +118,9 @@ public class ReplicationConfiguration
     /// <summary>Serializes this configuration to its S3 XML representation.</summary>
     public XElement Serialize()
     {
-        var xConfig = new XElement(Ns + "ReplicationConfiguration");
+        var xConfig = new XElement("ReplicationConfiguration");
         if (!string.IsNullOrEmpty(Role))
-            xConfig.Add(new XElement(Ns + "Role", Role));
+            xConfig.Add(new XElement("Role", Role));
         foreach (var rule in Rules)
             xConfig.Add(SerializeRule(rule));
         return xConfig;
@@ -133,8 +131,8 @@ public class ReplicationConfiguration
     {
         return new ReplicationConfiguration
         {
-            Role = xElement.Element(Ns + "Role")?.Value,
-            Rules = xElement.Elements(Ns + "Rule").Select(DeserializeRule).ToList()
+            Role = xElement.Element("Role")?.Value,
+            Rules = xElement.Elements("Rule").Select(DeserializeRule).ToList()
         };
     }
 
@@ -146,21 +144,21 @@ public class ReplicationConfiguration
 
     private static XElement SerializeRule(ReplicationRule rule)
     {
-        var xRule = new XElement(Ns + "Rule");
+        var xRule = new XElement("Rule");
         if (!string.IsNullOrEmpty(rule.Id))
-            xRule.Add(new XElement(Ns + "ID", rule.Id));
+            xRule.Add(new XElement("ID", rule.Id));
         if (rule.Priority.HasValue)
-            xRule.Add(new XElement(Ns + "Priority", rule.Priority.Value));
-        xRule.Add(new XElement(Ns + "Status", SerializeStatus(rule.Status)));
+            xRule.Add(new XElement("Priority", rule.Priority.Value));
+        xRule.Add(new XElement("Status", SerializeStatus(rule.Status)));
         if (rule.Filter != null)
             xRule.Add(SerializeFilter(rule.Filter));
         xRule.Add(SerializeDestination(rule.Destination));
         if (rule.DeleteMarkerReplication.HasValue)
-            xRule.Add(new XElement(Ns + "DeleteMarkerReplication",
-                new XElement(Ns + "Status", SerializeStatus(rule.DeleteMarkerReplication.Value))));
+            xRule.Add(new XElement("DeleteMarkerReplication",
+                new XElement("Status", SerializeStatus(rule.DeleteMarkerReplication.Value))));
         if (rule.ExistingObjectReplication.HasValue)
-            xRule.Add(new XElement(Ns + "ExistingObjectReplication",
-                new XElement(Ns + "Status", SerializeStatus(rule.ExistingObjectReplication.Value))));
+            xRule.Add(new XElement("ExistingObjectReplication",
+                new XElement("Status", SerializeStatus(rule.ExistingObjectReplication.Value))));
         if (rule.SourceSelectionCriteria != null)
             xRule.Add(SerializeSourceSelectionCriteria(rule.SourceSelectionCriteria));
         return xRule;
@@ -168,58 +166,58 @@ public class ReplicationConfiguration
 
     private static XElement SerializeFilter(ReplicationFilter filter)
     {
-        var xFilter = new XElement(Ns + "Filter");
+        var xFilter = new XElement("Filter");
         if (filter.Tag != null)
             xFilter.Add(SerializeTag(filter.Tag));
         else if (filter.And != null)
         {
-            var xAnd = new XElement(Ns + "And");
+            var xAnd = new XElement("And");
             if (filter.And.Prefix != null)
-                xAnd.Add(new XElement(Ns + "Prefix", filter.And.Prefix));
+                xAnd.Add(new XElement("Prefix", filter.And.Prefix));
             if (filter.And.Tags != null)
                 foreach (var t in filter.And.Tags)
                     xAnd.Add(SerializeTag(t));
             xFilter.Add(xAnd);
         }
         else if (filter.Prefix != null)
-            xFilter.Add(new XElement(Ns + "Prefix", filter.Prefix));
+            xFilter.Add(new XElement("Prefix", filter.Prefix));
         return xFilter;
     }
 
     private static XElement SerializeTag(ReplicationTag tag) =>
-        new XElement(Ns + "Tag",
-            new XElement(Ns + "Key", tag.Key),
-            new XElement(Ns + "Value", tag.Value));
+        new XElement("Tag",
+            new XElement("Key", tag.Key),
+            new XElement("Value", tag.Value));
 
     private static XElement SerializeDestination(ReplicationDestination dest)
     {
-        var xDest = new XElement(Ns + "Destination",
-            new XElement(Ns + "Bucket", dest.Bucket));
+        var xDest = new XElement("Destination",
+            new XElement("Bucket", dest.Bucket));
         if (!string.IsNullOrEmpty(dest.StorageClass))
-            xDest.Add(new XElement(Ns + "StorageClass", dest.StorageClass));
+            xDest.Add(new XElement("StorageClass", dest.StorageClass));
         if (!string.IsNullOrEmpty(dest.Account))
-            xDest.Add(new XElement(Ns + "Account", dest.Account));
+            xDest.Add(new XElement("Account", dest.Account));
         if (!string.IsNullOrEmpty(dest.AccessControlTranslationOwner))
-            xDest.Add(new XElement(Ns + "AccessControlTranslation",
-                new XElement(Ns + "Owner", dest.AccessControlTranslationOwner)));
+            xDest.Add(new XElement("AccessControlTranslation",
+                new XElement("Owner", dest.AccessControlTranslationOwner)));
         if (dest.EncryptionConfiguration?.ReplicaKmsKeyId != null)
-            xDest.Add(new XElement(Ns + "EncryptionConfiguration",
-                new XElement(Ns + "ReplicaKmsKeyID", dest.EncryptionConfiguration.ReplicaKmsKeyId)));
+            xDest.Add(new XElement("EncryptionConfiguration",
+                new XElement("ReplicaKmsKeyID", dest.EncryptionConfiguration.ReplicaKmsKeyId)));
         if (dest.ReplicationTime != null)
         {
-            var xRtc = new XElement(Ns + "ReplicationTime",
-                new XElement(Ns + "Status", SerializeStatus(dest.ReplicationTime.Status)));
+            var xRtc = new XElement("ReplicationTime",
+                new XElement("Status", SerializeStatus(dest.ReplicationTime.Status)));
             if (dest.ReplicationTime.Time != null)
-                xRtc.Add(new XElement(Ns + "Time", new XElement(Ns + "Minutes", dest.ReplicationTime.Time.Minutes)));
+                xRtc.Add(new XElement("Time", new XElement("Minutes", dest.ReplicationTime.Time.Minutes)));
             xDest.Add(xRtc);
         }
         if (dest.Metrics != null)
         {
-            var xMetrics = new XElement(Ns + "Metrics",
-                new XElement(Ns + "Status", SerializeStatus(dest.Metrics.Status)));
+            var xMetrics = new XElement("Metrics",
+                new XElement("Status", SerializeStatus(dest.Metrics.Status)));
             if (dest.Metrics.EventThreshold != null)
-                xMetrics.Add(new XElement(Ns + "EventThreshold",
-                    new XElement(Ns + "Minutes", dest.Metrics.EventThreshold.Minutes)));
+                xMetrics.Add(new XElement("EventThreshold",
+                    new XElement("Minutes", dest.Metrics.EventThreshold.Minutes)));
             xDest.Add(xMetrics);
         }
         return xDest;
@@ -227,25 +225,25 @@ public class ReplicationConfiguration
 
     private static XElement SerializeSourceSelectionCriteria(SourceSelectionCriteria ssc)
     {
-        var xSsc = new XElement(Ns + "SourceSelectionCriteria");
+        var xSsc = new XElement("SourceSelectionCriteria");
         if (ssc.SseKmsEncryptedObjects.HasValue)
-            xSsc.Add(new XElement(Ns + "SseKmsEncryptedObjects",
-                new XElement(Ns + "Status", SerializeStatus(ssc.SseKmsEncryptedObjects.Value))));
+            xSsc.Add(new XElement("SseKmsEncryptedObjects",
+                new XElement("Status", SerializeStatus(ssc.SseKmsEncryptedObjects.Value))));
         return xSsc;
     }
 
     private static ReplicationRule DeserializeRule(XElement xRule)
     {
-        var id = xRule.Element(Ns + "ID")?.Value;
-        var priorityText = xRule.Element(Ns + "Priority")?.Value;
-        var status = DeserializeStatus(xRule.Element(Ns + "Status")?.Value);
+        var id = xRule.Element("ID")?.Value;
+        var priorityText = xRule.Element("Priority")?.Value;
+        var status = DeserializeStatus(xRule.Element("Status")?.Value);
 
-        var xFilter = xRule.Element(Ns + "Filter");
+        var xFilter = xRule.Element("Filter");
         ReplicationFilter? filter = null;
         if (xFilter != null)
         {
-            var xTag = xFilter.Element(Ns + "Tag");
-            var xAnd = xFilter.Element(Ns + "And");
+            var xTag = xFilter.Element("Tag");
+            var xAnd = xFilter.Element("And");
             if (xTag != null)
                 filter = new ReplicationFilter { Tag = DeserializeTag(xTag) };
             else if (xAnd != null)
@@ -253,52 +251,52 @@ public class ReplicationConfiguration
                 {
                     And = new ReplicationFilterAnd
                     {
-                        Prefix = xAnd.Element(Ns + "Prefix")?.Value,
-                        Tags = xAnd.Elements(Ns + "Tag").Select(DeserializeTag).ToList()
+                        Prefix = xAnd.Element("Prefix")?.Value,
+                        Tags = xAnd.Elements("Tag").Select(DeserializeTag).ToList()
                     }
                 };
             else
-                filter = new ReplicationFilter { Prefix = xFilter.Element(Ns + "Prefix")?.Value };
+                filter = new ReplicationFilter { Prefix = xFilter.Element("Prefix")?.Value };
         }
 
-        var xDest = xRule.Element(Ns + "Destination")!;
+        var xDest = xRule.Element("Destination")!;
         var dest = new ReplicationDestination
         {
-            Bucket = xDest.Element(Ns + "Bucket")?.Value ?? string.Empty,
-            StorageClass = xDest.Element(Ns + "StorageClass")?.Value,
-            Account = xDest.Element(Ns + "Account")?.Value,
-            AccessControlTranslationOwner = xDest.Element(Ns + "AccessControlTranslation")?.Element(Ns + "Owner")?.Value,
-            EncryptionConfiguration = xDest.Element(Ns + "EncryptionConfiguration") is { } xEnc
-                ? new ReplicationEncryptionConfiguration { ReplicaKmsKeyId = xEnc.Element(Ns + "ReplicaKmsKeyID")?.Value }
+            Bucket = xDest.Element("Bucket")?.Value ?? string.Empty,
+            StorageClass = xDest.Element("StorageClass")?.Value,
+            Account = xDest.Element("Account")?.Value,
+            AccessControlTranslationOwner = xDest.Element("AccessControlTranslation")?.Element("Owner")?.Value,
+            EncryptionConfiguration = xDest.Element("EncryptionConfiguration") is { } xEnc
+                ? new ReplicationEncryptionConfiguration { ReplicaKmsKeyId = xEnc.Element("ReplicaKmsKeyID")?.Value }
                 : null,
-            ReplicationTime = xDest.Element(Ns + "ReplicationTime") is { } xRtc
+            ReplicationTime = xDest.Element("ReplicationTime") is { } xRtc
                 ? new ReplicationTime
                 {
-                    Status = DeserializeStatus(xRtc.Element(Ns + "Status")?.Value),
-                    Time = xRtc.Element(Ns + "Time") is { } xTime
-                        ? new ReplicationTimeValue { Minutes = int.Parse(xTime.Element(Ns + "Minutes")?.Value ?? "0") }
+                    Status = DeserializeStatus(xRtc.Element("Status")?.Value),
+                    Time = xRtc.Element("Time") is { } xTime
+                        ? new ReplicationTimeValue { Minutes = int.Parse(xTime.Element("Minutes")?.Value ?? "0") }
                         : null,
                 }
                 : null,
-            Metrics = xDest.Element(Ns + "Metrics") is { } xMetrics
+            Metrics = xDest.Element("Metrics") is { } xMetrics
                 ? new ReplicationMetrics
                 {
-                    Status = DeserializeStatus(xMetrics.Element(Ns + "Status")?.Value),
-                    EventThreshold = xMetrics.Element(Ns + "EventThreshold") is { } xEt
-                        ? new ReplicationTimeValue { Minutes = int.Parse(xEt.Element(Ns + "Minutes")?.Value ?? "0") }
+                    Status = DeserializeStatus(xMetrics.Element("Status")?.Value),
+                    EventThreshold = xMetrics.Element("EventThreshold") is { } xEt
+                        ? new ReplicationTimeValue { Minutes = int.Parse(xEt.Element("Minutes")?.Value ?? "0") }
                         : null,
                 }
                 : null,
         };
 
-        var xSsc = xRule.Element(Ns + "SourceSelectionCriteria");
+        var xSsc = xRule.Element("SourceSelectionCriteria");
         SourceSelectionCriteria? ssc = null;
         if (xSsc != null)
         {
             ssc = new SourceSelectionCriteria
             {
-                SseKmsEncryptedObjects = xSsc.Element(Ns + "SseKmsEncryptedObjects") is { } xSseKms
-                    ? DeserializeStatus(xSseKms.Element(Ns + "Status")?.Value)
+                SseKmsEncryptedObjects = xSsc.Element("SseKmsEncryptedObjects") is { } xSseKms
+                    ? DeserializeStatus(xSseKms.Element("Status")?.Value)
                     : null
             };
         }
@@ -310,16 +308,16 @@ public class ReplicationConfiguration
             Status = status,
             Filter = filter,
             Destination = dest,
-            DeleteMarkerReplication = xRule.Element(Ns + "DeleteMarkerReplication") is { } xDmr
-                ? DeserializeStatus(xDmr.Element(Ns + "Status")?.Value)
+            DeleteMarkerReplication = xRule.Element("DeleteMarkerReplication") is { } xDmr
+                ? DeserializeStatus(xDmr.Element("Status")?.Value)
                 : null,
-            ExistingObjectReplication = xRule.Element(Ns + "ExistingObjectReplication") is { } xEor
-                ? DeserializeStatus(xEor.Element(Ns + "Status")?.Value)
+            ExistingObjectReplication = xRule.Element("ExistingObjectReplication") is { } xEor
+                ? DeserializeStatus(xEor.Element("Status")?.Value)
                 : null,
             SourceSelectionCriteria = ssc,
         };
     }
 
     private static ReplicationTag DeserializeTag(XElement xTag) =>
-        new ReplicationTag(xTag.Element(Ns + "Key")?.Value ?? string.Empty, xTag.Element(Ns + "Value")?.Value ?? string.Empty);
+        new ReplicationTag(xTag.Element("Key")?.Value ?? string.Empty, xTag.Element("Value")?.Value ?? string.Empty);
 }

@@ -44,16 +44,16 @@ public class CsvInput
     public string? QuoteEscapeCharacter { get; set; }
     public string? CommentCharacter { get; set; }
 
-    internal XElement Serialize(XNamespace ns)
+    internal XElement Serialize()
     {
-        var xCsv = new XElement(ns + "CSV",
-            new XElement(ns + "FileHeaderInfo", FileHeaderInfo.ToString().ToUpperInvariant()));
-        if (RecordDelimiter != null) xCsv.Add(new XElement(ns + "RecordDelimiter", RecordDelimiter));
-        if (FieldDelimiter != null) xCsv.Add(new XElement(ns + "FieldDelimiter", FieldDelimiter));
-        if (QuoteCharacter != null) xCsv.Add(new XElement(ns + "QuoteCharacter", QuoteCharacter));
-        if (QuoteEscapeCharacter != null) xCsv.Add(new XElement(ns + "QuoteEscapeCharacter", QuoteEscapeCharacter));
-        if (CommentCharacter != null) xCsv.Add(new XElement(ns + "Comments", CommentCharacter));
-        return new XElement(ns + "InputSerialization", xCsv);
+        var xCsv = new XElement("CSV",
+            new XElement("FileHeaderInfo", FileHeaderInfo.ToString().ToUpperInvariant()));
+        if (RecordDelimiter != null) xCsv.Add(new XElement("RecordDelimiter", RecordDelimiter));
+        if (FieldDelimiter != null) xCsv.Add(new XElement("FieldDelimiter", FieldDelimiter));
+        if (QuoteCharacter != null) xCsv.Add(new XElement("QuoteCharacter", QuoteCharacter));
+        if (QuoteEscapeCharacter != null) xCsv.Add(new XElement("QuoteEscapeCharacter", QuoteEscapeCharacter));
+        if (CommentCharacter != null) xCsv.Add(new XElement("Comments", CommentCharacter));
+        return new XElement("InputSerialization", xCsv);
     }
 }
 
@@ -62,17 +62,17 @@ public class JsonInput
 {
     public JsonType Type { get; set; } = JsonType.Document;
 
-    internal XElement Serialize(XNamespace ns) =>
-        new XElement(ns + "InputSerialization",
-            new XElement(ns + "JSON",
-                new XElement(ns + "Type", Type.ToString().ToUpperInvariant())));
+    internal XElement Serialize() =>
+        new XElement("InputSerialization",
+            new XElement("JSON",
+                new XElement("Type", Type.ToString().ToUpperInvariant())));
 }
 
 /// <summary>Parquet input serialization configuration (no additional settings required).</summary>
 public class ParquetInput
 {
-    internal XElement Serialize(XNamespace ns) =>
-        new XElement(ns + "InputSerialization", new XElement(ns + "Parquet"));
+    internal XElement Serialize() =>
+        new XElement("InputSerialization", new XElement("Parquet"));
 }
 
 /// <summary>CSV output serialization configuration.</summary>
@@ -84,16 +84,16 @@ public class CsvOutput
     public string? QuoteCharacter { get; set; }
     public string? QuoteEscapeCharacter { get; set; }
 
-    internal XElement Serialize(XNamespace ns)
+    internal XElement Serialize()
     {
-        var xCsv = new XElement(ns + "CSV");
+        var xCsv = new XElement("CSV");
         if (QuoteFields.HasValue)
-            xCsv.Add(new XElement(ns + "QuoteFields", QuoteFields.Value == CsvQuoteFields.Always ? "ALWAYS" : "ASNEEDED"));
-        if (RecordDelimiter != null) xCsv.Add(new XElement(ns + "RecordDelimiter", RecordDelimiter));
-        if (FieldDelimiter != null) xCsv.Add(new XElement(ns + "FieldDelimiter", FieldDelimiter));
-        if (QuoteCharacter != null) xCsv.Add(new XElement(ns + "QuoteCharacter", QuoteCharacter));
-        if (QuoteEscapeCharacter != null) xCsv.Add(new XElement(ns + "QuoteEscapeCharacter", QuoteEscapeCharacter));
-        return new XElement(ns + "OutputSerialization", xCsv);
+            xCsv.Add(new XElement("QuoteFields", QuoteFields.Value == CsvQuoteFields.Always ? "ALWAYS" : "ASNEEDED"));
+        if (RecordDelimiter != null) xCsv.Add(new XElement("RecordDelimiter", RecordDelimiter));
+        if (FieldDelimiter != null) xCsv.Add(new XElement("FieldDelimiter", FieldDelimiter));
+        if (QuoteCharacter != null) xCsv.Add(new XElement("QuoteCharacter", QuoteCharacter));
+        if (QuoteEscapeCharacter != null) xCsv.Add(new XElement("QuoteEscapeCharacter", QuoteEscapeCharacter));
+        return new XElement("OutputSerialization", xCsv);
     }
 }
 
@@ -102,11 +102,11 @@ public class JsonOutput
 {
     public string? RecordDelimiter { get; set; }
 
-    internal XElement Serialize(XNamespace ns)
+    internal XElement Serialize()
     {
-        var xJson = new XElement(ns + "JSON");
-        if (RecordDelimiter != null) xJson.Add(new XElement(ns + "RecordDelimiter", RecordDelimiter));
-        return new XElement(ns + "OutputSerialization", xJson);
+        var xJson = new XElement("JSON");
+        if (RecordDelimiter != null) xJson.Add(new XElement("RecordDelimiter", RecordDelimiter));
+        return new XElement("OutputSerialization", xJson);
     }
 }
 
@@ -116,8 +116,6 @@ public record SelectScanRange(long Start, long End);
 /// <summary>Options for an S3 Select query.</summary>
 public class SelectObjectOptions
 {
-    private static readonly XNamespace Ns = Constants.S3Ns;
-
     /// <summary>The SQL expression to execute against the object.</summary>
     public required string Expression { get; set; }
 
@@ -144,15 +142,15 @@ public class SelectObjectOptions
     /// <summary>Serializes these options to the S3 SelectObjectContent request XML body.</summary>
     public XElement Serialize()
     {
-        var xReq = new XElement(Ns + "SelectObjectContentRequest",
-            new XElement(Ns + "Expression", Expression),
-            new XElement(Ns + "ExpressionType", ExpressionType.ToString().ToUpperInvariant()));
+        var xReq = new XElement("SelectObjectContentRequest",
+            new XElement("Expression", Expression),
+            new XElement("ExpressionType", ExpressionType.ToString().ToUpperInvariant()));
 
         xReq.Add(InputSerialization switch
         {
-            CsvInput csv => csv.Serialize(Ns),
-            JsonInput json => json.Serialize(Ns),
-            ParquetInput parquet => parquet.Serialize(Ns),
+            CsvInput csv => csv.Serialize(),
+            JsonInput json => json.Serialize(),
+            ParquetInput parquet => parquet.Serialize(),
             _ => throw new ArgumentException(
                 "InputSerialization must be CsvInput, JsonInput, or ParquetInput",
                 nameof(InputSerialization))
@@ -160,21 +158,21 @@ public class SelectObjectOptions
 
         xReq.Add(OutputSerialization switch
         {
-            CsvOutput csv => csv.Serialize(Ns),
-            JsonOutput json => json.Serialize(Ns),
+            CsvOutput csv => csv.Serialize(),
+            JsonOutput json => json.Serialize(),
             _ => throw new ArgumentException(
                 "OutputSerialization must be CsvOutput or JsonOutput",
                 nameof(OutputSerialization))
         });
 
         if (RequestProgress.HasValue)
-            xReq.Add(new XElement(Ns + "RequestProgress",
-                new XElement(Ns + "Enabled", RequestProgress.Value ? "true" : "false")));
+            xReq.Add(new XElement("RequestProgress",
+                new XElement("Enabled", RequestProgress.Value ? "true" : "false")));
 
         if (ScanRange != null)
-            xReq.Add(new XElement(Ns + "ScanRange",
-                new XElement(Ns + "Start", ScanRange.Start),
-                new XElement(Ns + "End", ScanRange.End)));
+            xReq.Add(new XElement("ScanRange",
+                new XElement("Start", ScanRange.Start),
+                new XElement("End", ScanRange.End)));
 
         return xReq;
     }
