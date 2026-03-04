@@ -145,9 +145,10 @@ public class LifecycleConfiguration
     /// <summary>Deserializes a <see cref="LifecycleConfiguration"/> from an XML element.</summary>
     public static LifecycleConfiguration Deserialize(XElement xElement)
     {
+        var ns = xElement.GetDefaultNamespace();
         return new LifecycleConfiguration
         {
-            Rules = xElement.Elements(Ns + "Rule").Select(DeserializeRule).ToList()
+            Rules = xElement.Elements(ns + "Rule").Select(r => DeserializeRule(r, ns)).ToList()
         };
     }
 
@@ -242,40 +243,40 @@ public class LifecycleConfiguration
         return xNcvt;
     }
 
-    private static LifecycleRule DeserializeRule(XElement xRule)
+    private static LifecycleRule DeserializeRule(XElement xRule, XNamespace ns)
     {
-        var id = xRule.Element(Ns + "ID")?.Value;
-        var statusText = xRule.Element(Ns + "Status")?.Value;
+        var id = xRule.Element(ns + "ID")?.Value;
+        var statusText = xRule.Element(ns + "Status")?.Value;
         var status = statusText == "Disabled" ? LifecycleRuleStatus.Disabled : LifecycleRuleStatus.Enabled;
 
-        var xFilter = xRule.Element(Ns + "Filter");
+        var xFilter = xRule.Element(ns + "Filter");
         LifecycleFilter? filter = null;
         if (xFilter != null)
         {
-            var xTag = xFilter.Element(Ns + "Tag");
-            var xAnd = xFilter.Element(Ns + "And");
+            var xTag = xFilter.Element(ns + "Tag");
+            var xAnd = xFilter.Element(ns + "And");
             if (xTag != null)
-                filter = new LifecycleFilter { Tag = DeserializeTag(xTag) };
+                filter = new LifecycleFilter { Tag = DeserializeTag(xTag, ns) };
             else if (xAnd != null)
                 filter = new LifecycleFilter
                 {
                     And = new LifecycleFilterAnd
                     {
-                        Prefix = xAnd.Element(Ns + "Prefix")?.Value,
-                        Tags = xAnd.Elements(Ns + "Tag").Select(DeserializeTag).ToList()
+                        Prefix = xAnd.Element(ns + "Prefix")?.Value,
+                        Tags = xAnd.Elements(ns + "Tag").Select(t => DeserializeTag(t, ns)).ToList()
                     }
                 };
             else
-                filter = new LifecycleFilter { Prefix = xFilter.Element(Ns + "Prefix")?.Value };
+                filter = new LifecycleFilter { Prefix = xFilter.Element(ns + "Prefix")?.Value };
         }
 
-        var xExpiration = xRule.Element(Ns + "Expiration");
+        var xExpiration = xRule.Element(ns + "Expiration");
         LifecycleExpiration? expiration = null;
         if (xExpiration != null)
         {
-            var daysText = xExpiration.Element(Ns + "Days")?.Value;
-            var dateText = xExpiration.Element(Ns + "Date")?.Value;
-            var markerText = xExpiration.Element(Ns + "ExpiredObjectDeleteMarker")?.Value;
+            var daysText = xExpiration.Element(ns + "Days")?.Value;
+            var dateText = xExpiration.Element(ns + "Date")?.Value;
+            var markerText = xExpiration.Element(ns + "ExpiredObjectDeleteMarker")?.Value;
             expiration = new LifecycleExpiration
             {
                 Days = daysText != null ? int.Parse(daysText, CultureInfo.InvariantCulture) : null,
@@ -284,48 +285,48 @@ public class LifecycleConfiguration
             };
         }
 
-        var transitions = xRule.Elements(Ns + "Transition").Select(xt =>
+        var transitions = xRule.Elements(ns + "Transition").Select(xt =>
         {
-            var daysText = xt.Element(Ns + "Days")?.Value;
-            var dateText = xt.Element(Ns + "Date")?.Value;
+            var daysText = xt.Element(ns + "Days")?.Value;
+            var dateText = xt.Element(ns + "Date")?.Value;
             return new LifecycleTransition
             {
                 Days = daysText != null ? int.Parse(daysText, CultureInfo.InvariantCulture) : null,
                 Date = dateText != null ? DateTimeOffset.Parse(dateText, CultureInfo.InvariantCulture) : null,
-                StorageClass = xt.Element(Ns + "StorageClass")?.Value ?? string.Empty,
+                StorageClass = xt.Element(ns + "StorageClass")?.Value ?? string.Empty,
             };
         }).ToList();
 
-        var xNcve = xRule.Element(Ns + "NoncurrentVersionExpiration");
+        var xNcve = xRule.Element(ns + "NoncurrentVersionExpiration");
         LifecycleNoncurrentVersionExpiration? ncve = null;
         if (xNcve != null)
         {
             ncve = new LifecycleNoncurrentVersionExpiration
             {
-                NoncurrentDays = int.Parse(xNcve.Element(Ns + "NoncurrentDays")?.Value ?? "0", CultureInfo.InvariantCulture),
-                NewerNoncurrentVersions = xNcve.Element(Ns + "NewerNoncurrentVersions")?.Value is { } nncv
+                NoncurrentDays = int.Parse(xNcve.Element(ns + "NoncurrentDays")?.Value ?? "0", CultureInfo.InvariantCulture),
+                NewerNoncurrentVersions = xNcve.Element(ns + "NewerNoncurrentVersions")?.Value is { } nncv
                     ? int.Parse(nncv, CultureInfo.InvariantCulture) : null,
             };
         }
 
-        var ncvTransitions = xRule.Elements(Ns + "NoncurrentVersionTransition").Select(xNcvt =>
+        var ncvTransitions = xRule.Elements(ns + "NoncurrentVersionTransition").Select(xNcvt =>
         {
             return new LifecycleNoncurrentVersionTransition
             {
-                NoncurrentDays = int.Parse(xNcvt.Element(Ns + "NoncurrentDays")?.Value ?? "0", CultureInfo.InvariantCulture),
-                StorageClass = xNcvt.Element(Ns + "StorageClass")?.Value ?? string.Empty,
-                NewerNoncurrentVersions = xNcvt.Element(Ns + "NewerNoncurrentVersions")?.Value is { } nncv
+                NoncurrentDays = int.Parse(xNcvt.Element(ns + "NoncurrentDays")?.Value ?? "0", CultureInfo.InvariantCulture),
+                StorageClass = xNcvt.Element(ns + "StorageClass")?.Value ?? string.Empty,
+                NewerNoncurrentVersions = xNcvt.Element(ns + "NewerNoncurrentVersions")?.Value is { } nncv
                     ? int.Parse(nncv, CultureInfo.InvariantCulture) : null,
             };
         }).ToList();
 
-        var xAbort = xRule.Element(Ns + "AbortIncompleteMultipartUpload");
+        var xAbort = xRule.Element(ns + "AbortIncompleteMultipartUpload");
         LifecycleAbortIncompleteMultipartUpload? abort = null;
         if (xAbort != null)
         {
             abort = new LifecycleAbortIncompleteMultipartUpload
             {
-                DaysAfterInitiation = int.Parse(xAbort.Element(Ns + "DaysAfterInitiation")?.Value ?? "0", CultureInfo.InvariantCulture)
+                DaysAfterInitiation = int.Parse(xAbort.Element(ns + "DaysAfterInitiation")?.Value ?? "0", CultureInfo.InvariantCulture)
             };
         }
 
@@ -342,6 +343,6 @@ public class LifecycleConfiguration
         };
     }
 
-    private static LifecycleTag DeserializeTag(XElement xTag) =>
-        new LifecycleTag(xTag.Element(Ns + "Key")?.Value ?? string.Empty, xTag.Element(Ns + "Value")?.Value ?? string.Empty);
+    private static LifecycleTag DeserializeTag(XElement xTag, XNamespace ns) =>
+        new LifecycleTag(xTag.Element(ns + "Key")?.Value ?? string.Empty, xTag.Element(ns + "Value")?.Value ?? string.Empty);
 }

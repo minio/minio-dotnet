@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Minio.Model;
 using Xunit;
 
@@ -115,5 +116,114 @@ public class BucketTests : MinioTest
         var ruleYears = (RetentionRuleYears)objLock.DefaultRetentionRule;
         Assert.Equal(RetentionMode.Compliance, ruleYears.Mode);
         Assert.Equal(3, ruleYears.Years);
+    }
+
+    [Fact]
+    public async Task BucketEncryptionWithoutConfig()
+    {
+        var client = CreateClient();
+        await client.CreateBucketAsync("test").ConfigureAwait(true);
+
+        // No configuration set → throws with ServerSideEncryptionConfigurationNotFoundError.
+        // A full Set/Get/Remove round-trip is not covered here because the standard MinIO
+        // container does not support bucket-default SSE without KMS configured
+        // (SetBucketEncryptionAsync returns 501 NotImplemented for SSE-S3/AES256).
+        var ex = await Assert.ThrowsAsync<MinioHttpException>(
+            () => client.GetBucketEncryptionAsync("test")).ConfigureAwait(true);
+        Assert.Equal("ServerSideEncryptionConfigurationNotFoundError", ex.Error?.Code);
+    }
+
+    [Fact]
+    public async Task BucketLifecycle()
+    {
+        var client = CreateClient();
+        await client.CreateBucketAsync("test").ConfigureAwait(true);
+
+        // No configuration set → returns null
+        var lc1 = await client.GetBucketLifecycleAsync("test").ConfigureAwait(true);
+        Assert.Null(lc1);
+
+        // Set a lifecycle rule that expires objects after 30 days
+        var config = new LifecycleConfiguration
+        {
+            Rules =
+            [
+                new LifecycleRule
+                {
+                    Id = "expire-after-30-days",
+                    Status = LifecycleRuleStatus.Enabled,
+                    Filter = new LifecycleFilter { Prefix = "logs/" },
+                    Expiration = new LifecycleExpiration { Days = 30 },
+                },
+            ],
+        };
+        await client.SetBucketLifecycleAsync("test", config).ConfigureAwait(true);
+
+        // Retrieve and verify the rule round-trips correctly
+        var lc2 = await client.GetBucketLifecycleAsync("test").ConfigureAwait(true);
+        Assert.NotNull(lc2);
+        Assert.Single(lc2.Rules);
+        Assert.Equal("expire-after-30-days", lc2.Rules[0].Id);
+        Assert.Equal(LifecycleRuleStatus.Enabled, lc2.Rules[0].Status);
+        Assert.Equal(30, lc2.Rules[0].Expiration?.Days);
+
+        // Remove and confirm the configuration is gone
+        await client.RemoveBucketLifecycleAsync("test").ConfigureAwait(true);
+        var lc3 = await client.GetBucketLifecycleAsync("test").ConfigureAwait(true);
+        Assert.Null(lc3);
+    }
+
+    [Fact]
+    public async Task BucketReplicationWithoutConfig()
+    {
+        var client = CreateClient();
+        await client.CreateBucketAsync("test").ConfigureAwait(true);
+
+        // No replication configuration set → returns null
+        var rc = await client.GetBucketReplicationAsync("test").ConfigureAwait(true);
+        Assert.Null(rc);
+    }
+
+
+    [Fact]
+    public async Task BucketPolicy()
+    {
+        var client = CreateClient();
+        await client.CreateBucketAsync("test").ConfigureAwait(true);
+
+        // No policy set → returns null
+        var policy1 = await client.GetPolicyAsync("test").ConfigureAwait(true);
+        Assert.Null(policy1);
+
+        // Set a read-only public policy for the bucket
+        const string policyJson = """
+            {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {"AWS": ["*"]},
+                        "Action": ["s3:GetObject"],
+                        "Resource": ["arn:aws:s3:::test/*"]
+                    }
+                ]
+            }
+            """;
+        await client.SetPolicyAsync("test", policyJson).ConfigureAwait(true);
+
+        // Retrieve and verify the policy contains the expected statement
+        var policy2 = await client.GetPolicyAsync("test").ConfigureAwait(true);
+        Assert.NotNull(policy2);
+        using var doc = JsonDocument.Parse(policy2!);
+        var statements = doc.RootElement.GetProperty("Statement");
+        Assert.Equal(1, statements.GetArrayLength());
+        Assert.Equal("Allow", statements[0].GetProperty("Effect").GetString());
+        Assert.Contains("s3:GetObject",
+            statements[0].GetProperty("Action").EnumerateArray().Select(e => e.GetString()));
+
+        // Remove and confirm the policy is gone
+        await client.RemovePolicyAsync("test").ConfigureAwait(true);
+        var policy3 = await client.GetPolicyAsync("test").ConfigureAwait(true);
+        Assert.Null(policy3);
     }
 }

@@ -471,13 +471,7 @@ internal class MinioClient : IMinioClient
                 HttpResponseMessage resp;
                 using (var req = CreateRequest(HttpMethod.Post, bucketName, xDelete, q))
                 {
-                    // DeleteObjects requires a "Content-MD5" header
-                    // TODO: Do this more elegant to prevent repeating code later
-                    var stream = await req.Content!.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                    if (!stream.CanSeek)
-                        throw new ArgumentException("Request content stream must be seekable for Content-MD5 computation.", nameof(req));
-                    req.Content.Headers.ContentMD5 = await MD5.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
-                    stream.Position = 0;
+                    await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
 
                     req.SetBypassGovernanceRetention(bypassGovernanceRetention)
                         .SetExpectedBucketOwner(expectedBucketOwner)
@@ -906,6 +900,7 @@ internal class MinioClient : IMinioClient
         q.Add("encryption", string.Empty);
 
         using var req = CreateRequest(HttpMethod.Put, bucketName, config.Serialize(), q);
+        await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
     }
 
@@ -951,6 +946,7 @@ internal class MinioClient : IMinioClient
         q.Add("lifecycle", string.Empty);
 
         using var req = CreateRequest(HttpMethod.Put, bucketName, config.Serialize(), q);
+        await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
     }
 
@@ -996,6 +992,7 @@ internal class MinioClient : IMinioClient
         q.Add("replication", string.Empty);
 
         using var req = CreateRequest(HttpMethod.Put, bucketName, config.Serialize(), q);
+        await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
         using var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
     }
 
@@ -1618,6 +1615,13 @@ internal class MinioClient : IMinioClient
         var req = CreateRequest(method, path, queryParameters);
         req.Content = new XmlHttpContent(new XDocument(xml));
         return req;
+    }
+
+    private static async Task AddContentMd5Async(HttpRequestMessage req, CancellationToken cancellationToken)
+    {
+        var stream = await req.Content!.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        req.Content.Headers.ContentMD5 = await MD5.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
+        stream.Position = 0;
     }
 
     private static void VerifyBucketName(string bucketName, [CallerArgumentExpression("bucketName")] string? paramName = null)
