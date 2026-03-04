@@ -219,7 +219,7 @@ public class BucketTests : MinioTest
         Assert.Equal(1, statements.GetArrayLength());
         Assert.Equal("Allow", statements[0].GetProperty("Effect").GetString());
         Assert.Contains("s3:GetObject",
-            statements[0].GetProperty("Action").EnumerateArray().Select(e => e.GetString()));
+            statements[0].GetProperty("Action").EnumerateArray().Select(e => e.GetString()!));
 
         // Remove and confirm the policy is gone
         await client.RemovePolicyAsync("test").ConfigureAwait(true);

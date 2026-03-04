@@ -145,7 +145,7 @@ public class LifecycleConfiguration
     /// <summary>Deserializes a <see cref="LifecycleConfiguration"/> from an XML element.</summary>
     public static LifecycleConfiguration Deserialize(XElement xElement)
     {
-        var ns = xElement.GetDefaultNamespace();
+        var ns = xElement.Name.Namespace;
         return new LifecycleConfiguration
         {
             Rules = xElement.Elements(ns + "Rule").Select(r => DeserializeRule(r, ns)).ToList()

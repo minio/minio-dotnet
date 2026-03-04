@@ -1620,6 +1620,9 @@ internal class MinioClient : IMinioClient
     private static async Task AddContentMd5Async(HttpRequestMessage req, CancellationToken cancellationToken)
     {
         var stream = await req.Content!.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        if (!stream.CanSeek)
+            throw new InvalidOperationException("Cannot compute Content-MD5: the request content stream is not seekable.");
+        stream.Position = 0;
         req.Content.Headers.ContentMD5 = await MD5.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
         stream.Position = 0;
     }
