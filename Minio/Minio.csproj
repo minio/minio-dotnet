@@ -1,6 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-      <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Title>MinIO SDK for .NET</Title>
+        <OutputType>Library</OutputType>
+        <PackageId>Minio</PackageId>
+        <PackageTags>MinIO;AIStor;S3;ObjectStore</PackageTags>
+        <Description>MinIO SDK for .NET is used to access the MinIO/AIStor service</Description>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedAllSources>true</EmbedAllSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <IsPackable>true</IsPackable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -10,6 +20,9 @@
       <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="8.10.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3" />
       <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+      <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+        <PrivateAssets>all</PrivateAssets>
+      </PackageReference>
       <PackageReference Include="System.IO.Hashing" Version="8.0.0" />
       <PackageReference Include="System.Reactive" Version="6.1.0" />
     </ItemGroup>

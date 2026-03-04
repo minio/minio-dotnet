@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 MinIO .NET SDK - A modern C# client library for MinIO S3-compatible object storage. Multi-targeted for .NET 8.0 and later.
 
 ## Build Commands
-Make sure you have installed a recent .NET Core SDK.
+Make sure you have installed a recent .NET SDK.
 ```bash
 # Build
 dotnet build

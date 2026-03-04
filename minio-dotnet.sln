@@ -10,7 +10,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution files", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
 		CLAUDE.md = CLAUDE.md
+		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
 		DEVELOPMENT.md = DEVELOPMENT.md
+		LICENSE = LICENSE
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.IntegrationTests", "Minio.IntegrationTests\Minio.IntegrationTests.csproj", "{80DE6DB6-D10F-4324-8C17-A77E3E52DD03}"
