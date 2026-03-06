@@ -21,10 +21,10 @@ public class ObjectLockConfiguration
     /// <returns>An <see cref="XElement"/> representing the <c>ObjectLockConfiguration</c> XML element.</returns>
     public XElement Serialize()
     {
-        var xConfig = new XElement(Constants.S3Ns + "ObjectLockConfiguration",
-            new XElement(Constants.S3Ns + "ObjectLockEnabled", "Enabled"));
+        var xConfig = new XElement("ObjectLockConfiguration",
+            new XElement("ObjectLockEnabled", "Enabled"));
         if (DefaultRetentionRule != null)
-            xConfig.Add(new XElement(Constants.S3Ns + "Rule", DefaultRetentionRule.Serialize()));
+            xConfig.Add(new XElement("Rule", DefaultRetentionRule.Serialize()));
         return xConfig;
     }
 
@@ -37,7 +37,7 @@ public class ObjectLockConfiguration
     public static ObjectLockConfiguration Deserialize(XElement xElement)
     {
         if (xElement == null) throw new ArgumentNullException(nameof(xElement));
-        var xDefaultRetention = xElement.Element(Constants.S3Ns + "Rule")?.Element(Constants.S3Ns + "DefaultRetention");
+        var xDefaultRetention = xElement.Element("Rule")?.Element("DefaultRetention");
         var defaultRetentionRule = xDefaultRetention != null ? RetentionRule.Deserialize(xDefaultRetention) : null;
         return new ObjectLockConfiguration
         {

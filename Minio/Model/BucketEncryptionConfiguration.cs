@@ -49,26 +49,24 @@ public class BucketEncryptionConfiguration
     /// <summary>Serializes this configuration to its S3 XML representation.</summary>
     public XElement Serialize()
     {
-        var ns = Constants.S3Ns;
-        var xApply = new XElement(ns + "ApplyServerSideEncryptionByDefault",
-            new XElement(ns + "SSEAlgorithm", SseAlgorithmExtensions.Serialize(SseAlgorithm)));
+        var xApply = new XElement("ApplyServerSideEncryptionByDefault",
+            new XElement("SSEAlgorithm", SseAlgorithmExtensions.Serialize(SseAlgorithm)));
         if (!string.IsNullOrEmpty(KmsMasterKeyId))
-            xApply.Add(new XElement(ns + "KMSMasterKeyID", KmsMasterKeyId));
-        var xRule = new XElement(ns + "Rule", xApply);
+            xApply.Add(new XElement("KMSMasterKeyID", KmsMasterKeyId));
+        var xRule = new XElement("Rule", xApply);
         if (BucketKeyEnabled.HasValue)
-            xRule.Add(new XElement(ns + "BucketKeyEnabled", BucketKeyEnabled.Value ? "true" : "false"));
-        return new XElement(ns + "ServerSideEncryptionConfiguration", xRule);
+            xRule.Add(new XElement("BucketKeyEnabled", BucketKeyEnabled.Value ? "true" : "false"));
+        return new XElement("ServerSideEncryptionConfiguration", xRule);
     }
 
     /// <summary>Deserializes a <see cref="BucketEncryptionConfiguration"/> from an XML element.</summary>
     public static BucketEncryptionConfiguration Deserialize(XElement xElement)
     {
-        var ns = Constants.S3Ns;
-        var xRule = xElement.Element(ns + "Rule");
-        var xApply = xRule?.Element(ns + "ApplyServerSideEncryptionByDefault");
-        var algorithmText = xApply?.Element(ns + "SSEAlgorithm")?.Value ?? "AES256";
-        var kmsMasterKeyId = xApply?.Element(ns + "KMSMasterKeyID")?.Value;
-        var bucketKeyEnabledText = xRule?.Element(ns + "BucketKeyEnabled")?.Value;
+        var xRule = xElement.Element("Rule");
+        var xApply = xRule?.Element("ApplyServerSideEncryptionByDefault");
+        var algorithmText = xApply?.Element("SSEAlgorithm")?.Value ?? "AES256";
+        var kmsMasterKeyId = xApply?.Element("KMSMasterKeyID")?.Value;
+        var bucketKeyEnabledText = xRule?.Element("BucketKeyEnabled")?.Value;
         bool? bucketKeyEnabled = bucketKeyEnabledText != null ? bool.Parse(bucketKeyEnabledText) : null;
         return new BucketEncryptionConfiguration
         {

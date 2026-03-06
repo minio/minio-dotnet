@@ -15,8 +15,6 @@ namespace Minio.CredentialProviders;
 /// </summary>
 public class WebIdentityProvider : ICredentialsProvider
 {
-    private readonly XNamespace Ns = "https://sts.amazonaws.com/doc/2011-06-15/";
-
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IAccessTokenProvider _accessTokenProvider;
     private readonly IOptions<WebIdentityCredentialsOptions> _options;
@@ -94,12 +92,12 @@ public class WebIdentityProvider : ICredentialsProvider
             var xRoot = XDocument.Parse(responseData).Root;
             if (xRoot == null) throw new MinioHttpException(req, resp, null);
             
-            var xError = xRoot.Element(Ns + "Error");
+            var xError = xRoot.Element("Error");
             var err = new ErrorResponse
             {
-                Code = xError?.Element(Ns + "Code")?.Value ?? string.Empty,
-                Message = xError?.Element(Ns + "Message")?.Value ?? string.Empty,
-                RequestId = xRoot.Element(Ns + "RequestId")?.Value ?? string.Empty,
+                Code = xError?.Element("Code")?.Value ?? string.Empty,
+                Message = xError?.Element("Message")?.Value ?? string.Empty,
+                RequestId = xRoot.Element("RequestId")?.Value ?? string.Empty,
                 BucketName = string.Empty,
                 Key = string.Empty,
                 Resource = string.Empty,
@@ -112,18 +110,20 @@ public class WebIdentityProvider : ICredentialsProvider
         }
 
         var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        var xResponse = await XDocument.LoadAsync(responseBody, LoadOptions.None, cancellationToken).ConfigureAwait(false);
-
-        var xCreds = xResponse.Root?.Element(Ns + "AssumeRoleWithWebIdentityResult")?.Element(Ns + "Credentials");
-        if (xCreds == null)
-            throw new InvalidOperationException("STS response did not contain a Credentials element.");
-        var exp = xCreds.Element(Ns + "Expiration")?.Value;
-        return new Credentials
+        await using (responseBody.ConfigureAwait(false))
         {
-            AccessKey = xCreds.Element(Ns + "AccessKeyId")?.Value ?? string.Empty,
-            SecretKey = xCreds.Element(Ns + "SecretAccessKey")?.Value ?? string.Empty,
-            SessionToken = xCreds.Element(Ns + "SessionToken")?.Value ?? string.Empty,
-            Expiration = exp != null ? DateTime.Parse(exp, null, DateTimeStyles.RoundtripKind) : null,
-        };
+            var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken).ConfigureAwait(false);
+            var xCreds = xResponse.Root?.Element("AssumeRoleWithWebIdentityResult")?.Element("Credentials");
+            if (xCreds == null)
+                throw new InvalidOperationException("STS response did not contain a Credentials element.");
+            var exp = xCreds.Element("Expiration")?.Value;
+            return new Credentials
+            {
+                AccessKey = xCreds.Element("AccessKeyId")?.Value ?? string.Empty,
+                SecretKey = xCreds.Element("SecretAccessKey")?.Value ?? string.Empty,
+                SessionToken = xCreds.Element("SessionToken")?.Value ?? string.Empty,
+                Expiration = exp != null ? DateTime.Parse(exp, null, DateTimeStyles.RoundtripKind) : null,
+            };
+        }
     }
 }

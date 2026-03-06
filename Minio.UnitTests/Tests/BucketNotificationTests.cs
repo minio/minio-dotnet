@@ -49,7 +49,7 @@ public class BucketNotificationTests
         var got = bucketNotification1.Serialize();
         var expected = XElement.Parse(
             """
-            <NotificationConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <NotificationConfiguration>
                 <CloudFunctionConfiguration>
                     <CloudFunction>arn:aws:lambda:us-west-2:35667example:function:CreateThumbnail</CloudFunction>
                     <Id>ObjectCreatedEvents</Id>
