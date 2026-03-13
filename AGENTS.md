@@ -3,189 +3,240 @@
 ## Build & Test Commands
 
 ### Project Structure
-- **Main Library**: `Minio/Minio.csproj` (net6.0, net7.0, netstandard2.0)
-- **Unit Tests**: `Minio.Tests/Minio.Tests.csproj` (MSTest, net6.0)
-- **Functional Tests**: `Minio.Functional.Tests/Minio.Functional.Tests.csproj` (console app, net6.0, net7.0)
-- **Examples**: `Minio.Examples/Minio.Examples.csproj`
-- **Simple Test**: `SimpleTest/SimpleTest.csproj`
+- **Main Library**: `Minio/Minio.csproj` (net8.0, net9.0, net10.0)
+- **Unit Tests**: `Minio.UnitTests/Minio.UnitTests.csproj` (xUnit, net8.0+)
+- **Integration Tests**: `Minio.IntegrationTests/Minio.IntegrationTests.csproj` (xUnit with Testcontainers)
+- **Multipart Upload Tests**: `Minio.IntegrationTests/Tests/MultipartUploadTests.cs` (10 comprehensive tests)
+- **Checksum Verification**: `Minio.Helpers.ChecksumVerifyingStream` + `ChecksumVerificationException` classes
 
 ### Build & Restore
 ```bash
-# Restore dependencies
 dotnet restore
-
-# Build all projects
 dotnet build
-
-# Build specific project
 dotnet build Minio/Minio.csproj
-dotnet build Minio.Tests/Minio.Tests.csproj
-
-# Build in Release mode
+dotnet build Minio.UnitTests/Minio.UnitTests.csproj
 dotnet build --configuration Release
 ```
 
 ### Running Tests
 
-#### Unit Tests (MSTest)
+#### Unit Tests (xUnit)
 ```bash
-# Run all unit tests
-dotnet test Minio.Tests/Minio.Tests.csproj
-
-# Run a specific test method
-dotnet test Minio.Tests/Minio.Tests.csproj --filter "FullyQualifiedName~UtilsTest.TestValidPartSize1"
-
-# Run tests in a specific test class
-dotnet test Minio.Tests/Minio.Tests.csproj --filter "FullyQualifiedName~UtilsTest"
-
-# Run tests with verbose output
-dotnet test Minio.Tests/Minio.Tests.csproj --verbosity detailed
+dotnet test Minio.UnitTests/Minio.UnitTests.csproj
+dotnet test Minio.UnitTests/Minio.UnitTests.csproj --filter "FullyQualifiedName~MinioClientBuilderTests.EnsureMinioClient"
+dotnet test Minio.UnitTests/Minio.UnitTests.csproj --filter "FullyQualifiedName~MinioClientBuilderTests"
+dotnet test --verbosity detailed
 ```
 
-#### Functional Tests
+#### Integration Tests
 ```bash
-# Run functional tests (requires MinIO server)
-cd Minio.Functional.Tests
-dotnet run
-
-# With custom endpoint
-SERVER_ENDPOINT="myserver:9000" ACCESS_KEY="mykey" SECRET_KEY="mysecret" dotnet run
-
-# Run core tests only
-MINT_MODE=core dotnet run
+dotnet test Minio.IntegrationTests/Minio.IntegrationTests.csproj
+dotnet test Minio.IntegrationTests/Minio.IntegrationTests.csproj --filter "FullyQualifiedName~BucketTests"
 ```
 
-#### Simple Test
+#### Examples
 ```bash
-dotnet run --project SimpleTest/SimpleTest.csproj
+dotnet run --project Minio.Examples.Simple/Minio.Examples.Simple.csproj
+dotnet run --project Minio.Examples.Host/Minio.Examples.Host.csproj
 ```
 
-### Linting & Code Analysis
+### Code Analysis
 ```bash
-# Run Roslyn analyzers
 dotnet build /p:EnableNETAnalyzers=true /p:AnalysisLevel=latest
-
-# Check for warnings as errors (configured in Directory.Build.props)
-dotnet build
 ```
+
+**Code Quality Standards:**
+- TreatWarningsAsErrors enabled - all code must compile without warnings
+- NullableReferenceTypes enabled - all nullable scenarios must be handled
+- XML comments required for all public APIs
+- Async: Use `ConfigureAwait(false)` in library code, `ConfigureAwait(true)` in tests
+- Null safety: Use `ArgumentNullException.ThrowIfNull()`, `ArgumentException.ThrowIfNullOrEmpty()`
+- Resource management: Properly dispose streams via `await using` pattern
+- Naming: PascalCase for public members, camelCase for private fields
 
 ## Code Style Guidelines
 
 ### C# Coding Conventions
+- File-scoped namespaces, using directives outside namespace blocks
+- PascalCase for classes/structs/interfaces/enums/methods/properties (interfaces start with `I`)
+- camelCase for private fields (no underscore prefix)
+- 4-space indentation, LF line endings, braces on new line
+- Expression-bodied members for simple single-line methods/properties
+- Prefer auto-properties over backing fields
+- Use `var` for type-obvious scenarios
+- Always specify accessibility modifiers
+- Use `internal` for implementation details, `public` for public API
+- Use `readonly` for immutable fields, `sealed` for non-inheritable classes
 
-#### Namespace Declarations
-- Use file-scoped namespaces (`namespace Minio.DataModel;` not block-scoped)
-- using directives place **outside** namespace blocks
-
-#### Naming Conventions
-- **Classes/Structs/Interfaces/Enums**: PascalCase (`MinioClient`, `BucketArgs<T>`, `IMinioClient`)
-- **Interfaces**: Start with `I` (`IMinioClient`, `IRequestLogger`)
-- **Methods**: PascalCase (`WithEndpoint`, `Build`, `ValidateBucketName`)
-- **Properties**: PascalCase (`BucketName`, `Endpoint`, `RequestTimeout`)
-- **Private fields**: camelCase (no underscore prefix: `private bool disposedValue`)
-- **Constants**: PascalCase (`DefaultEndpoint`, `MaximumStreamObjectSize`)
-
-#### Formatting
-- **Indentation**: 4 spaces
-- **Line endings**: LF (Unix-style)
-- **Braces**: Always on new line (all methods, classes, properties)
-- **Expression-bodied members**: Use for simple methods/properties
-- **Auto-properties**: Prefer auto-properties over backing fields
-- **var keyword**: Use for type-obvious scenarios (`var client = new MinioClient()`)
-
-#### Accessibility
-- Always specify accessibility modifiers (`public`, `private`, `internal`)
-- `internal` for implementation details, `public` for public API
-- Use `readonly` for fields that don't change
-
-### Async/Await_patterns
-- Use `async Task` for void-returning async methods (events)
+### Async/Await Patterns
+- Use `async Task` for async void methods (events)
 - Use `async Task<T>` for methods returning a value
 - Always use `ConfigureAwait(false)` in library code
-- Use `ValueTask` for performance-critical paths when appropriate
+- Use `ValueTask` for performance-critical paths
 
 ### Error Handling
-- Throw specific exception types (`MinioException`, `InvalidBucketNameException`)
-- Use exception messages that clearly describe the issue
+- Throw specific exception types (`MinioException`, `InvalidOperationException`)
+- Use descriptive exception messages
 - Validate input parameters in public API methods
 - Parse server responses and convert to appropriate exceptions
 
 ### Naming Specifics
-- Use `Args` suffix for request argument classes (`MakeBucketArgs`, `BucketExistsArgs`)
 - Use fluent builder pattern: `With[PropertyName]()` methods return `this`
-- Use `Async` suffix for async methods when同步 version exists
+- Use `Async` suffix for async methods
 - Use `Task` return type for async methods
 
 ### Using Directives
-- Sort system directives first (`using System.*`)
+- Sort using directives alphabetically within groups
 - Group using directives (system, then external packages, then internal namespaces)
 - Remove unused using directives
+- Use aliased using for generic types
 
 ### XML Documentation
 - Document all public API members
-- Use `<summary>`, `<param>`, `<returns>`, `<exception>` tags
-- Include example usage for complex methods
+- Use `<summary>`, `<param>`, `<returns>`, `<exception>`, `<example>` tags
+- Include usage examples for complex methods
+- Use `<see>` and `<paramref>` for cross-references
 
 ## Testing Guidelines
 
-### Unit Tests
-- Use MSTest framework (`[TestClass]`, `[TestMethod]`)
+### Unit Tests (xUnit)
+- Use xUnit framework (`[Fact]`, `[Theory]` attributes)
 - Test one behavior per method
-- Use descriptive test method names (`TestMethodName_Scenario_ExpectedBehavior`)
-- Verify expected exceptions with `[ExpectedException]` attribute or `Assert.ThrowsException`
-- Use `TestHelper.GetRandomName()` for generating test names
+- Use descriptive test method names (`MethodName_Scenario_ExpectedBehavior`)
+- Use `Assert.Throws<T>` for exception testing
+- Use `[InlineData]` for parameterized tests
+- Mock dependencies using Moq or create test doubles manually
 
 ### Test Organization
-- Tests located in `Minio.Tests/` directory
-- Mock external dependencies using Moq
-- Test both success and failure scenarios
-- Avoid network calls in unit tests
+- Unit tests in `Minio.UnitTests/` directory
+- Integration tests in `Minio.IntegrationTests/` directory
+- Base test classes: `MinioTest` (uses Testcontainers)
+- Clean up resources in `DisposeAsync()` or `[Fact]` cleanup code
 
-### Functional Tests
-- Located in `Minio.Functional.Tests/`
-- Require a running MinIO server
-- Environment variables: `SERVER_ENDPOINT`, `ACCESS_KEY`, `SECRET_KEY`, `ENABLE_HTTPS`
-- Use `FunctionalTest.GetRandomName()` for bucket/object names
-- Clean up resources after tests
+### Integration Tests
+- Use `MinioTest` base class for integration tests
+- Tests use Testcontainers (MinIO, NATS, Keycloak)
+- Environment variables: `SERVER_ENDPOINT`, `ACCESS_KEY`, `SECRET_KEY` (when running externally)
 
 ## Project-Specific Patterns
 
 ### Builder Pattern
-The client uses a fluent builder pattern:
 ```csharp
-var client = new MinioClient()
-    .WithEndpoint("play.min.io")
-    .WithCredentials("access", "secret")
-    .WithSSL()
+var client = new MinioClientBuilder("https://minio.example.com")
+    .WithStaticCredentials("accessKey", "secretKey")
     .Build();
 ```
 
-### Argument Classes
-All operations use argument classes:
+### Credentials Providers
+Multiple credential providers via `ICredentialsProvider`:
+- `StaticCredentialsProvider` - Static access key/secret
+- `EnvironmentCredentialsProvider` - AWS environment variables
+- `AccessTokenProvider` - Token-based authentication
+- Keycloak integration via `KeycloakAccessTokenProvider`
+
+### HTTP Client
+- Uses `HttpClient` for all HTTP operations
+- Custom `HttpClientFactory` for client management
+- Request signing via `V4RequestAuthenticator` (AWS Signature Version 4)
+
+### Configuration
+#### Directory.Build.props
+- Target frameworks: net8.0, net9.0, net10.0
+- LangVersion: latest, implicit usings enabled, nullable enabled
+- AnalysisMode: AllEnabledByDefault, SourceLink enabled
+- TreatWarningsAsErrors: true, GenerateDocumentationFile: true
+
+#### .editorconfig
+- Comprehensive code style rules configured
+- CA rules suppressed where not applicable (see .editorconfig comments for details)
+
+### Server-Side Encryption (SSE)
+
+The SDK supports three SSE types matching MinIO/Rust SDK:
+
+#### SSE-S3 (S3-managed keys)
 ```csharp
-var args = new MakeBucketArgs().WithBucket("mybucket");
-await client.MakeBucketAsync(args);
+var client = new MinioClientBuilder("https://minio.example.com")
+    .WithStaticCredentials("accessKey", "secretKey")
+    .Build();
+
+var putOptions = new PutObjectOptions
+{
+    ServerSideEncryption = new SseS3Config()
+};
+
+await client.PutObjectAsync("mybucket", "myobject", stream, putOptions, null, cancellationToken);
 ```
 
-### Credential Providers
-Supports multiple credential providers (`IClientProvider` interface):
-- AWS Environment Provider
-- Assume Role Provider
-- Certificate Identity Provider
-- Web Identity Provider
-- Chained Provider
+#### SSE-KMS (AWS KMS-managed keys)
+```csharp
+var putOptions = new PutObjectOptions
+{
+    ServerSideEncryption = new SseKmsConfig() // Uses default KMS key
+};
 
-## Configuration
+// Or with specific key ID
+var putOptions = new PutObjectOptions
+{
+    ServerSideEncryption = new SseKmsConfig("my-kms-key-id")
+};
+```
 
-### Directory.Build.props
-- Configures analyzers, warnings as errors, code style enforcement
-- Auto-includes SourceLink for debugging
-- Generates documentation and symbol packages on Release builds
-- `<ImplicitUsings>enable</ImplicitUsings>` and `<Nullable>enable</Nullable>` commented out
+#### SSE-C (Customer-provided keys)
+Not yet implemented (requires customer key management).
 
-### .editorconfig
-- Configured to remove noise and increase conciseness
-- Deviations from VS defaults documented in comments
-- Disables underscore prefix on private fields
-- Uses file-scoped namespace declarations
-- LF line endings
+#### Get Object with SSE
+```csharp
+var getOptions = new GetObjectOptions
+{
+    ServerSideEncryption = new SseS3Config()
+};
+
+await using var stream = await client.GetObjectAsync("mybucket", "myobject", getOptions, cancellationToken);
+// Checksum verification is automatic when checksums are present in ObjectInfo
+```
+
+### Checksum Verification
+
+Automatic checksum verification during download:
+- Supports CRC32, CRC32C, CRC64NVME, SHA1, SHA256
+- Automatically wraps streams via `ChecksumVerifyingStream`
+- Throws `ChecksumVerificationException` on mismatch
+
+**Note**: For put operations, specify checksum algorithm:
+```csharp
+var putOptions = new PutObjectOptions
+{
+    ChecksumAlgorithm = ChecksumAlgorithm.Crc32c
+};
+```
+
+**Note**: CRC64NVME (matching Rust SDK) is recommended for new applications as it provides the most accurate checksums.
+
+For multipart uploads, set checksums for individual parts:
+```csharp
+var part1 = new PartInfo 
+{ 
+    PartNumber = 1, 
+    Etag = "part1-etag",
+    ChecksumAlgorithm = ChecksumAlgorithm.Crc64nvme,
+    Checksum = crc64nvmeBytes
+};
+```
+
+### Error Responses
+- Custom exception hierarchy starting with `MinioException`
+- `MinioHttpException` for HTTP-specific errors
+
+## CI/CD Notes
+
+- SourceLink enabled for debugging
+- Documentation and symbol packages generated on Release builds
+- GitHub Actions for CI/CD
+- NuGet package: https://www.nuget.org/packages/Minio/
+
+## Build Status
+
+- **Unit Tests**: 213 tests pass across net8.0, net9.0, net10.0
+- **Integration Tests**: Uses Testcontainers for MinIO (requires Docker)
+- **Build**: 0 errors, 0 warnings with TreatWarningsAsErrors enabled

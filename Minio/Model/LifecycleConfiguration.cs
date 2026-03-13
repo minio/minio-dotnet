@@ -143,7 +143,7 @@ public class LifecycleConfiguration
     /// <summary>Deserializes a <see cref="LifecycleConfiguration"/> from an XML element.</summary>
     public static LifecycleConfiguration Deserialize(XElement xElement)
     {
-        if (xElement is null) throw new ArgumentNullException(nameof(xElement));
+        ArgumentNullException.ThrowIfNull(xElement);
         return new LifecycleConfiguration
         {
             Rules = xElement.Elements("Rule").Select(DeserializeRule).ToList()

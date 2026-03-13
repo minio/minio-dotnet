@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace Minio.Model;
@@ -129,6 +130,7 @@ public class ReplicationConfiguration
     /// <summary>Deserializes a <see cref="ReplicationConfiguration"/> from an XML element.</summary>
     public static ReplicationConfiguration Deserialize(XElement xElement)
     {
+        ArgumentNullException.ThrowIfNull(xElement);
         return new ReplicationConfiguration
         {
             Role = xElement.Element("Role")?.Value,
@@ -274,7 +276,7 @@ public class ReplicationConfiguration
                 {
                     Status = DeserializeStatus(xRtc.Element("Status")?.Value),
                     Time = xRtc.Element("Time") is { } xTime
-                        ? new ReplicationTimeValue { Minutes = int.Parse(xTime.Element("Minutes")?.Value ?? "0") }
+                        ? new ReplicationTimeValue { Minutes = int.Parse(xTime.Element("Minutes")?.Value ?? "0", CultureInfo.InvariantCulture) }
                         : null,
                 }
                 : null,
@@ -283,7 +285,7 @@ public class ReplicationConfiguration
                 {
                     Status = DeserializeStatus(xMetrics.Element("Status")?.Value),
                     EventThreshold = xMetrics.Element("EventThreshold") is { } xEt
-                        ? new ReplicationTimeValue { Minutes = int.Parse(xEt.Element("Minutes")?.Value ?? "0") }
+                        ? new ReplicationTimeValue { Minutes = int.Parse(xEt.Element("Minutes")?.Value ?? "0", CultureInfo.InvariantCulture) }
                         : null,
                 }
                 : null,
@@ -304,7 +306,7 @@ public class ReplicationConfiguration
         return new ReplicationRule
         {
             Id = id,
-            Priority = priorityText != null ? int.Parse(priorityText) : null,
+            Priority = priorityText != null ? int.Parse(priorityText, CultureInfo.InvariantCulture) : null,
             Status = status,
             Filter = filter,
             Destination = dest,

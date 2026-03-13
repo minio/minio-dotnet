@@ -53,7 +53,7 @@ public class CopyObjectOptions
     public DateTimeOffset? Expires { get; set; }
 
     /// <summary>User-defined metadata for the destination object. Requires <see cref="MetadataDirective"/> = <see cref="Model.MetadataDirective.Replace"/>.</summary>
-    public IDictionary<string, string>? UserMetadata { get; set; }
+    public IDictionary<string, string>? UserMetadata { get; } = new Dictionary<string, string>();
 
     /// <summary>User-defined tags for the destination object. Requires <see cref="TaggingDirective"/> = <see cref="Model.TaggingDirective.Replace"/>.</summary>
     public IEnumerable<KeyValuePair<string, string>>? UserTags { get; set; }

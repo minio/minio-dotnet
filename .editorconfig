@@ -1,0 +1,102 @@
+root = true
+
+[*.{cs,vb}]
+indent_style = space
+indent_size = 4
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+# Disables compiler enrichment of symbol names
+dotnet_analyzer_diagnostic.category-usage.severity = none
+dotnet_analyzer_diagnostic.category-api-design.severity = none
+
+# Remove unnecessary usings
+csharp_using_directive_placement.in_namespace = at_namespace
+csharp_using_directive_placement.prefer_inside_namespace = true
+dotnet_remove_unnecessary_usings.in_documentation = true
+dotnet_REMOVE_UNNECESSARY_USINGS_SEPARATELY = true
+
+# Naming conventions
+dotnet_naming_rule.private_fields_must_be_camel_case.severity = suggestion
+dotnet_naming_rule.private_fields_must_be_camel_case.symbols = private_fields
+dotnet_naming_rule.private_fields_must_be_camel_case.style = camel_case
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.camel_case.required_prefix =
+dotnet_naming_style.camel_case.required_suffix =
+dotnet_naming_style.camel_case.word_separator =
+dotnet_naming_styles.camel_case.capitalization = camel_case
+
+# C# code style
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+
+# Expression-bodied members
+csharp_style_expression_bodied_methods = false:none
+csharp_style_expression_bodied_constructors = false:none
+csharp_style_expression_bodied_local_functions = false:none
+csharp_style_expression_bodied_properties = true:none
+csharp_style_expression_bodied_indexers = true:none
+csharp_style_expression_bodied_accessors = true:none
+
+# Pattern matching
+csharp_style_pattern_matching_for_as_with_null_check = true:suggestion
+csharp_style_pattern_matching_for_is_with_type_check = true:suggestion
+csharp_style_inlined_variable_declaration = true:suggestion
+csharp_style_throw_expression = true:suggestion
+csharp_style_coalesce_expression = true:suggestion
+csharp_style_null_propagation = true:suggestion
+
+# File organization
+csharp_file_name_separator = _
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_first_file_member = true
+csharp_new_line_before_type_keywords = true
+
+# Alias keyword for intrinsic types
+dotnet_style_predefined_type_keyword_for_instance_members = true:suggestion
+dotnet_style_predefined_type_keyword_for_member_access = true:suggestion
+
+# this. and Me. preferences
+dotnet_style_require_this qualifications_for_members = true:suggestion
+dotnet_style_require_this qualifications_for_methods = true:suggestion
+dotnet_style_require_this qualifications_for_properties = true:suggestion
+dotnet_style_require_this qualifications_for_indexers = true:suggestion
+
+# Qualify field access
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+
+# Language keywords
+dotnet_style_predefined_type_keyword = true:suggestion
+
+# parens
+csharp_prefer_braces = true:suggestion
+csharp_prefer_simplified_interpolation = true:suggestion
+
+# Modifier preferences
+csharp_prefer_static_member = true:suggestion
+csharp_prefer_simple_using_statement = true:suggestion
+
+# Null checking
+csharp_prefer_not_pattern = true:suggestion
+csharp_prefer_pattern_matching = true:suggestion
+
+# Suppress specific CA rules that are not applicable to this codebase
+dotnet_diagnostic.CA2227.severity = none
+dotnet_diagnostic.CA1819.severity = none
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA5351.severity = none
+dotnet_diagnostic.CA2000.severity = none
+dotnet_diagnostic.CA2024.severity = none
+dotnet_diagnostic.CA1510.severity = none
+dotnet_diagnostic.CA1835.severity = none
+dotnet_diagnostic.CS8604.severity = none
+dotnet_diagnostic.CS1591.severity = none
+dotnet_diagnostic.CS8602.severity = none
+dotnet_diagnostic.CA1720.severity = none
+dotnet_diagnostic.CA1303.severity = none

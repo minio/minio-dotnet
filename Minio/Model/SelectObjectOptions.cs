@@ -69,9 +69,9 @@ public class JsonInput
 }
 
 /// <summary>Parquet input serialization configuration (no additional settings required).</summary>
-public class ParquetInput
+public sealed class ParquetInput
 {
-    internal XElement Serialize() =>
+    internal static XElement Serialize() =>
         new XElement("InputSerialization", new XElement("Parquet"));
 }
 
@@ -150,7 +150,7 @@ public class SelectObjectOptions
         {
             CsvInput csv => csv.Serialize(),
             JsonInput json => json.Serialize(),
-            ParquetInput parquet => parquet.Serialize(),
+            ParquetInput parquet => ParquetInput.Serialize(),
             _ => throw new ArgumentException(
                 "InputSerialization must be CsvInput, JsonInput, or ParquetInput",
                 nameof(InputSerialization))

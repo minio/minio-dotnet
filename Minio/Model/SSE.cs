@@ -13,11 +13,6 @@ public class SSE : IServerSideEncryption
     // SseGenericHeader is the AWS SSE header used for SSE-S3 and SSE-KMS.
     private const string SseGenericHeader = "X-Amz-Server-Side-Encryption";
 
-    // SseKmsKeyID is the AWS SSE-KMS key id.
-    private const string SseKmsKeyID = SseGenericHeader + "-Aws-Kms-Key-Id";
-    // SseEncryptionContext is the AWS SSE-KMS Encryption Context data.
-    private const string SseEncryptionContext = SseGenericHeader + "-Context";
-
     // SseCustomerAlgorithm is the AWS SSE-C algorithm HTTP header key.
     private const string SseCustomerAlgorithm = SseGenericHeader + "-Customer-Algorithm";
     // SseCustomerKey is the AWS SSE-C encryption key HTTP header key.

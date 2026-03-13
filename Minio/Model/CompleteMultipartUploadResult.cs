@@ -36,6 +36,12 @@ public class CompleteMultipartUploadResult
     public string? ChecksumCRC32C { get; init; }
 
     /// <summary>
+    /// Gets the Base64-encoded CRC-64/NVME checksum of the assembled object, if one was requested.
+    /// This matches the Rust SDK's CRC64NVME checksum algorithm.
+    /// </summary>
+    public string? ChecksumCRC64nvme { get; init; }
+
+    /// <summary>
     /// Gets the Base64-encoded SHA-1 checksum of the assembled object, if one was requested.
     /// </summary>
     public string? ChecksumSHA1 { get; init; }

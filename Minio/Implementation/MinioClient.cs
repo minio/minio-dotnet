@@ -315,6 +315,7 @@ internal class MinioClient : IMinioClient
                 {
                     ChecksumAlgorithm.Crc32 => ("ChecksumCRC32", 32),
                     ChecksumAlgorithm.Crc32c => ("ChecksumCRC32C", 32),
+                    ChecksumAlgorithm.Crc64nvme => ("ChecksumCRC64nvme", 64),
                     ChecksumAlgorithm.Sha1 => ("ChecksumSHA1", 128),
                     ChecksumAlgorithm.Sha256 => ("ChecksumSHA256", 256),
                     _ => throw new ArgumentException("Invalid checksum algorithm", nameof(parts))
@@ -409,7 +410,29 @@ internal class MinioClient : IMinioClient
         var resp = await GetOrHeadObjectAsync(HttpMethod.Get, bucketName, key, options, cancellationToken).ConfigureAwait(false);
         var stream = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         var objectInfo = ToObjectInfo(key, resp);
-        return new ObjectInfoStream(stream, objectInfo, resp);
+        
+        // Wrap the stream with checksum verification if checksums were provided
+        var wrappedStream = WrapStreamWithChecksumVerification(stream, objectInfo, resp);
+        
+        return new ObjectInfoStream(wrappedStream, objectInfo, resp);
+    }
+    
+    private static Stream WrapStreamWithChecksumVerification(Stream innerStream, ObjectInfo info, HttpResponseMessage resp)
+    {
+        // Determine which checksum algorithm to use (CRC64NVME has priority for most accurate checksums)
+        if (!string.IsNullOrEmpty(info.ChecksumCRC64nvme))
+            return new ChecksumVerifyingStream(innerStream, ChecksumAlgorithm.Crc64nvme, info.ChecksumCRC64nvme!);
+        if (!string.IsNullOrEmpty(info.ChecksumCRC32C))
+            return new ChecksumVerifyingStream(innerStream, ChecksumAlgorithm.Crc32c, info.ChecksumCRC32C!);
+        if (!string.IsNullOrEmpty(info.ChecksumCRC32))
+            return new ChecksumVerifyingStream(innerStream, ChecksumAlgorithm.Crc32, info.ChecksumCRC32!);
+        if (!string.IsNullOrEmpty(info.ChecksumSHA1))
+            return new ChecksumVerifyingStream(innerStream, ChecksumAlgorithm.Sha1, info.ChecksumSHA1!);
+        if (!string.IsNullOrEmpty(info.ChecksumSHA256))
+            return new ChecksumVerifyingStream(innerStream, ChecksumAlgorithm.Sha256, info.ChecksumSHA256!);
+        
+        // No checksums provided, return original stream
+        return innerStream;
     }
 
     public async Task DeleteObjectAsync(string bucketName, string key, string? versionId, bool bypassGovernanceRetention, string? expectedBucketOwner, string? mfa, CancellationToken cancellationToken)
@@ -479,66 +502,69 @@ internal class MinioClient : IMinioClient
 
             if (items > 0)
             {
-                HttpResponseMessage resp;
-                using (var req = CreateRequest(HttpMethod.Post, bucketName, xDelete, q))
-                {
-                    await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
+                using var req = CreateRequest(HttpMethod.Post, bucketName, xDelete, q);
+                await AddContentMd5Async(req, cancellationToken).ConfigureAwait(false);
 
-                    req.SetBypassGovernanceRetention(bypassGovernanceRetention)
-                        .SetExpectedBucketOwner(expectedBucketOwner)
-                        .SetMfa(mfa);
-                    resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
-                }
-
-                using (resp)
+                req.SetBypassGovernanceRetention(bypassGovernanceRetention)
+                    .SetExpectedBucketOwner(expectedBucketOwner)
+                    .SetMfa(mfa);
+                var resp = await SendRequestAsync(req, cancellationToken).ConfigureAwait(false);
+                try
                 {
-                    if (!quiet)
+                    using (resp)
                     {
-                        var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                        await using (responseBody.ConfigureAwait(false))
+                        if (!quiet)
                         {
-                            var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken)
-                                .ConfigureAwait(false);
-                            foreach (var xResult in xResponse.Root!.Elements())
+                            var responseBody = await resp.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                            await using (responseBody.ConfigureAwait(false))
                             {
-                                switch (xResult.Name.LocalName)
+                                var xResponse = await XmlHelper.LoadXDocumentAsync(responseBody, cancellationToken)
+                                    .ConfigureAwait(false);
+                                foreach (var xResult in xResponse.Root!.Elements())
                                 {
-                                    case "Deleted":
+                                    switch (xResult.Name.LocalName)
                                     {
-                                        var key = xResult.Element("Key")?.Value ?? string.Empty;
-                                        var versionIdText = xResult.Element("VersionId")?.Value;
-                                        var versionId = !string.IsNullOrEmpty(versionIdText) ? versionIdText : null;
-                                        var deleteMarkerText = xResult.Element("DeleteMarker")?.Value;
-                                        var deleteMarker = deleteMarkerText != null
-                                            ? bool.TryParse(deleteMarkerText, out var dm) ? (bool?)dm : null
-                                            : null;
-                                        var deleteMarkerVersionIdText = xResult.Element("DeleteMarkerVersionId")?.Value;
-                                        var deleteMarkerVersionId = !string.IsNullOrEmpty(deleteMarkerVersionIdText)
-                                            ? deleteMarkerVersionIdText
-                                            : null;
-                                        yield return new DeleteResult(key, versionId, deleteMarker,
-                                            deleteMarkerVersionId);
-                                        break;
-                                    }
-                                    case "Error":
-                                    {
-                                        var key = xResult.Element("Key")?.Value ?? string.Empty;
-                                        var versionIdText = xResult.Element("VersionId")?.Value;
-                                        var versionId = !string.IsNullOrEmpty(versionIdText) ? versionIdText : null;
-                                        var errorCodeText = xResult.Element("Code")?.Value;
-                                        var errorCode = !string.IsNullOrEmpty(errorCodeText) ? errorCodeText : null;
-                                        var errorMessageText = xResult.Element("Message")?.Value;
-                                        var errorMessage = !string.IsNullOrEmpty(errorMessageText)
-                                            ? errorMessageText
-                                            : null;
-                                        yield return new DeleteResult(key, versionId, ErrorCode: errorCode,
-                                            ErrorMessage: errorMessage);
-                                        break;
+                                        case "Deleted":
+                                        {
+                                            var key = xResult.Element("Key")?.Value ?? string.Empty;
+                                            var versionIdText = xResult.Element("VersionId")?.Value;
+                                            var versionId = !string.IsNullOrEmpty(versionIdText) ? versionIdText : null;
+                                            var deleteMarkerText = xResult.Element("DeleteMarker")?.Value;
+                                            var deleteMarker = deleteMarkerText != null
+                                                ? bool.TryParse(deleteMarkerText, out var dm) ? (bool?)dm : null
+                                                : null;
+                                            var deleteMarkerVersionIdText = xResult.Element("DeleteMarkerVersionId")?.Value;
+                                            var deleteMarkerVersionId = !string.IsNullOrEmpty(deleteMarkerVersionIdText)
+                                                ? deleteMarkerVersionIdText
+                                                : null;
+                                            yield return new DeleteResult(key, versionId, deleteMarker,
+                                                deleteMarkerVersionId);
+                                            break;
+                                        }
+                                        case "Error":
+                                        {
+                                            var key = xResult.Element("Key")?.Value ?? string.Empty;
+                                            var versionIdText = xResult.Element("VersionId")?.Value;
+                                            var versionId = !string.IsNullOrEmpty(versionIdText) ? versionIdText : null;
+                                            var errorCodeText = xResult.Element("Code")?.Value;
+                                            var errorCode = !string.IsNullOrEmpty(errorCodeText) ? errorCodeText : null;
+                                            var errorMessageText = xResult.Element("Message")?.Value;
+                                            var errorMessage = !string.IsNullOrEmpty(errorMessageText)
+                                                ? errorMessageText
+                                                : null;
+                                            yield return new DeleteResult(key, versionId, ErrorCode: errorCode,
+                                                ErrorMessage: errorMessage);
+                                            break;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                }
+                finally
+                {
+                    resp?.Dispose();
                 }
             }
         }
@@ -1625,7 +1651,7 @@ internal class MinioClient : IMinioClient
         var requestId = Interlocked.Increment(ref _requestId);
         var sw = Stopwatch.StartNew();
         if (_logger.IsEnabled(LogLevel.Debug))
-            _logger.LogDebug("Request #{RequestID} {Method} {Url}", requestId, req.Method, req.RequestUri);
+            LogRequestDebug(_logger, requestId, req.Method, req.RequestUri);
 
         try
         {
@@ -1654,27 +1680,67 @@ internal class MinioClient : IMinioClient
                                 Server = xRoot.Element("Server")?.Value ?? string.Empty,
                             };
                             if (_logger.IsEnabled(LogLevel.Debug))
-                                _logger.LogDebug("Response #{RequestID} failed {StatusCode} - {Code}: {Message} ({Duration})", requestId, resp.StatusCode, err.Code, err.Message, sw.Elapsed);
+                                LogResponseFailed(_logger, requestId, resp.StatusCode, err.Code, err.Message, sw.Elapsed);
                             throw new MinioHttpException(req, resp, err);
                         }
                     }
 
                     if (_logger.IsEnabled(LogLevel.Debug))
-                        _logger.LogDebug("Response #{RequestID} failed {StatusCode} ({Duration})", requestId, resp.StatusCode, sw.Elapsed);
+                        LogResponseFailed(_logger, requestId, resp.StatusCode, sw.Elapsed);
                     throw new MinioHttpException(req, resp, null);
                 }
             }
 
             if (_logger.IsEnabled(LogLevel.Debug))
-                _logger.LogDebug("Response #{RequestID} {StatusCode} ({Duration})", requestId, resp.StatusCode, sw.Elapsed);
+                LogResponseOk(_logger, requestId, resp.StatusCode, sw.Elapsed);
             return resp;
         }
         catch (Exception exc) when (exc is not MinioHttpException)
         {
             if (_logger.IsEnabled(LogLevel.Debug))
-                _logger.LogDebug(exc, "Response #{RequestID} threw an exception ({Duration})", requestId, sw.Elapsed);
+                LogResponseException(_logger, requestId, sw.Elapsed, exc);
             throw;
         }
+    }
+
+    private static readonly Action<ILogger, long, HttpMethod, Uri, Exception?> _loggerRequestDebug =
+        LoggerMessage.Define<long, HttpMethod, Uri>(LogLevel.Debug, new EventId(1, "Request"), "Request #{RequestID} {Method} {Url}");
+
+    private static readonly Action<ILogger, long, HttpStatusCode, string, string, TimeSpan, Exception?> _loggerResponseFailedWithDetails =
+        LoggerMessage.Define<long, HttpStatusCode, string, string, TimeSpan>(LogLevel.Debug, new EventId(2, "ResponseFailed"), "Response #{RequestID} failed {StatusCode} - {Code}: {Message} ({Duration})");
+
+    private static readonly Action<ILogger, long, HttpStatusCode, TimeSpan, Exception?> _loggerResponseFailed =
+        LoggerMessage.Define<long, HttpStatusCode, TimeSpan>(LogLevel.Debug, new EventId(3, "ResponseFailed"), "Response #{RequestID} failed {StatusCode} ({Duration})");
+
+    private static readonly Action<ILogger, long, HttpStatusCode, TimeSpan, Exception?> _loggerResponseOk =
+        LoggerMessage.Define<long, HttpStatusCode, TimeSpan>(LogLevel.Debug, new EventId(4, "ResponseOk"), "Response #{RequestID} {StatusCode} ({Duration})");
+
+    private static readonly Action<ILogger, long, TimeSpan, Exception?> _loggerResponseException =
+        LoggerMessage.Define<long, TimeSpan>(LogLevel.Debug, new EventId(5, "ResponseException"), "Response #{RequestID} threw an exception ({Duration})");
+
+    private static void LogRequestDebug(ILogger logger, long requestId, HttpMethod method, Uri url)
+    {
+        _loggerRequestDebug(logger, requestId, method, url, null);
+    }
+
+    private static void LogResponseFailed(ILogger logger, long requestId, HttpStatusCode statusCode, string code, string message, TimeSpan duration)
+    {
+        _loggerResponseFailedWithDetails(logger, requestId, statusCode, code, message, duration, null);
+    }
+
+    private static void LogResponseFailed(ILogger logger, long requestId, HttpStatusCode statusCode, TimeSpan duration)
+    {
+        _loggerResponseFailed(logger, requestId, statusCode, duration, null);
+    }
+
+    private static void LogResponseOk(ILogger logger, long requestId, HttpStatusCode statusCode, TimeSpan duration)
+    {
+        _loggerResponseOk(logger, requestId, statusCode, duration, null);
+    }
+
+    private static void LogResponseException(ILogger logger, long requestId, TimeSpan duration, Exception exc)
+    {
+        _loggerResponseException(logger, requestId, duration, exc);
     }
 
     private HttpRequestMessage CreateRequest(HttpMethod method, string path, QueryParams? queryParameters = null)
@@ -1818,6 +1884,7 @@ internal class MinioClient : IMinioClient
             // Checksum values
             ChecksumCRC32 = resp.Headers.TryGetValue("x-amz-checksum-crc32"),
             ChecksumCRC32C = resp.Headers.TryGetValue("x-amz-checksum-crc32c"),
+            ChecksumCRC64nvme = resp.Headers.TryGetValue("x-amz-checksum-crc64nvme"),
             ChecksumSHA1 = resp.Headers.TryGetValue("x-amz-checksum-sha1"),
             ChecksumSHA256 = resp.Headers.TryGetValue("x-amz-checksum-sha256"),
         };

@@ -62,6 +62,7 @@ public class BucketEncryptionConfiguration
     /// <summary>Deserializes a <see cref="BucketEncryptionConfiguration"/> from an XML element.</summary>
     public static BucketEncryptionConfiguration Deserialize(XElement xElement)
     {
+        ArgumentNullException.ThrowIfNull(xElement);
         var xRule = xElement.Element("Rule");
         var xApply = xRule?.Element("ApplyServerSideEncryptionByDefault");
         var algorithmText = xApply?.Element("SSEAlgorithm")?.Value ?? "AES256";

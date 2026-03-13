@@ -36,7 +36,7 @@ public class ObjectLockConfiguration
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="xElement"/> is <c>null</c>.</exception>
     public static ObjectLockConfiguration Deserialize(XElement xElement)
     {
-        if (xElement == null) throw new ArgumentNullException(nameof(xElement));
+        ArgumentNullException.ThrowIfNull(xElement);
         var xDefaultRetention = xElement.Element("Rule")?.Element("DefaultRetention");
         var defaultRetentionRule = xDefaultRetention != null ? RetentionRule.Deserialize(xDefaultRetention) : null;
         return new ObjectLockConfiguration

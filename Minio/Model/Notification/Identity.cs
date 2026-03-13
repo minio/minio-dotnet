@@ -11,5 +11,6 @@ public class Identity
     /// <summary>
     /// Gets or sets the principal ID of the identity, typically the AWS account or IAM entity identifier.
     /// </summary>
-    [JsonPropertyName("principalId")] public string PrincipalId { get; set; }
+    [JsonPropertyName("principalId")]
+    public string? PrincipalId { get; set; }
 }

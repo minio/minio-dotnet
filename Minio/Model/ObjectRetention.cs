@@ -26,6 +26,7 @@ public class ObjectRetention
     /// <summary>Deserializes an <see cref="ObjectRetention"/> from an XML element.</summary>
     public static ObjectRetention Deserialize(XElement xElement)
     {
+        ArgumentNullException.ThrowIfNull(xElement);
         return new ObjectRetention
         {
             Mode = RetentionModeExtensions.Deserialize(xElement.Element("Mode")?.Value ?? string.Empty),

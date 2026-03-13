@@ -27,5 +27,8 @@ public sealed class SecTimeSpanJsonConverter : JsonConverter<TimeSpan>
     /// <param name="value">The <see cref="TimeSpan"/> value to serialize.</param>
     /// <param name="options">The serializer options (unused).</param>
     public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options)
-        => writer.WriteNumberValue((long)value.TotalSeconds);
+    {
+        ArgumentNullException.ThrowIfNull(writer);
+        writer.WriteNumberValue((long)value.TotalSeconds);
+    }
 }

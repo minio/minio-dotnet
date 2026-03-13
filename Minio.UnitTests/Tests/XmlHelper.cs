@@ -27,8 +27,10 @@ public class XmlHelperTests
         var xDocParsed = await XmlHelper.LoadXDocumentAsync(ms, CancellationToken.None).ConfigureAwait(true);
         var xmlParsed = xDocParsed.ToString();
 
-        const string expectedXml = "<root>\n  <child1 attribute1=\"value1\" attribute2=\"value2\" attribute3=\"value3\" />\n  <child2 attribute1=\"value1\" attribute2=\"value2\" attribute3=\"value3\" />\n</root>";
-        Assert.Equal(expectedXml, xmlParsed);
+        // Normalize line endings for comparison (Windows uses CRLF, Unix uses LF)
+        var expectedXml = "<root>\n  <child1 attribute1=\"value1\" attribute2=\"value2\" attribute3=\"value3\" />\n  <child2 attribute1=\"value1\" attribute2=\"value2\" attribute3=\"value3\" />\n</root>";
+        var actualXml = xmlParsed.Replace("\r\n", "\n", StringComparison.Ordinal);
+        Assert.Equal(expectedXml, actualXml);
     }
 
 }

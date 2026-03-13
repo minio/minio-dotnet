@@ -197,7 +197,7 @@ public sealed class TopicConfig : NotificationConfiguration
     /// <summary>
     /// Gets or sets the ARN of the SNS topic that receives the notification.
     /// </summary>
-    public string Topic { get; set; }
+    public string? Topic { get; set; }
 
     /// <summary>
     /// Serializes this topic notification configuration to its S3 XML representation.
@@ -242,7 +242,7 @@ public sealed class QueueConfig: NotificationConfiguration
     /// <summary>
     /// Gets or sets the ARN of the SQS queue that receives the notification.
     /// </summary>
-    public string Queue { get; set; }
+    public string? Queue { get; set; }
 
     /// <summary>
     /// Serializes this queue notification configuration to its S3 XML representation.

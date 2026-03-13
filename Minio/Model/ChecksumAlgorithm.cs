@@ -16,6 +16,11 @@ public enum ChecksumAlgorithm
     Crc32c,
 
     /// <summary>
+    /// CRC-64/NVME checksum algorithm (matches Rust SDK CRC64NVME).
+    /// </summary>
+    Crc64nvme,
+
+    /// <summary>
     /// SHA-1 checksum algorithm.
     /// </summary>
     Sha1,

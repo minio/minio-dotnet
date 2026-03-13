@@ -37,5 +37,20 @@ public sealed class ObjectInfoStream : BaseStream
     {
         await base.DisposeAsync().ConfigureAwait(false);
         _dispose.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    public override bool CanTimeout => base.CanTimeout;
+
+    public override int ReadTimeout
+    {
+        get => base.ReadTimeout;
+        set => base.ReadTimeout = value;
+    }
+
+    public override int WriteTimeout
+    {
+        get => base.WriteTimeout;
+        set => base.WriteTimeout = value;
     }
 }

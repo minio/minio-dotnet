@@ -1,6 +1,6 @@
 namespace Minio.UnitTests.Tests;
 
-public sealed class MockHttpMessageHandler : DelegatingHandler
+internal sealed class MockHttpMessageHandler : DelegatingHandler
 {
     private readonly Action<HttpRequestMessage, HttpResponseMessage> _handler;
 

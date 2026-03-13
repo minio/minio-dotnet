@@ -34,6 +34,7 @@ internal class ProgressReadStream : Stream
     {
         await _baseStream.DisposeAsync().ConfigureAwait(false);
         await base.DisposeAsync().ConfigureAwait(false);
+        GC.SuppressFinalize(this);
     }
 
     public override void Close()

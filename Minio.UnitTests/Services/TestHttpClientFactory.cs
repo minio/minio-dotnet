@@ -1,6 +1,6 @@
 namespace Minio.UnitTests.Services;
 
-public sealed class TestHttpClientFactory : IHttpClientFactory, IDisposable
+internal sealed class TestHttpClientFactory : IHttpClientFactory, IDisposable
 {
     private readonly DelegatingHandler _messageHandler;
 

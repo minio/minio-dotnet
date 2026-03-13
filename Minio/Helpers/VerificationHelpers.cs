@@ -30,8 +30,7 @@ public static class VerificationHelpers
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="bucketName"/> is <see langword="null"/>.</exception>
     public static bool VerifyBucketName(string bucketName)
     {
-        if (bucketName == null) 
-            throw new ArgumentNullException(nameof(bucketName));
+        ArgumentNullException.ThrowIfNull(bucketName);
         
         // Bucket names must be between 3 (min) and 63 (max) characters long
         if (bucketName.Length < 3 || bucketName.Length > 63) 

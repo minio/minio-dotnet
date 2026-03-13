@@ -13,18 +13,18 @@ public class BucketNotificationEvent
     /// Gets or sets the name of the S3 event that triggered the notification
     /// (e.g., <c>s3:ObjectCreated:Put</c>).
     /// </summary>
-    [JsonPropertyName("EventName")]
-    public string EventName { get; set; }
+    [JsonPropertyName("eventName")]
+    public string? EventName { get; set; }
 
     /// <summary>
     /// Gets or sets the object key associated with the notification event.
     /// </summary>
-    [JsonPropertyName("Key")]
-    public string Key { get; set; }
+    [JsonPropertyName("key")]
+    public string? Key { get; set; }
 
     /// <summary>
     /// Gets or sets the list of individual notification event records included in this message.
     /// </summary>
     [JsonPropertyName("Records")]
-    public IList<NotificationEvent> Records { get; set; } = new List<NotificationEvent>();
+    public IList<NotificationEvent>? Records { get; } = new List<NotificationEvent>();
 }

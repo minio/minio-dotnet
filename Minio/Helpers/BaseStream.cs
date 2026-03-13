@@ -36,6 +36,7 @@ public abstract class BaseStream : Stream
     {
         await _baseStream.DisposeAsync().ConfigureAwait(false);
         await base.DisposeAsync().ConfigureAwait(false);
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>

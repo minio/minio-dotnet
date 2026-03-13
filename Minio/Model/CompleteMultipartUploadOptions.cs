@@ -17,4 +17,10 @@ public class CompleteMultipartUploadOptions
     /// the algorithm specified by <see cref="ChecksumAlgorithm"/>.
     /// </summary>
     public byte[]? Checksum { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to enable checksum mode for the upload.
+    /// When enabled, the server will calculate and return checksums for the object.
+    /// </summary>
+    public bool? ChecksumMode { get; set; }
 }

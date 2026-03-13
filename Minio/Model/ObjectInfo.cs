@@ -71,18 +71,18 @@ public class ObjectInfo
     /// Gets a read-only dictionary of all raw response headers (both system and user metadata)
     /// associated with the object.
     /// </summary>
-    public IReadOnlyDictionary<string, string> Metadata { get; init; }
+    public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 
     /// <summary>
     /// Gets a read-only dictionary of user-defined metadata stored with the object
     /// (headers with the <c>x-amz-meta-</c> prefix, returned without the prefix).
     /// </summary>
-    public IReadOnlyDictionary<string, string> UserMetadata { get; init; }
+    public IReadOnlyDictionary<string, string>? UserMetadata { get; init; }
 
     /// <summary>
     /// Gets a read-only dictionary of user-defined tags attached to the object.
     /// </summary>
-    public IReadOnlyDictionary<string, string> UserTags { get; init; }
+    public IReadOnlyDictionary<string, string>? UserTags { get; init; }
 
     /// <summary>
     /// Gets the number of user-defined tags attached to the object.
@@ -104,6 +104,12 @@ public class ObjectInfo
     /// Gets the Base64-encoded CRC-32C checksum of the object, if one was stored at upload time.
     /// </summary>
     public string? ChecksumCRC32C { get; init; }
+
+    /// <summary>
+    /// Gets the Base64-encoded CRC-64/NVME checksum of the object, if one was stored at upload time.
+    /// This matches the Rust SDK's CRC64NVME checksum algorithm.
+    /// </summary>
+    public string? ChecksumCRC64nvme { get; init; }
 
     /// <summary>
     /// Gets the Base64-encoded SHA-1 checksum of the object, if one was stored at upload time.

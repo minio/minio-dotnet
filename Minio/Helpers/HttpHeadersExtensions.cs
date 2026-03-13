@@ -51,7 +51,8 @@ internal static class HttpHeadersExtensions
         {
             ChecksumAlgorithm.Crc32 => ("x-amz-checksum-crc32", 32),
             ChecksumAlgorithm.Crc32c => ("x-amz-checksum-crc32c", 32),
-            ChecksumAlgorithm.Sha1 => ("x-amz-checksum-sha1", 128),
+            ChecksumAlgorithm.Crc64nvme => ("x-amz-checksum-crc64nvme", 64),
+            ChecksumAlgorithm.Sha1 => ("x-amz-checksum-sha1", 160),
             ChecksumAlgorithm.Sha256 => ("x-amz-checksum-sha256", 256),
             _ => throw new ArgumentException("Invalid checksum algorithm", nameof(algorithm))
         };

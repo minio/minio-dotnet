@@ -42,7 +42,7 @@ public abstract class RetentionRule
     /// <exception cref="InvalidOperationException">Thrown when neither a <c>Days</c> nor a <c>Years</c> element is found.</exception>
     public static RetentionRule Deserialize(XElement xElement)
     {
-        if (xElement == null) throw new ArgumentNullException(nameof(xElement));
+        ArgumentNullException.ThrowIfNull(xElement);
         if (xElement.Element("Days") != null)
             return RetentionRuleDays.Deserialize(xElement);
         if (xElement.Element("Years") != null)
@@ -88,7 +88,7 @@ public class RetentionRuleDays : RetentionRule
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="xElement"/> is <c>null</c>.</exception>
     public new static RetentionRuleDays Deserialize(XElement xElement)
     {
-        if (xElement == null) throw new ArgumentNullException(nameof(xElement));
+        ArgumentNullException.ThrowIfNull(xElement);
         var mode = RetentionModeExtensions.Deserialize(xElement.Element("Mode")?.Value ?? string.Empty);
         var days = int.Parse(xElement.Element("Days")?.Value ?? string.Empty, CultureInfo.InvariantCulture);
         return new RetentionRuleDays(mode, days);
@@ -132,7 +132,7 @@ public class RetentionRuleYears : RetentionRule
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="xElement"/> is <c>null</c>.</exception>
     public new static RetentionRuleYears Deserialize(XElement xElement)
     {
-        if (xElement == null) throw new ArgumentNullException(nameof(xElement));
+        ArgumentNullException.ThrowIfNull(xElement);
         var mode = RetentionModeExtensions.Deserialize(xElement.Element("Mode")?.Value ?? string.Empty);
         var years = int.Parse(xElement.Element("Years")?.Value ?? string.Empty, CultureInfo.InvariantCulture);
         return new RetentionRuleYears(mode, years);

@@ -46,7 +46,7 @@ public class PutObjectOptions
     /// <summary>
     /// Gets or sets the collection of content encodings (e.g., <c>gzip</c>) applied to the object data.
     /// </summary>
-    public ICollection<string>? ContentEncoding { get; set; }
+    public ICollection<string>? ContentEncoding { get; } = new List<string>();
 
     /// <summary>
     /// Gets or sets the <c>Content-Disposition</c> header value to associate with the object.
@@ -56,7 +56,7 @@ public class PutObjectOptions
     /// <summary>
     /// Gets or sets the collection of natural languages of the intended audience for the object.
     /// </summary>
-    public ICollection<string>? ContentLanguage { get; set; }
+    public ICollection<string>? ContentLanguage { get; } = new List<string>();
 
     /// <summary>
     /// Gets or sets the <c>Cache-Control</c> header value to associate with the object.

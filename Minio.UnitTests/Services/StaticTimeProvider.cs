@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace Minio.UnitTests.Services;
 
-public class StaticTimeProvider : ITimeProvider
+internal sealed class StaticTimeProvider : ITimeProvider
 {
     public StaticTimeProvider(string time)
     {

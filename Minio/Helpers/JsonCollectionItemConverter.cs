@@ -20,16 +20,16 @@ public class JsonCollectionItemConverter<TDatatype, TConverterType> : JsonConver
     /// <summary>
     /// Reads and converts JSON into a <see cref="List{T}"/> of <typeparamref name="TDatatype"/>,
     /// using a fresh instance of <typeparamref name="TConverterType"/> for each element.
-    /// Returns <see langword="null"/> when the JSON token is <c>null</c>.
+    /// Returns an empty <see cref="List{T}"/> when the JSON token is <c>null</c>.
     /// </summary>
     /// <param name="reader">The reader positioned at the start of the JSON value to deserialize.</param>
     /// <param name="typeToConvert">The target type; always <see cref="List{T}"/> of <typeparamref name="TDatatype"/>.</param>
     /// <param name="options">The serializer options to use as a base; element-level converters are replaced with <typeparamref name="TConverterType"/>.</param>
-    /// <returns>A <see cref="List{T}"/> containing the deserialized elements, or <see langword="null"/> if the JSON token is null.</returns>
+    /// <returns>A <see cref="List{T}"/> containing the deserialized elements, or an empty list if the JSON token is null.</returns>
     public override List<TDatatype> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.Null)
-            return default;
+            return [];
 
         var jsonSerializerOptions = new JsonSerializerOptions(options);
         jsonSerializerOptions.Converters.Clear();
@@ -40,7 +40,7 @@ public class JsonCollectionItemConverter<TDatatype, TConverterType> : JsonConver
         while (reader.TokenType != JsonTokenType.EndArray)
         {
             if (reader.TokenType != JsonTokenType.StartArray)
-                returnValue.Add((TDatatype)JsonSerializer.Deserialize(ref reader, typeof(TDatatype), jsonSerializerOptions));
+                returnValue.Add(JsonSerializer.Deserialize<TDatatype>(ref reader, jsonSerializerOptions)!);
             reader.Read();
         }
 
@@ -57,7 +57,7 @@ public class JsonCollectionItemConverter<TDatatype, TConverterType> : JsonConver
     /// <param name="options">The serializer options to use as a base; element-level converters are replaced with <typeparamref name="TConverterType"/>.</param>
     public override void Write(Utf8JsonWriter writer, List<TDatatype>? value, JsonSerializerOptions options)
     {
-        if (writer == null) throw new ArgumentNullException(nameof(writer));
+        ArgumentNullException.ThrowIfNull(writer);
             
         if (value == null)
         {

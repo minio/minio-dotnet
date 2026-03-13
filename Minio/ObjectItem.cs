@@ -100,7 +100,7 @@ public class ObjectItem
     /// Gets the user-defined metadata associated with the object. Only populated when
     /// metadata is requested during listing (MinIO-specific feature).
     /// </summary>
-    public IReadOnlyDictionary<string, string> UserMetadata { get; init; }
+    public IReadOnlyDictionary<string, string>? UserMetadata { get; init; }
 }
 
 /// <summary>

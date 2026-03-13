@@ -7,6 +7,11 @@ namespace Minio.Model;
 public class PartInfo
 {
     /// <summary>
+    /// Gets or sets the 1-based part number that identifies this part within the multipart upload.
+    /// </summary>
+    public int PartNumber { get; set; }
+
+    /// <summary>
     /// Gets or sets the checksum algorithm used to compute the checksum for this part.
     /// </summary>
     public ChecksumAlgorithm? ChecksumAlgorithm { get; set; }
@@ -20,5 +25,5 @@ public class PartInfo
     /// <summary>
     /// Gets or sets the ETag returned by S3 when this part was uploaded.
     /// </summary>
-    public string Etag { get; set; }
+    public string? Etag { get; set; }
 }

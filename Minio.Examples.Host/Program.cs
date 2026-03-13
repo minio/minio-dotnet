@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿﻿#pragma warning disable CA2007 // Consider calling ConfigureAwait
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Minio;
@@ -40,7 +42,13 @@ var observable = await minioClient
     ])
     .ConfigureAwait(false);
 
-using var subscription = observable.Subscribe(e => Console.WriteLine($"{e.S3.Bucket.Name}:{e.S3.Object.Key} - {e.EventName}"));
+using var subscription = observable.Subscribe(e => 
+{
+    var bucket = e.S3.Bucket?.Name ?? "<unknown>";
+    var key = e.S3.Object?.Key ?? "<unknown>";
+    var eventName = e.EventName ?? "<unknown>";
+    Console.WriteLine($"{bucket}:{key} - {eventName}");
+});
 
 // Write out 100 objects in parallel
 var buffer = new byte[256];

@@ -2,7 +2,7 @@ using System.Xml.Linq;
 
 namespace Minio.IntegrationTests.Helpers;
 
-public static class XmlHelpers
+internal static class XmlHelpers
 {
     private static readonly XNamespace XsiNs = "https://www.w3.org/2001/XMLSchema-instance";
 

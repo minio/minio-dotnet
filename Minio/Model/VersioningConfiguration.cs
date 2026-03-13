@@ -39,7 +39,7 @@ public class VersioningConfiguration
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="xElement"/> is <c>null</c>.</exception>
     public static VersioningConfiguration Deserialize(XElement xElement)
     {
-        if (xElement == null) throw new ArgumentNullException(nameof(xElement));
+        ArgumentNullException.ThrowIfNull(xElement);
         var status = VersioningStatusExtensions.Deserialize(xElement.Element("Status")?.Value ?? string.Empty);
         var mfaDelete = xElement.Element("Status")?.Value is "Enabled";
         return new VersioningConfiguration

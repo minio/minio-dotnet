@@ -11,17 +11,17 @@ public class BucketMeta
     /// Gets or sets the Amazon Resource Name (ARN) of the bucket.
     /// </summary>
     [JsonPropertyName("arn")]
-    public string Arn { get; set; }
+    public string? Arn { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the bucket.
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>
     /// Gets or sets the identity of the bucket owner.
     /// </summary>
     [JsonPropertyName("ownerIdentity")]
-    public Identity OwnerIdentity { get; set; }
+    public Identity? OwnerIdentity { get; set; }
 }

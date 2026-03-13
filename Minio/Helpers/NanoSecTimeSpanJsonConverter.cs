@@ -28,7 +28,10 @@ public sealed class NanoSecTimeSpanJsonConverter : JsonConverter<TimeSpan>
     /// <param name="value">The <see cref="TimeSpan"/> value to serialize.</param>
     /// <param name="options">The serializer options (unused).</param>
     public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options)
-        => writer.WriteNumberValue((long)value.TotalNanoseconds);
+    {
+        ArgumentNullException.ThrowIfNull(writer);
+        writer.WriteNumberValue((long)value.TotalNanoseconds);
+    }
 #else
     /// <summary>
     /// Reads a JSON integer representing a duration in nanoseconds and converts it to a <see cref="TimeSpan"/>.
@@ -47,6 +50,9 @@ public sealed class NanoSecTimeSpanJsonConverter : JsonConverter<TimeSpan>
     /// <param name="value">The <see cref="TimeSpan"/> value to serialize.</param>
     /// <param name="options">The serializer options (unused).</param>
     public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options)
-        => writer.WriteNumberValue(value.Ticks * 100);
+    {
+        ArgumentNullException.ThrowIfNull(writer);
+        writer.WriteNumberValue(value.Ticks * 100);
+    }
 #endif
 }
