@@ -1034,15 +1034,8 @@ public partial class MinioClient : IObjectOperations
 
             if (singleFile && args.Progress is not null)
             {
-                var statArgs = new StatObjectArgs()
-                    .WithBucket(args.BucketName)
-                    .WithObject(args.ObjectName);
-                var stat = await StatObjectAsync(statArgs, cancellationToken).ConfigureAwait(false);
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    progressReport.Percentage = 100;
-                    progressReport.TotalBytesTransferred = stat.Size;
-                }
+                progressReport.Percentage = 100;
+                progressReport.TotalBytesTransferred = args.ObjectSize;
 
                 args.Progress.Report(progressReport);
             }
