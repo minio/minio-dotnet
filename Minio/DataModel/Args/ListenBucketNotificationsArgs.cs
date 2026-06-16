@@ -74,27 +74,25 @@ public class ListenBucketNotificationsArgs : BucketArgs<ListenBucketNotification
         requestMessageBuilder.ResponseWriter = async (responseStream, cancellationToken) =>
         {
             using var sr = new StreamReader(responseStream);
-            while (!sr.EndOfStream)
-                try
-                {
-                    var line = await sr.ReadLineAsync(cancellationToken).ConfigureAwait(false);
-                    if (string.IsNullOrEmpty(line))
-                        break;
+            var line = await sr.ReadLineAsync(cancellationToken).ConfigureAwait(false);
 
-                    if (EnableTrace)
-                    {
-                        Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
-                        Console.WriteLine(line);
-                        Console.WriteLine("==============================================");
-                    }
-
-                    var trimmed = line.Trim();
-                    if (trimmed.Length > 2) NotificationObserver.OnNext(new MinioNotificationRaw(trimmed));
-                }
-                catch
-                {
+            while (line != null)
+            {
+                if (string.IsNullOrEmpty(line))
                     break;
+
+                if (EnableTrace)
+                {
+                    Console.WriteLine("== ListenBucketNotificationsAsync read line ==");
+                    Console.WriteLine(line);
+                    Console.WriteLine("==============================================");
                 }
+
+                var trimmed = line.Trim();
+                if (trimmed.Length > 2) NotificationObserver.OnNext(new MinioNotificationRaw(trimmed));
+
+                line = await sr.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+            }
         };
         return requestMessageBuilder;
     }
