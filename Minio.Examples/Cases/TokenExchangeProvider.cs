@@ -24,7 +24,7 @@ namespace Minio.Examples.Cases;
 
 public class TokenExchangeProvider
 {
-    private IMinioClient minioClient;
+    private readonly IMinioClient minioClient;
     private readonly string tokenEndpoint = "http://192.168.86.151:8080/realms/master/protocol/openid-connect/token";
     private readonly string clientId = "minio-client";
     private readonly string clientSecret;
