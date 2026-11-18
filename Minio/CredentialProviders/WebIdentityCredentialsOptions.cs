@@ -46,4 +46,20 @@ public class WebIdentityCredentialsOptions
     /// Defaults to <c>"Minio"</c>.
     /// </summary>
     public string MinioHttpClient { get; set; } = "Minio";
+
+    /// <summary>
+    /// Gets or sets an optional <c>RoleSessionName</c> sent to the STS endpoint.
+    /// <see cref="WebIdentityProvider.FromAwsEnvironment"/> fills it from <c>AWS_ROLE_SESSION_NAME</c>.
+    /// When <see langword="null"/> or empty, it is not sent for callers that build the provider themselves.
+    /// <see cref="WebIdentityProvider.FromAwsEnvironment"/> instead generates a session name when it has a role
+    /// ARN (<c>AWS_ROLE_ARN</c>) but <c>AWS_ROLE_SESSION_NAME</c> is unset, because AWS STS requires one.
+    /// </summary>
+    public string? RoleSessionName { get; set; }
+
+    /// <summary>
+    /// Set by <see cref="WebIdentityProvider.FromAwsEnvironment"/>: use the AWS STS wire format
+    /// (<c>RoleArn</c>, and a generated <c>RoleSessionName</c> when a role is set but no session name is).
+    /// Other callers keep the existing MinIO request contract.
+    /// </summary>
+    internal bool AwsRequestFormat { get; set; }
 }
