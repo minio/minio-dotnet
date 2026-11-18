@@ -42,6 +42,41 @@ public class WebIdentityProvider : ICredentialsProvider
     }
 
     /// <summary>
+    /// Creates a provider for the AWS web-identity flow, configured from the environment:
+    /// <c>AWS_WEB_IDENTITY_TOKEN_FILE</c> (required, read on every call), <c>AWS_ROLE_ARN</c> and <c>AWS_ROLE_SESSION_NAME</c> (optional),
+    /// and the STS endpoint, resolved as: <paramref name="stsEndpoint"/>, <c>AWS_ENDPOINT_URL_STS</c>,
+    /// then <c>sts[.AWS_REGION].amazonaws.com[.cn]</c>. The global <c>AWS_ENDPOINT_URL</c> is not read.
+    /// <c>AWS_ENDPOINT_URL_STS</c> is ignored when <c>AWS_IGNORE_CONFIGURED_ENDPOINT_URLS</c> is <c>true</c>;
+    /// any URL path is kept. Only when the endpoint came from <c>AWS_ENDPOINT_URL_STS</c> and
+    /// <paramref name="httpClient"/> is <see langword="null"/>, <c>AWS_CA_BUNDLE</c> (PEM file, read on every
+    /// credential retrieval) is trusted in addition to the system certificates; in every other case the variable
+    /// is not read. A supplied client is used as is and is never modified or disposed.
+    /// </summary>
+    /// <param name="stsEndpoint">Optional explicit STS endpoint, which takes precedence over the environment. <c>AWS_CA_BUNDLE</c> does not apply to it.</param>
+    /// <param name="httpClient">Optional client for the STS request.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown by this method when <c>AWS_WEB_IDENTITY_TOKEN_FILE</c> is not set. An unreadable
+    /// <c>AWS_CA_BUNDLE</c>, or one without certificates, is thrown later, from
+    /// <see cref="GetCredentialsAsync"/>, because the provider reads the bundle when it creates its own client.
+    /// </exception>
+    public static WebIdentityProvider FromAwsEnvironment(string? stsEndpoint = null, HttpClient? httpClient = null)
+    {
+        var tokenFile = AwsWebIdentityEnvironment.GetEnv("AWS_WEB_IDENTITY_TOKEN_FILE")
+            ?? throw new InvalidOperationException("AWS_WEB_IDENTITY_TOKEN_FILE is not set.");
+        var options = new WebIdentityCredentialsOptions
+        {
+            StsEndPoint = AwsWebIdentityEnvironment.ResolveStsEndpoint(stsEndpoint, out var fromStsVariable),
+            RoleARN = AwsWebIdentityEnvironment.GetEnv("AWS_ROLE_ARN")!,
+            RoleSessionName = AwsWebIdentityEnvironment.GetEnv("AWS_ROLE_SESSION_NAME"),
+            AwsRequestFormat = true,
+        };
+        return new WebIdentityProvider(
+            AwsWebIdentityEnvironment.CreateFactory(httpClient, fromStsVariable),
+            new FileAccessTokenProvider(tokenFile),
+            Options.Create(options));
+    }
+
+    /// <summary>
     /// Asynchronously obtains temporary credentials by exchanging a web identity token with the
     /// STS <c>AssumeRoleWithWebIdentity</c> action at the configured endpoint.
     /// The returned credentials include an access key, secret key, session token, and expiration time.
@@ -72,8 +107,15 @@ public class WebIdentityProvider : ICredentialsProvider
         query.Add("WebIdentityToken", accessToken);
         query.Add("DurationSeconds", opts.DurationSeconds.ToString(CultureInfo.InvariantCulture));
         query.AddIfNotNullOrEmpty("Policy", opts.Policy);
-        query.AddIfNotNullOrEmpty("RoleARN", opts.RoleARN);
+        query.AddIfNotNullOrEmpty(opts.AwsRequestFormat ? "RoleArn" : "RoleARN", opts.RoleARN);
         query.AddIfNotNullOrEmpty("TokenRevokeType", opts.TokenRevokeType);
+        var sessionName = opts.RoleSessionName;
+        if (opts.AwsRequestFormat && string.IsNullOrEmpty(sessionName) && !string.IsNullOrEmpty(opts.RoleARN))
+        {
+            // AWS STS requires a session name whenever a role is assumed (minio-go does the same).
+            sessionName = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+        }
+        query.AddIfNotNullOrEmpty("RoleSessionName", sessionName);
 
         var builder = new UriBuilder(opts.StsEndPoint)
         {
