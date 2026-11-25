@@ -32,6 +32,11 @@ public sealed class MinioClientBuilder
     public string Region { get; private set; } = "us-east-1";
 
     /// <summary>
+    /// Gets the URL addressing style used for bucket operations.
+    /// </summary>
+    public BucketAddressingStyle AddressingStyle { get; private set; } = BucketAddressingStyle.Path;
+
+    /// <summary>
     /// Gets the credentials provider that will be used to authenticate requests.
     /// Set via one of the <c>With*Credentials*</c> methods or <see cref="WithCredentialsProvider"/>.
     /// </summary>
@@ -72,6 +77,7 @@ public sealed class MinioClientBuilder
         {
             EndPoint = EndPoint,
             Region = Region,
+            AddressingStyle = AddressingStyle,
         });
         var timeProvider = new DefaultTimeProvider();
         var authLogger = NullLoggerFactory.Instance.CreateLogger<V4RequestAuthenticator>();
@@ -89,6 +95,17 @@ public sealed class MinioClientBuilder
     public MinioClientBuilder WithRegion(string region)
     {
         Region = region;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the URL addressing style used for bucket operations.
+    /// </summary>
+    /// <param name="addressingStyle">The addressing style to use.</param>
+    /// <returns>The current <see cref="MinioClientBuilder"/> instance for fluent chaining.</returns>
+    public MinioClientBuilder WithAddressingStyle(BucketAddressingStyle addressingStyle)
+    {
+        AddressingStyle = addressingStyle;
         return this;
     }
 
