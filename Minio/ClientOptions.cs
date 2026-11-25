@@ -11,6 +11,12 @@ public class ClientOptions
     public required Uri EndPoint { get; set; }
 
     /// <summary>
+    /// Gets or sets the URL addressing style used for bucket operations.
+    /// Defaults to <see cref="BucketAddressingStyle.Path"/> for backwards compatibility.
+    /// </summary>
+    public BucketAddressingStyle AddressingStyle { get; set; } = BucketAddressingStyle.Path;
+
+    /// <summary>
     /// Gets or sets the AWS region used for request signing. Defaults to <c>us-east-1</c>.
     /// </summary>
     public string Region { get; set; } = "us-east-1";

@@ -1679,12 +1679,26 @@ internal class MinioClient : IMinioClient
 
     private HttpRequestMessage CreateRequest(HttpMethod method, string path, QueryParams? queryParameters = null)
     {
-        var uriBuilder = new StringBuilder();
-        uriBuilder.Append(_options.Value.EndPoint);
-        if (uriBuilder[^1] != '/')
-            uriBuilder.Append('/');
-        if (!string.IsNullOrEmpty(path))
-            uriBuilder.Append(path);
+        var endpoint = _options.Value.EndPoint;
+        var requestPath = path;
+
+        if (_options.Value.AddressingStyle == BucketAddressingStyle.VirtualHost && !string.IsNullOrEmpty(path))
+        {
+            var separator = path.IndexOf('/', StringComparison.Ordinal);
+            var bucketName = separator < 0 ? path : path[..separator];
+            requestPath = separator < 0 ? string.Empty : path[(separator + 1)..];
+
+            var endpointBuilder = new UriBuilder(endpoint)
+            {
+                Host = $"{bucketName}.{endpoint.Host}",
+            };
+            endpoint = endpointBuilder.Uri;
+        }
+
+        var uriBuilder = new StringBuilder(endpoint.ToString().TrimEnd('/'));
+        uriBuilder.Append('/');
+        if (!string.IsNullOrEmpty(requestPath))
+            uriBuilder.Append(requestPath);
         if (queryParameters != null)
             uriBuilder.Append(queryParameters);
 

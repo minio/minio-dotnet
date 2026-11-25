@@ -18,13 +18,14 @@ public abstract class MinioUnitTests
     protected string CurrentTime { get; set; } = "20240411T153713Z";
     // ReSharper restore MemberCanBePrivate.Global
 
-    protected async Task RunWithMinioClientAsync(Action<HttpRequestMessage, HttpResponseMessage> handler, Func<IMinioClient, Task> func, bool withPolicy = false)
+    protected async Task RunWithMinioClientAsync(Action<HttpRequestMessage, HttpResponseMessage> handler, Func<IMinioClient, Task> func, bool withPolicy = false, BucketAddressingStyle addressingStyle = BucketAddressingStyle.Path)
     {
         ArgumentNullException.ThrowIfNull(func);
         
         var options = Options.Create(new ClientOptions
         {
-            EndPoint = new Uri(MinioEndPoint)
+            EndPoint = new Uri(MinioEndPoint),
+            AddressingStyle = addressingStyle,
         });
         var credentialsProvider = new StaticCredentialsProvider(Options.Create(new StaticCredentialsOptions
         {
